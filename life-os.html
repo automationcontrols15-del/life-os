@@ -354,9 +354,42 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
   .water-btns{gap:6px;}
   .water-btn{padding:8px 12px;font-size:12px;}
 }
+
+/* LOCK SCREEN */
+#lock-screen{position:fixed;inset:0;background:linear-gradient(135deg,#0d0f1c 0%,#16192e 50%,#0d0f1c 100%);z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:0;}
+#lock-screen.hidden{display:none;}
+.lock-card{background:rgba(255,255,255,.06);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,.1);border-radius:20px;padding:40px 36px;width:100%;max-width:380px;text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.5);}
+.lock-logo{width:60px;height:60px;background:var(--primary);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:28px;margin:0 auto 20px;box-shadow:0 8px 24px rgba(99,102,241,.4);}
+.lock-title{font-size:22px;font-weight:700;color:#fff;margin-bottom:6px;}
+.lock-sub{font-size:13px;color:rgba(255,255,255,.4);margin-bottom:28px;}
+.lock-input{width:100%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:13px 16px;font-size:16px;color:#fff;text-align:center;letter-spacing:3px;outline:none;transition:border-color .2s;}
+.lock-input:focus{border-color:var(--primary);}
+.lock-input::placeholder{letter-spacing:0;color:rgba(255,255,255,.3);}
+.lock-btn{width:100%;margin-top:14px;background:var(--primary);color:#fff;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;border:none;transition:background .2s,transform .1s;}
+.lock-btn:hover{background:var(--primary-h);}
+.lock-btn:active{transform:scale(.98);}
+.lock-error{color:#f87171;font-size:13px;margin-top:10px;min-height:18px;}
+.lock-footer{margin-top:24px;font-size:12px;color:rgba(255,255,255,.2);}
+@keyframes lockShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
+.lock-shake{animation:lockShake .3s ease;}
   </style>
 </head>
 <body>
+
+<!-- LOCK SCREEN -->
+<div id="lock-screen">
+  <div class="lock-card">
+    <div class="lock-logo">⚡</div>
+    <div class="lock-title">Life OS</div>
+    <div class="lock-sub">Enter your password to continue</div>
+    <input type="password" class="lock-input" id="lock-pwd" placeholder="Password" maxlength="50"
+      onkeydown="if(event.key==='Enter')Auth.unlock()">
+    <button class="lock-btn" onclick="Auth.unlock()">Unlock →</button>
+    <div class="lock-error" id="lock-error"></div>
+    <div class="lock-footer">Life OS v1.0 · Personal & Secure</div>
+  </div>
+</div>
+
 <div id="app">
   <!-- Sidebar -->
   <aside id="sidebar">
@@ -416,6 +449,7 @@ const SK = {
   LEARNING: 'los_learning',
   FOOD: 'los_food',
   EXPENSES: 'los_expenses',
+  AUTH_PWD: 'los_auth_pwd',
 };
 
 const DEFAULT_SETTINGS = {
@@ -2251,6 +2285,19 @@ function viewSettings() {
       <button class="btn btn-secondary btn-sm mt-3" onclick="showAddRoutineHabit('evening')">+ Add Habit</button>
     </div>
 
+    <!-- Security -->
+    <div class="settings-section">
+      <div class="settings-title">Security & Access</div>
+      <div class="setting-row">
+        <div><div class="setting-label">App Password</div><div class="setting-sub">Required every time you open a new browser session</div></div>
+        <button class="btn btn-secondary btn-sm" onclick="showChangePwdModal()">🔒 Change Password</button>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Lock App Now</div><div class="setting-sub">Immediately lock and return to the password screen</div></div>
+        <button class="btn btn-danger btn-sm" onclick="Auth.lock()">🔐 Lock Now</button>
+      </div>
+    </div>
+
     <!-- Data Export -->
     <div class="settings-section">
       <div class="settings-title">Data Management</div>
@@ -2281,6 +2328,88 @@ function showModal(title, content) {
   document.getElementById('modal-overlay').classList.remove('hidden');
 }
 function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+// ─── AUTH / LOCK SCREEN ───────────────────────────────
+const Auth = {
+  DEFAULT_PWD: 'ravi@2024',
+  SESSION_KEY: 'los_unlocked',
+
+  getPassword() {
+    return localStorage.getItem(SK.AUTH_PWD) || this.DEFAULT_PWD;
+  },
+
+  setPassword(newPwd) {
+    localStorage.setItem(SK.AUTH_PWD, newPwd);
+  },
+
+  isUnlocked() {
+    return sessionStorage.getItem(this.SESSION_KEY) === '1';
+  },
+
+  markUnlocked() {
+    sessionStorage.setItem(this.SESSION_KEY, '1');
+  },
+
+  lock() {
+    sessionStorage.removeItem(this.SESSION_KEY);
+    document.getElementById('lock-screen').classList.remove('hidden');
+    document.getElementById('lock-pwd').value = '';
+    document.getElementById('lock-error').textContent = '';
+    setTimeout(() => document.getElementById('lock-pwd').focus(), 100);
+  },
+
+  unlock() {
+    const input = document.getElementById('lock-pwd').value;
+    if (input === this.getPassword()) {
+      this.markUnlocked();
+      const ls = document.getElementById('lock-screen');
+      ls.style.opacity = '0';
+      ls.style.transition = 'opacity .4s ease';
+      setTimeout(() => ls.classList.add('hidden'), 400);
+      document.getElementById('lock-error').textContent = '';
+    } else {
+      const card = document.querySelector('.lock-card');
+      card.classList.remove('lock-shake');
+      void card.offsetWidth; // reflow
+      card.classList.add('lock-shake');
+      document.getElementById('lock-error').textContent = '❌ Incorrect password. Try again.';
+      document.getElementById('lock-pwd').value = '';
+      document.getElementById('lock-pwd').focus();
+    }
+  },
+
+  init() {
+    if (this.isUnlocked()) {
+      document.getElementById('lock-screen').classList.add('hidden');
+    } else {
+      setTimeout(() => document.getElementById('lock-pwd').focus(), 200);
+    }
+  }
+};
+
+function showChangePwdModal() {
+  showModal('🔒 Change Password', `
+    <div class="form-group"><label class="form-label">Current Password</label><input type="password" class="form-control" id="cp-old" placeholder="Current password"></div>
+    <div class="form-group" style="margin-top:12px"><label class="form-label">New Password</label><input type="password" class="form-control" id="cp-new" placeholder="New password (min 4 chars)"></div>
+    <div class="form-group" style="margin-top:12px"><label class="form-label">Confirm New Password</label><input type="password" class="form-control" id="cp-confirm" placeholder="Confirm new password"></div>
+    <div style="margin-top:20px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveNewPassword()">Save Password</button>
+    </div>
+  `);
+}
+
+function saveNewPassword() {
+  const oldPwd = document.getElementById('cp-old')?.value;
+  const newPwd = document.getElementById('cp-new')?.value;
+  const confirm = document.getElementById('cp-confirm')?.value;
+  if (oldPwd !== Auth.getPassword()) { App.toast('❌ Current password is wrong'); return; }
+  if (!newPwd || newPwd.length < 4) { App.toast('Password must be at least 4 characters'); return; }
+  if (newPwd !== confirm) { App.toast('❌ Passwords do not match'); return; }
+  Auth.setPassword(newPwd);
+  closeModal();
+  App.toast('✅ Password changed successfully!');
+}
 
 // ─── APP OBJECT ───────────────────────────────────────
 const App = {
@@ -2369,6 +2498,9 @@ const App = {
   },
 
   init() {
+    // Auth check — show lock screen if not unlocked
+    Auth.init();
+
     // Apply saved theme
     const s = DB.settings();
     document.documentElement.setAttribute('data-theme', s.theme||'light');
