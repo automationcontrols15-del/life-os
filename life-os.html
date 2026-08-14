@@ -1,0 +1,2403 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="description" content="Personal Life Operating System — Track, Analyse, Understand, Improve">
+  <title>Life OS — Personal Life Operating System</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f2f7;--bg2:#e8eaf2;--card:#fff;--sidebar:#16192a;--sidebar2:#1e2240;
+  --text:#111827;--text2:#374151;--muted:#6b7280;--xs:#9ca3af;
+  --border:#e5e7eb;--border2:#f3f4f6;--input:#f8fafc;
+  --primary:#6366f1;--primary-h:#4f46e5;--primary-l:#eef2ff;--primary-t:rgba(99,102,241,.12);
+  --success:#10b981;--success-l:#d1fae5;--success-t:rgba(16,185,129,.12);
+  --warn:#f59e0b;--warn-l:#fef3c7;--warn-t:rgba(245,158,11,.12);
+  --danger:#ef4444;--danger-l:#fee2e2;--danger-t:rgba(239,68,68,.12);
+  --info:#3b82f6;--info-l:#dbeafe;
+  --r:14px;--r-sm:8px;--r-xs:5px;
+  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.05);
+  --sh-md:0 4px 16px rgba(0,0,0,.09);
+  --t:.2s ease;
+  --sw:250px;--bnav:64px;
+}
+[data-theme=dark]{
+  --bg:#0b0d18;--bg2:#111320;--card:#151829;--sidebar:#0d0f1c;--sidebar2:#16192e;
+  --text:#f1f5f9;--text2:#cbd5e1;--muted:#64748b;--xs:#475569;
+  --border:#1e2235;--border2:#151829;--input:#1a1d30;
+  --primary-l:#1e2256;--success-l:#064e3b;--warn-l:#451a03;--danger-l:#450a0a;--info-l:#1e3a5f;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.5;transition:background var(--t),color var(--t);}
+a{color:inherit;text-decoration:none;}
+button{cursor:pointer;border:none;background:none;font:inherit;color:inherit;}
+input,select,textarea{font:inherit;color:inherit;}
+
+/* LAYOUT */
+#app{display:flex;min-height:100vh;}
+#sidebar{width:var(--sw);background:var(--sidebar);flex-shrink:0;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;z-index:200;transition:transform var(--t);}
+#main{margin-left:var(--sw);flex:1;min-width:0;display:flex;flex-direction:column;min-height:100vh;}
+#content{flex:1;padding:28px;max-width:1200px;}
+#sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;}
+
+/* SIDEBAR */
+.sb-brand{display:flex;align-items:center;gap:10px;padding:22px 20px 18px;border-bottom:1px solid rgba(255,255,255,.06);}
+.sb-logo{width:34px;height:34px;background:var(--primary);border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.sb-name{font-size:17px;font-weight:700;color:#fff;letter-spacing:-.3px;}
+.sb-ver{font-size:10px;color:rgba(255,255,255,.3);margin-top:1px;}
+#sidebar-nav{flex:1;padding:12px 0;overflow-y:auto;}
+.sb-section{padding:8px 20px 4px;font-size:10px;font-weight:600;color:rgba(255,255,255,.25);letter-spacing:.8px;text-transform:uppercase;}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 20px;cursor:pointer;color:rgba(255,255,255,.5);font-size:13.5px;font-weight:500;transition:all var(--t);border-left:3px solid transparent;user-select:none;}
+.sb-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.8);}
+.sb-item.active{background:rgba(99,102,241,.15);color:#fff;border-left-color:var(--primary);}
+.sb-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
+.sb-bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);}
+.sb-user{display:flex;align-items:center;gap:10px;}
+.sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+.sb-uname{font-size:13px;font-weight:600;color:#fff;}
+.sb-uemail{font-size:11px;color:rgba(255,255,255,.35);}
+
+/* TOPBAR (mobile) */
+#topbar{display:none;align-items:center;justify-content:space-between;padding:0 16px;height:54px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-shrink:0;}
+.topbar-title{font-size:15px;font-weight:700;}
+.btn-menu{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--muted);}
+.btn-checkin-sm{background:var(--primary);color:#fff;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;}
+
+/* BOTTOM NAV */
+#bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--bnav);background:var(--card);border-top:1px solid var(--border);z-index:100;flex-direction:row;justify-content:space-around;align-items:center;padding:0 8px;}
+.bnav-item{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;padding:6px 4px;border-radius:10px;color:var(--muted);transition:color var(--t);}
+.bnav-item.active{color:var(--primary);}
+.bnav-icon{font-size:20px;line-height:1;}
+.bnav-label{font-size:10px;font-weight:500;}
+
+/* CARDS */
+.card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:20px;transition:box-shadow var(--t);}
+.card-sm{padding:14px 16px;}
+.card-hover:hover{box-shadow:var(--sh-md);}
+.card-title{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;}
+.card-heading{font-size:17px;font-weight:700;margin-bottom:4px;}
+
+/* GRID */
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.grid-auto{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;}
+
+/* STAT CARD */
+.stat-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;display:flex;flex-direction:column;gap:4px;}
+.stat-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.stat-value{font-size:22px;font-weight:800;letter-spacing:-.5px;color:var(--text);}
+.stat-sub{font-size:12px;color:var(--muted);}
+.stat-icon{font-size:20px;margin-bottom:4px;}
+.stat-bar{height:4px;border-radius:2px;background:var(--border);margin-top:6px;overflow:hidden;}
+.stat-fill{height:100%;border-radius:2px;transition:width .5s ease;}
+
+/* SCORE */
+.score-ring{display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.score-num{font-size:52px;font-weight:900;letter-spacing:-2px;line-height:1;}
+.score-label{font-size:13px;color:var(--muted);font-weight:500;margin-top:2px;}
+.score-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700;}
+
+/* PROGRESS */
+.progress-bar{height:8px;border-radius:4px;background:var(--border);overflow:hidden;}
+.progress-fill{height:100%;border-radius:4px;transition:width .6s ease;}
+.progress-sm{height:5px;}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:var(--r-sm);font-weight:600;font-size:13.5px;transition:all var(--t);cursor:pointer;}
+.btn-primary{background:var(--primary);color:#fff;}
+.btn-primary:hover{background:var(--primary-h);}
+.btn-secondary{background:var(--bg2);color:var(--text2);}
+.btn-secondary:hover{background:var(--border);}
+.btn-success{background:var(--success);color:#fff;}
+.btn-danger{background:var(--danger);color:#fff;}
+.btn-ghost{background:transparent;color:var(--muted);padding:6px 10px;}
+.btn-ghost:hover{background:var(--bg2);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-lg{padding:12px 24px;font-size:15px;}
+.btn-icon{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--muted);}
+.btn-icon:hover{background:var(--bg2);}
+.btn-block{width:100%;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;}
+
+/* QUICK ADD BTNS */
+.quick-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:10px;}
+.quick-btn{display:flex;flex-direction:column;align-items:center;gap:5px;padding:12px 8px;border-radius:var(--r);background:var(--card);box-shadow:var(--sh);transition:all var(--t);cursor:pointer;border:2px solid transparent;}
+.quick-btn:hover{border-color:var(--primary);transform:translateY(-1px);box-shadow:var(--sh-md);}
+.quick-btn .q-icon{font-size:22px;}
+.quick-btn .q-label{font-size:11px;font-weight:600;color:var(--muted);}
+
+/* WATER BUTTONS */
+.water-btns{display:flex;gap:8px;flex-wrap:wrap;}
+.water-btn{padding:9px 16px;border-radius:var(--r-sm);background:var(--info-l);color:var(--info);font-weight:700;font-size:13px;transition:all var(--t);}
+.water-btn:hover{background:var(--info);color:#fff;}
+.water-display{font-size:48px;font-weight:900;color:var(--info);letter-spacing:-2px;}
+.water-glasses{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0;}
+.glass{font-size:24px;transition:all var(--t);}
+
+/* FORM ELEMENTS */
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+label.form-label{font-size:12px;font-weight:600;color:var(--muted);}
+.form-control{padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--r-sm);background:var(--input);font-size:13.5px;transition:border var(--t),box-shadow var(--t);width:100%;}
+.form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-t);}
+select.form-control{cursor:pointer;}
+textarea.form-control{resize:vertical;min-height:80px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* RANGE SLIDER */
+.range-wrap{display:flex;flex-direction:column;gap:6px;}
+.range-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);}
+input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:var(--border);outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--primary);box-shadow:0 1px 4px rgba(99,102,241,.4);}
+input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;background:var(--primary);border:none;}
+
+/* TOGGLE */
+.toggle-wrap{display:flex;align-items:center;gap:8px;}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-slider{position:absolute;inset:0;background:var(--border);border-radius:11px;cursor:pointer;transition:var(--t);}
+.toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:var(--t);}
+.toggle input:checked+.toggle-slider{background:var(--primary);}
+.toggle input:checked+.toggle-slider:before{transform:translateX(18px);}
+
+/* CHECKBOX */
+.check-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:var(--r-sm);transition:background var(--t);cursor:pointer;}
+.check-item:hover{background:var(--bg2);}
+.check-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--primary);cursor:pointer;flex-shrink:0;}
+.check-item.done span{text-decoration:line-through;color:var(--muted);}
+
+/* STAR RATING */
+.star-rating{display:flex;gap:2px;}
+.star{cursor:pointer;font-size:22px;color:var(--border);transition:color var(--t);}
+.star.filled{color:var(--warn);}
+.star:hover,.star:hover~.star{color:var(--warn);}
+.dot-rating{display:flex;gap:5px;}
+.dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--border);cursor:pointer;transition:all var(--t);}
+.dot.active{background:var(--primary);border-color:var(--primary);}
+
+/* TAGS */
+.tag{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:600;}
+.tag-primary{background:var(--primary-l);color:var(--primary);}
+.tag-success{background:var(--success-l);color:var(--success);}
+.tag-warn{background:var(--warn-l);color:var(--warn);}
+.tag-danger{background:var(--danger-l);color:var(--danger);}
+.tag-muted{background:var(--bg2);color:var(--muted);}
+
+/* TASKS */
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:12px 14px;background:var(--card);border-radius:var(--r-sm);box-shadow:var(--sh);margin-bottom:8px;transition:all var(--t);}
+.task-item.done .task-title{text-decoration:line-through;color:var(--muted);}
+.task-check{width:20px;height:20px;border-radius:5px;border:2.5px solid var(--border);flex-shrink:0;margin-top:1px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all var(--t);}
+.task-check.checked{background:var(--success);border-color:var(--success);color:#fff;}
+.task-title{font-size:13.5px;font-weight:500;flex:1;}
+.task-meta{font-size:11px;color:var(--muted);margin-top:2px;}
+.task-actions{display:flex;gap:4px;opacity:0;transition:opacity var(--t);}
+.task-item:hover .task-actions{opacity:1;}
+.priority-h{border-left:3px solid var(--danger);}
+.priority-m{border-left:3px solid var(--warn);}
+.priority-l{border-left:3px solid var(--success);}
+
+/* HABIT ITEMS */
+.habit-item{display:flex;align-items:center;gap:12px;padding:12px 14px;background:var(--card);border-radius:var(--r-sm);box-shadow:var(--sh);margin-bottom:8px;}
+.habit-check{width:24px;height:24px;border-radius:6px;border:2.5px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all var(--t);}
+.habit-check.done{background:var(--success);border-color:var(--success);color:#fff;}
+.habit-info{flex:1;}
+.habit-name{font-size:13.5px;font-weight:500;}
+.habit-streak{font-size:11px;color:var(--warn);font-weight:600;}
+
+/* SECTION HEADERS */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.section-title{font-size:17px;font-weight:700;letter-spacing:-.2px;}
+.section-sub{font-size:12px;color:var(--muted);margin-top:1px;}
+.page-header{margin-bottom:24px;}
+.page-title{font-size:22px;font-weight:800;letter-spacing:-.4px;}
+.page-sub{font-size:13px;color:var(--muted);margin-top:3px;}
+
+/* DIVIDER */
+.divider{height:1px;background:var(--border);margin:16px 0;}
+
+/* EMPTY STATE */
+.empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+.empty-icon{font-size:40px;margin-bottom:12px;}
+.empty-title{font-size:16px;font-weight:600;color:var(--text2);margin-bottom:6px;}
+.empty-sub{font-size:13px;}
+
+/* MODAL */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px);}
+#modal-overlay.hidden{display:none;}
+#modal-box{background:var(--card);border-radius:var(--r);max-width:520px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--sh-md);animation:slideUp .2s ease;}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 0;}
+.modal-title{font-size:17px;font-weight:700;}
+.modal-close{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:18px;}
+.modal-close:hover{background:var(--bg2);}
+.modal-body{padding:20px;}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:500;z-index:600;opacity:0;transition:opacity .3s;pointer-events:none;}
+#toast.show{opacity:1;}
+
+/* CHECK-IN WIZARD */
+.wizard-progress{display:flex;gap:4px;margin-bottom:24px;}
+.wizard-step{flex:1;height:4px;border-radius:2px;background:var(--border);transition:background .3s;}
+.wizard-step.done{background:var(--primary);}
+.wizard-step.active{background:var(--primary-l);}
+.wizard-nav{display:flex;justify-content:space-between;margin-top:24px;padding-top:20px;border-top:1px solid var(--border);}
+.step-title{font-size:22px;font-weight:800;margin-bottom:4px;}
+.step-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+
+/* ROUTINE CHECKLIST */
+.routine-habit{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:var(--r-sm);cursor:pointer;transition:background var(--t);}
+.routine-habit:hover{background:var(--bg2);}
+.routine-check{width:22px;height:22px;border-radius:6px;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all var(--t);}
+.routine-check.done{background:var(--success);border-color:var(--success);color:#fff;}
+.routine-name{font-size:13.5px;font-weight:500;}
+.routine-score{font-size:36px;font-weight:900;letter-spacing:-1px;}
+
+/* EXERCISE LOG */
+.exercise-item{padding:12px 14px;background:var(--bg2);border-radius:var(--r-sm);margin-bottom:8px;display:flex;align-items:center;gap:10px;}
+.exercise-icon{font-size:20px;}
+.exercise-info{flex:1;}
+.exercise-name{font-size:13.5px;font-weight:600;}
+.exercise-meta{font-size:11px;color:var(--muted);}
+.break-chip{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;background:var(--success-l);color:var(--success);border-radius:99px;font-size:12px;font-weight:600;margin:4px;}
+
+/* CHARTS */
+.chart-wrap{position:relative;height:220px;}
+.chart-wrap-lg{position:relative;height:280px;}
+
+/* ANALYTICS */
+.period-selector{display:flex;gap:6px;background:var(--bg2);border-radius:var(--r-sm);padding:4px;}
+.period-btn{padding:5px 14px;border-radius:var(--r-xs);font-size:12px;font-weight:600;color:var(--muted);transition:all var(--t);}
+.period-btn.active{background:var(--card);color:var(--text);box-shadow:var(--sh);}
+
+/* HEATMAP */
+.heatmap{display:flex;gap:3px;flex-wrap:wrap;}
+.heatmap-day{width:13px;height:13px;border-radius:2px;background:var(--border);}
+.heatmap-day.l1{background:rgba(99,102,241,.2);}
+.heatmap-day.l2{background:rgba(99,102,241,.45);}
+.heatmap-day.l3{background:rgba(99,102,241,.7);}
+.heatmap-day.l4{background:var(--primary);}
+
+/* GOAL CARD */
+.goal-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px 18px;margin-bottom:10px;}
+.goal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.goal-title{font-size:14px;font-weight:700;}
+.goal-meta{font-size:11px;color:var(--muted);}
+.goal-pct{font-size:18px;font-weight:800;color:var(--primary);}
+
+/* BOOK CARD */
+.book-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:16px;display:flex;gap:14px;}
+.book-spine{width:8px;border-radius:2px;flex-shrink:0;}
+.book-info{flex:1;}
+.book-title{font-size:14px;font-weight:700;}
+.book-author{font-size:12px;color:var(--muted);}
+
+/* REVIEW */
+.review-area{background:var(--warn-l);border-radius:var(--r-sm);padding:12px 14px;margin-bottom:8px;}
+.review-good{background:var(--success-l);}
+.review-bad{background:var(--danger-l);}
+
+/* FOOD LOG */
+.meal-card{background:var(--card);border-radius:var(--r);box-shadow:var(--sh);padding:14px 16px;margin-bottom:8px;}
+.meal-type{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;}
+.meal-desc{font-size:14px;font-weight:500;margin:3px 0;}
+.meal-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;}
+
+/* SETTINGS */
+.settings-section{margin-bottom:28px;}
+.settings-title{font-size:15px;font-weight:700;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid var(--border);}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border2);}
+.setting-row:last-child{border-bottom:none;}
+.setting-label{font-size:13.5px;font-weight:500;}
+.setting-sub{font-size:11px;color:var(--muted);}
+
+/* MISC */
+.text-muted{color:var(--muted);}
+.text-sm{font-size:12px;}
+.text-xs{font-size:11px;}
+.text-primary{color:var(--primary);}
+.text-success{color:var(--success);}
+.text-warn{color:var(--warn);}
+.text-danger{color:var(--danger);}
+.font-bold{font-weight:700;}
+.font-semibold{font-weight:600;}
+.mt-1{margin-top:4px;}.mt-2{margin-top:8px;}.mt-3{margin-top:12px;}.mt-4{margin-top:16px;}.mt-6{margin-top:24px;}
+.mb-1{margin-bottom:4px;}.mb-2{margin-bottom:8px;}.mb-3{margin-bottom:12px;}.mb-4{margin-bottom:16px;}
+.flex{display:flex;}.flex-col{flex-direction:column;}.items-center{align-items:center;}.justify-between{justify-content:space-between;}.gap-2{gap:8px;}.gap-3{gap:12px;}.flex-1{flex:1;}
+.hidden{display:none!important;}
+
+/* ANIMATIONS */
+@keyframes slideUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.anim-fade{animation:fadeIn .3s ease;}
+.anim-slide{animation:slideUp .3s ease;}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  #sidebar{transform:translateX(-100%);}
+  #sidebar.open{transform:translateX(0);}
+  #sidebar-overlay.open{display:block;}
+  #main{margin-left:0;}
+  #topbar{display:flex;}
+  #bottom-nav{display:flex;}
+  #content{padding:16px 14px calc(var(--bnav) + 20px);}
+  .grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}
+  .form-row,.form-row-3{grid-template-columns:1fr;}
+  .score-num{font-size:40px;}
+  .quick-grid{grid-template-columns:repeat(4,1fr);}
+}
+@media(max-width:480px){
+  .quick-grid{grid-template-columns:repeat(3,1fr);}
+  .water-btns{gap:6px;}
+  .water-btn{padding:8px 12px;font-size:12px;}
+}
+  </style>
+</head>
+<body>
+<div id="app">
+  <!-- Sidebar -->
+  <aside id="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">⚡</div>
+      <div><div class="sb-name">Life OS</div><div class="sb-ver">v1.0</div></div>
+    </div>
+    <nav id="sidebar-nav"></nav>
+  </aside>
+
+  <!-- Mobile overlay -->
+  <div id="sidebar-overlay" onclick="App.closeSidebar()"></div>
+
+  <!-- Main -->
+  <main id="main">
+    <div id="topbar">
+      <button class="btn-menu" onclick="App.openSidebar()">☰</button>
+      <span class="topbar-title" id="topbar-title">Dashboard</span>
+      <button class="btn-checkin-sm" onclick="App.navigate('checkin')">✓ Check In</button>
+    </div>
+    <div id="content" class="anim-fade"></div>
+  </main>
+
+  <!-- Mobile bottom nav -->
+  <nav id="bottom-nav">
+    <div class="bnav-item" data-view="dashboard" onclick="App.navigate('dashboard')"><div class="bnav-icon">⌂</div><div class="bnav-label">Home</div></div>
+    <div class="bnav-item" data-view="checkin" onclick="App.navigate('checkin')"><div class="bnav-icon">✓</div><div class="bnav-label">Check-In</div></div>
+    <div class="bnav-item" data-view="tasks" onclick="App.navigate('tasks')"><div class="bnav-icon">☑</div><div class="bnav-label">Tasks</div></div>
+    <div class="bnav-item" data-view="analytics" onclick="App.navigate('analytics')"><div class="bnav-icon">📊</div><div class="bnav-label">Analytics</div></div>
+    <div class="bnav-item" data-view="more" onclick="App.navigate('more')"><div class="bnav-icon">⋯</div><div class="bnav-label">More</div></div>
+  </nav>
+
+  <!-- Modal -->
+  <div id="modal-overlay" class="hidden">
+    <div id="modal-box"><div id="modal-content"></div></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast"></div>
+</div>
+
+<script>
+// PART 1: Config, Storage, Utils, Score Engine
+'use strict';
+
+const VERSION = '1.0.0';
+
+const SK = {
+  SETTINGS: 'los_settings',
+  LOG_PREFIX: 'los_log_',
+  TASKS: 'los_tasks',
+  HABITS: 'los_habits',
+  HABIT_LOGS: 'los_habit_logs',
+  GOALS: 'los_goals',
+  BOOKS: 'los_books',
+  EXERCISES: 'los_exercises',
+  LEARNING: 'los_learning',
+  FOOD: 'los_food',
+  EXPENSES: 'los_expenses',
+};
+
+const DEFAULT_SETTINGS = {
+  name: 'Ravi',
+  stepGoal: 8000,
+  waterGoal: 8,
+  exerciseGoal: 30,
+  meditationGoal: 15,
+  readingGoal: 20,
+  learningGoal: 30,
+  sleepGoal: 7.5,
+  expenseBudget: 30000,
+  theme: 'light',
+  scoreWeights: { health:20, mindset:15, exercise:15, nutrition:10, morningRoutine:10, eveningRoutine:10, learning:10, relationships:5, tasks:5 },
+  morningHabits: [
+    {id:'mh1',name:'Wake up on time',enabled:true},
+    {id:'mh2',name:'Drink water',enabled:true},
+    {id:'mh3',name:'Meditation',enabled:true},
+    {id:'mh4',name:'Exercise',enabled:true},
+    {id:'mh5',name:'Walking',enabled:true},
+    {id:'mh6',name:'Reading',enabled:true},
+    {id:'mh7',name:'Plan the day',enabled:true},
+    {id:'mh8',name:'No phone 30 min',enabled:true},
+    {id:'mh9',name:'Gratitude',enabled:true},
+  ],
+  eveningHabits: [
+    {id:'eh1',name:'Review the day',enabled:true},
+    {id:'eh2',name:'Plan tomorrow',enabled:true},
+    {id:'eh3',name:'Reading',enabled:true},
+    {id:'eh4',name:'Meditation',enabled:true},
+    {id:'eh5',name:'Gratitude',enabled:true},
+    {id:'eh6',name:'Family time',enabled:true},
+    {id:'eh7',name:'No screen time',enabled:true},
+    {id:'eh8',name:'Prepare for sleep',enabled:true},
+    {id:'eh9',name:'Sleep on time',enabled:true},
+  ],
+};
+
+const BLANK_LOG = () => ({
+  date:'', weight:null, sleep:null, sleepQuality:null, energy:null,
+  mood:null, stress:null, focus:null, mentalClarity:null,
+  water:0, steps:null, walkDuration:null,
+  exercised:false, exercises:[],
+  breakExercises:[],
+  meditated:false, meditationDuration:null, meditationType:'Mindfulness', meditationPeriod:'morning',
+  moodBefore:null, moodAfter:null,
+  morningRoutine:{}, eveningRoutine:{},
+  meals:[],
+  learningMinutes:null, learningTopic:'', learningCategory:'', learningTakeaway:'',
+  readingPages:null, readingMinutes:null, currentBook:'',
+  connection:false, connectionNote:'', familyTime:false,
+  gratitude:'', biggestAchievement:'', tomorrowPriority:'',
+  journal:{wentWell:'', didntGoWell:'', learned:'', grateful:'', improve:'', achievement:'', distraction:''},
+  score:null, scoreBreakdown:{},
+});
+
+const DB = {
+  get(k, fallback=null){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):fallback;}catch{return fallback;}},
+  set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){console.error(e);}},
+  settings(){ const saved=this.get(SK.SETTINGS,{}); return {...DEFAULT_SETTINGS,...saved, scoreWeights:{...DEFAULT_SETTINGS.scoreWeights,...(saved.scoreWeights||{})}, morningHabits:saved.morningHabits||DEFAULT_SETTINGS.morningHabits, eveningHabits:saved.eveningHabits||DEFAULT_SETTINGS.eveningHabits}; },
+  saveSettings(s){ this.set(SK.SETTINGS,s); },
+  todayKey(){ return SK.LOG_PREFIX + Utils.today(); },
+  todayLog(){ const k=this.todayKey(); const l=this.get(k); if(l){const b=BLANK_LOG();return{...b,...l,morningRoutine:{...(b.morningRoutine||{}),...(l.morningRoutine||{})},eveningRoutine:{...(b.eveningRoutine||{}),...(l.eveningRoutine||{})}};} return{...BLANK_LOG(),date:Utils.today()}; },
+  saveTodayLog(l){ this.set(this.todayKey(),l); },
+  logForDate(d){ const l=this.get(SK.LOG_PREFIX+d); return l?{...BLANK_LOG(),...l}:null; },
+  allLogs(){ const keys=Object.keys(localStorage).filter(k=>k.startsWith(SK.LOG_PREFIX)).sort(); return keys.map(k=>this.get(k)).filter(Boolean); },
+  recentLogs(n=30){ return this.allLogs().slice(-n); },
+  tasks(){ return this.get(SK.TASKS,[]); },
+  saveTasks(t){ this.set(SK.TASKS,t); },
+  habits(){ return this.get(SK.HABITS,[]); },
+  saveHabits(h){ this.set(SK.HABITS,h); },
+  habitLogs(){ return this.get(SK.HABIT_LOGS,{}); },
+  saveHabitLogs(h){ this.set(SK.HABIT_LOGS,h); },
+  goals(){ return this.get(SK.GOALS,[]); },
+  saveGoals(g){ this.set(SK.GOALS,g); },
+  books(){ return this.get(SK.BOOKS,[]); },
+  saveBooks(b){ this.set(SK.BOOKS,b); },
+  expenses(){ return this.get(SK.EXPENSES,[]); },
+  saveExpenses(e){ this.set(SK.EXPENSES,e); },
+};
+
+const Utils = {
+  today(){ return new Date().toISOString().slice(0,10); },
+  now(){ return new Date().toTimeString().slice(0,5); },
+  fmtDate(d){ if(!d)return''; const dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); },
+  fmtDay(d){ if(!d)return''; const dt=new Date(d+'T12:00:00'); return dt.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); },
+  dayName(){ return new Date().toLocaleDateString('en-GB',{weekday:'long'}); },
+  greeting(){ const h=new Date().getHours(); return h<12?'Good morning':h<17?'Good afternoon':'Good evening'; },
+  uid(){ return Math.random().toString(36).slice(2,10); },
+  pct(v,t){ if(!t)return 0; return Math.min(100,Math.round((v/t)*100)); },
+  clamp(v,min,max){ return Math.min(max,Math.max(min,v)); },
+  avg(arr){ if(!arr.length)return 0; return arr.reduce((s,v)=>s+v,0)/arr.length; },
+  round1(v){ return Math.round(v*10)/10; },
+  streak(logs, check){ 
+    let s=0,d=new Date();
+    for(let i=0;i<365;i++){
+      const key=d.toISOString().slice(0,10);
+      const log=logs.find(l=>l.date===key);
+      if(log&&check(log)) s++;
+      else if(i>0) break;
+      d.setDate(d.getDate()-1);
+    }
+    return s;
+  },
+  escape(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); },
+  stars(v,max=5){ let s=''; for(let i=1;i<=max;i++) s+=`<span class="star ${i<=v?'filled':''}" style="font-size:18px">${i<=v?'★':'☆'}</span>`; return s; },
+  ratingDots(v,max=5){ let s=''; for(let i=1;i<=max;i++) s+=`<span class="dot ${i<=v?'active':''}" data-v="${i}"></span>`; return s; },
+};
+
+const Score = {
+  calc(log, settings){
+    const w = settings.scoreWeights;
+    const s = {};
+    
+    // Health (weight, sleep, energy, steps, water)
+    let hpts=0, hmax=0;
+    if(log.weight!==null){hpts+=20;hmax+=20;}
+    if(log.sleep!==null){ const q=log.sleep>=7&&log.sleep<=9?20:log.sleep>=6?14:8; hpts+=q; hmax+=20; }
+    if(log.energy!==null){ hpts+=log.energy*4; hmax+=20; }
+    if(log.steps!==null){ hpts+=Math.min(20,Math.round((log.steps/settings.stepGoal)*20)); hmax+=20; }
+    if(log.water){ hpts+=Math.min(20,Math.round((log.water/settings.waterGoal)*20)); hmax+=20; }
+    s.health = hmax?Math.round((hpts/hmax)*100):50;
+
+    // Mindset (mood, stress, focus, meditation)
+    let mpts=0, mmax=0;
+    if(log.mood!==null){ mpts+=log.mood*20; mmax+=100; }
+    if(log.stress!==null){ mpts+=(6-log.stress)*20; mmax+=100; }
+    if(log.focus!==null){ mpts+=log.focus*20; mmax+=100; }
+    if(log.meditated){ mpts+=Math.min(100,Math.round((log.meditationDuration/settings.meditationGoal)*100)); mmax+=100; }
+    s.mindset = mmax?Math.round((mpts/mmax)*100):50;
+
+    // Exercise
+    let epts=0;
+    if(log.exercised && log.exercises && log.exercises.length){
+      const totalMin=log.exercises.reduce((sum,e)=>sum+(e.duration||0),0);
+      epts=Math.min(100,Math.round((totalMin/settings.exerciseGoal)*100));
+    } else if(log.steps&&log.steps>=settings.stepGoal){ epts=60; }
+    s.exercise = epts || (log.exercised===false?0:50);
+
+    // Nutrition
+    if(log.meals&&log.meals.length){
+      const healthy=log.meals.filter(m=>m.isHealthy).length;
+      const junk=log.meals.filter(m=>m.isJunk).length;
+      const ratio=healthy/(log.meals.length);
+      s.nutrition=Math.round((ratio*70)+(log.water>=settings.waterGoal?30:Math.round((log.water/settings.waterGoal)*30)));
+    } else { s.nutrition=50; }
+
+    // Morning routine
+    const mh = settings.morningHabits.filter(h=>h.enabled);
+    if(mh.length&&Object.keys(log.morningRoutine).length){
+      const done=mh.filter(h=>log.morningRoutine[h.id]).length;
+      s.morningRoutine=Math.round((done/mh.length)*100);
+    } else { s.morningRoutine=50; }
+
+    // Evening routine
+    const eh = settings.eveningHabits.filter(h=>h.enabled);
+    if(eh.length&&Object.keys(log.eveningRoutine).length){
+      const done=eh.filter(h=>log.eveningRoutine[h.id]).length;
+      s.eveningRoutine=Math.round((done/eh.length)*100);
+    } else { s.eveningRoutine=50; }
+
+    // Learning
+    if(log.learningMinutes!==null){ s.learning=Math.min(100,Math.round((log.learningMinutes/settings.learningGoal)*100)); }
+    else { s.learning=50; }
+
+    // Relationships
+    s.relationships = log.connection?100:(log.familyTime?60:30);
+
+    // Tasks
+    const tasks=DB.tasks().filter(t=>t.dueDate===Utils.today()||t.status==='in_progress');
+    if(tasks.length){ const done=tasks.filter(t=>t.status==='completed').length; s.tasks=Math.round((done/tasks.length)*100); }
+    else { s.tasks=70; }
+
+    // Weighted total
+    const total=Math.round(
+      (s.health*(w.health/100))+
+      (s.mindset*(w.mindset/100))+
+      (s.exercise*(w.exercise/100))+
+      (s.nutrition*(w.nutrition/100))+
+      (s.morningRoutine*(w.morningRoutine/100))+
+      (s.eveningRoutine*(w.eveningRoutine/100))+
+      (s.learning*(w.learning/100))+
+      (s.relationships*(w.relationships/100))+
+      (s.tasks*(w.tasks/100))
+    );
+    return { total, breakdown:s };
+  },
+  color(v){ return v>=80?'var(--success)':v>=60?'var(--warning)':'var(--danger)'; },
+  grade(v){ return v>=90?'A+':v>=80?'A':v>=70?'B':v>=60?'C':'D'; },
+};
+// VIEWS PART 1: Navigation, Dashboard, Check-In
+
+const NAV_ITEMS = [
+  {section:'MAIN'},
+  {id:'dashboard',icon:'⌂',label:'Dashboard'},
+  {id:'checkin',icon:'✅',label:'Daily Check-In'},
+  {id:'analytics',icon:'📊',label:'Analytics'},
+  {id:'calendar',icon:'📅',label:'Calendar'},
+  {section:'HEALTH'},
+  {id:'health',icon:'❤️',label:'Health Overview'},
+  {id:'water',icon:'💧',label:'Water'},
+  {id:'exercise',icon:'🏃',label:'Exercise'},
+  {id:'meditation',icon:'🧘',label:'Meditation'},
+  {section:'ROUTINES'},
+  {id:'morning',icon:'☀️',label:'Morning Routine'},
+  {id:'evening',icon:'🌙',label:'Evening Routine'},
+  {section:'GROWTH'},
+  {id:'mindset',icon:'🧠',label:'Mindset'},
+  {id:'learning',icon:'📚',label:'Learning'},
+  {id:'reading',icon:'📖',label:'Reading'},
+  {id:'relationships',icon:'❤',label:'Relationships'},
+  {section:'DAILY'},
+  {id:'food',icon:'🍎',label:'Food & Nutrition'},
+  {id:'expenses',icon:'💰',label:'Expense Tracker'},
+  {id:'tasks',icon:'☑️',label:'Tasks'},
+  {id:'journal',icon:'📓',label:'Daily Journal'},
+  {section:'GOALS'},
+  {id:'goals',icon:'🎯',label:'Goals'},
+  {id:'habits',icon:'⚡',label:'Habits'},
+  {section:'REVIEWS'},
+  {id:'weekly',icon:'📈',label:'Weekly Review'},
+  {id:'monthly',icon:'📅',label:'Monthly Review'},
+  {section:'SYSTEM'},
+  {id:'settings',icon:'⚙️',label:'Settings'},
+];
+
+function renderNav() {
+  const nav = document.getElementById('sidebar-nav');
+  if (!nav) return;
+  const curr = App.state.view;
+  nav.innerHTML = NAV_ITEMS.map(item => {
+    if (item.section) return `<div class="sb-section">${item.section}</div>`;
+    return `<div class="sb-item ${curr===item.id?'active':''}" onclick="App.navigate('${item.id}')">
+      <span class="sb-icon">${item.icon}</span>
+      <span>${item.label}</span>
+    </div>`;
+  }).join('');
+
+  // Bottom user
+  const s = DB.settings();
+  const sidebar = document.getElementById('sidebar');
+  if (!sidebar.querySelector('.sb-bottom')) {
+    const bottom = document.createElement('div');
+    bottom.className = 'sb-bottom';
+    bottom.innerHTML = `<div class="sb-user">
+      <div class="sb-avatar">${(s.name||'U')[0].toUpperCase()}</div>
+      <div><div class="sb-uname">${Utils.escape(s.name||'User')}</div><div class="sb-uemail">Life OS v1.0</div></div>
+    </div>`;
+    sidebar.appendChild(bottom);
+  }
+}
+
+// ─── DASHBOARD ──────────────────────────────────────
+function viewDashboard() {
+  const log = DB.todayLog();
+  const settings = DB.settings();
+  const score = Score.calc(log, settings);
+  if (log.score !== score.total) { log.score = score.total; log.scoreBreakdown = score.breakdown; DB.saveTodayLog(log); }
+
+  const allLogs = DB.recentLogs(7);
+  const prevScore = allLogs.length > 1 ? (allLogs[allLogs.length-2]?.score||0) : 0;
+  const scoreDiff = score.total - prevScore;
+  const scoreDiffStr = scoreDiff > 0 ? `<span class="text-success">↑ ${scoreDiff}pts</span>` : scoreDiff < 0 ? `<span class="text-danger">↓ ${Math.abs(scoreDiff)}pts</span>` : `<span class="text-muted">→ Stable</span>`;
+
+  const tasks = DB.tasks().filter(t => t.status !== 'completed' && t.status !== 'cancelled');
+  const todayTasks = tasks.filter(t => !t.dueDate || t.dueDate === Utils.today()).slice(0, 5);
+  const overdueTasks = tasks.filter(t => t.dueDate && t.dueDate < Utils.today());
+
+  const mh = settings.morningHabits.filter(h=>h.enabled);
+  const mDone = mh.filter(h=>log.morningRoutine[h.id]).length;
+  const eh = settings.eveningHabits.filter(h=>h.enabled);
+  const eDone = eh.filter(h=>log.eveningRoutine[h.id]).length;
+
+  const waterPct = Utils.pct(log.water, settings.waterGoal);
+  const stepPct = Utils.pct(log.steps||0, settings.stepGoal);
+  const scoreColor = Score.color(score.total);
+
+  return `<div class="anim-fade">
+  <!-- Header -->
+  <div style="margin-bottom:24px">
+    <div style="font-size:13px;color:var(--muted);font-weight:500">${Utils.dayName()}, ${Utils.fmtDate(Utils.today())}</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-top:2px">${Utils.greeting()}, ${Utils.escape(settings.name||'there')} 👋</div>
+  </div>
+
+  <!-- Score + Quick Add Row -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <!-- Life Score -->
+    <div class="card" style="display:flex;align-items:center;gap:20px">
+      <div style="text-align:center">
+        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Life Score</div>
+        <div class="score-num" style="color:${scoreColor}">${score.total}</div>
+        <div style="font-size:12px;color:var(--muted)">/ 100 &nbsp; ${scoreDiffStr}</div>
+      </div>
+      <div style="flex:1">
+        ${Object.entries(score.breakdown).map(([k,v])=>`
+          <div style="margin-bottom:7px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px">
+              <span>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</span><span style="font-weight:700;color:${Score.color(v)}">${v}</span>
+            </div>
+            <div class="progress-bar progress-sm"><div class="progress-fill" style="width:${v}%;background:${Score.color(v)}"></div></div>
+          </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Quick Add -->
+    <div class="card">
+      <div class="card-title">Quick Add</div>
+      <div class="quick-grid">
+        <div class="quick-btn" onclick="App.navigate('water')"><div class="q-icon">💧</div><div class="q-label">Water</div></div>
+        <div class="quick-btn" onclick="App.navigate('exercise')"><div class="q-icon">🏃</div><div class="q-label">Exercise</div></div>
+        <div class="quick-btn" onclick="App.navigate('meditation')"><div class="q-icon">🧘</div><div class="q-label">Meditate</div></div>
+        <div class="quick-btn" onclick="App.navigate('food')"><div class="q-icon">🍎</div><div class="q-label">Food</div></div>
+        <div class="quick-btn" onclick="showAddExpense()"><div class="q-icon">💰</div><div class="q-label">Expense</div></div>
+        <div class="quick-btn" onclick="App.navigate('learning')"><div class="q-icon">📚</div><div class="q-label">Learning</div></div>
+        <div class="quick-btn" onclick="App.navigate('reading')"><div class="q-icon">📖</div><div class="q-label">Reading</div></div>
+        <div class="quick-btn" onclick="App.navigate('tasks')"><div class="q-icon">☑️</div><div class="q-label">Task</div></div>
+        <div class="quick-btn" onclick="App.navigate('checkin')"><div class="q-icon">✅</div><div class="q-label">Check-In</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row 1: Health -->
+  <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">❤️ Health</div>
+  <div class="grid-4" style="margin-bottom:20px">
+    <div class="stat-card"><div class="stat-label">Weight</div><div class="stat-value">${log.weight ? log.weight+'<span style="font-size:14px;font-weight:500"> kg</span>' : '—'}</div></div>
+    <div class="stat-card">
+      <div class="stat-label">Steps</div>
+      <div class="stat-value">${log.steps ? log.steps.toLocaleString() : '—'}</div>
+      ${log.steps ? `<div class="stat-bar"><div class="stat-fill" style="width:${stepPct}%;background:var(--info)"></div></div><div class="stat-sub">${stepPct}% of ${settings.stepGoal.toLocaleString()}</div>` : '<div class="stat-sub text-muted">Goal: '+settings.stepGoal.toLocaleString()+'</div>'}
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Water</div>
+      <div class="stat-value">${log.water}<span style="font-size:14px;font-weight:500"> / ${settings.waterGoal} 🥛</span></div>
+      <div class="stat-bar"><div class="stat-fill" style="width:${waterPct}%;background:var(--info)"></div></div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sleep</div>
+      <div class="stat-value">${log.sleep ? log.sleep+'<span style="font-size:14px;font-weight:500">h</span>' : '—'}</div>
+      <div class="stat-sub">Quality: ${log.sleepQuality ? '★'.repeat(log.sleepQuality) : 'not logged'}</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Mind + Exercise -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <!-- Mind -->
+    <div class="card">
+      <div class="card-title">🧠 Mind</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        ${[['Mood',log.mood],['Energy',log.energy],['Focus',log.focus],['Stress',log.stress]].map(([l,v])=>`
+          <div>
+            <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px">${l}</div>
+            <div style="font-size:20px;font-weight:800;color:${v?'var(--text)':'var(--muted)'}">${v||'—'}${v?'<span style="font-size:12px;color:var(--muted)"> /5</span>':''}</div>
+          </div>`).join('')}
+      </div>
+      ${log.meditated ? `<div class="mt-3" style="padding:8px 12px;background:var(--primary-l);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--primary)">🧘 ${log.meditationDuration||0} min meditation ✓</div>` : ''}
+    </div>
+
+    <!-- Exercise -->
+    <div class="card">
+      <div class="card-title">🏃 Exercise</div>
+      ${log.exercises && log.exercises.length ? log.exercises.map(e=>`
+        <div class="exercise-item">
+          <div class="exercise-info">
+            <div class="exercise-name">${Utils.escape(e.type)}</div>
+            <div class="exercise-meta">${e.duration||0} min · ${Utils.escape(e.intensity||'')}</div>
+          </div>
+        </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏃</div><div class="empty-sub">No exercise logged today</div></div>`}
+      ${log.breakExercises && log.breakExercises.length ? `<div style="margin-top:8px">${log.breakExercises.map(b=>`<span class="break-chip">⚡ ${Utils.escape(b.type)}</span>`).join('')}</div>` : ''}
+    </div>
+  </div>
+
+  <!-- Row 3: Routines + Growth -->
+  <div class="grid-2" style="margin-bottom:20px">
+    <!-- Routines -->
+    <div class="card">
+      <div class="card-title">📋 Routines</div>
+      <div style="display:flex;gap:16px">
+        <div style="flex:1;text-align:center;padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">☀️ MORNING</div>
+          <div style="font-size:28px;font-weight:900;color:${mDone===mh.length&&mh.length>0?'var(--success)':'var(--text)'}">${mDone}<span style="font-size:16px;color:var(--muted)">/${mh.length}</span></div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${mh.length?Utils.pct(mDone,mh.length):0}%;background:var(--success)"></div></div>
+        </div>
+        <div style="flex:1;text-align:center;padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
+          <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">🌙 EVENING</div>
+          <div style="font-size:28px;font-weight:900;color:${eDone===eh.length&&eh.length>0?'var(--success)':'var(--text)'}">${eDone}<span style="font-size:16px;color:var(--muted)">/${eh.length}</span></div>
+          <div class="progress-bar" style="margin-top:6px"><div class="progress-fill" style="width:${eh.length?Utils.pct(eDone,eh.length):0}%;background:var(--primary)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Growth -->
+    <div class="card">
+      <div class="card-title">📚 Growth</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
+          <div style="font-size:11px;color:var(--muted);font-weight:600">LEARNING</div>
+          <div style="font-size:22px;font-weight:800;margin-top:4px">${log.learningMinutes||'—'}<span style="font-size:12px;font-weight:500;color:var(--muted)">${log.learningMinutes?' min':''}</span></div>
+          ${log.learningTopic ? `<div style="font-size:11px;color:var(--primary)">${Utils.escape(log.learningTopic)}</div>` : ''}
+        </div>
+        <div style="padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
+          <div style="font-size:11px;color:var(--muted);font-weight:600">READING</div>
+          <div style="font-size:22px;font-weight:800;margin-top:4px">${log.readingPages||'—'}<span style="font-size:12px;font-weight:500;color:var(--muted)">${log.readingPages?' pages':''}</span></div>
+          ${log.currentBook ? `<div style="font-size:11px;color:var(--primary)">${Utils.escape(log.currentBook.slice(0,20))}...</div>` : ''}
+        </div>
+      </div>
+      <div style="margin-top:10px;padding:8px 12px;background:${log.connection?'var(--success-l)':'var(--bg2)'};border-radius:var(--r-sm);display:flex;align-items:center;gap:8px">
+        <span>${log.connection?'✅':'⭕'}</span>
+        <span style="font-size:12px;font-weight:600;color:${log.connection?'var(--success)':'var(--muted)'}">Meaningful connection today</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasks -->
+  <div class="card" style="margin-bottom:20px">
+    <div class="section-header">
+      <div><div class="card-title" style="margin-bottom:0">📋 Today's Tasks</div></div>
+      <button class="btn btn-primary btn-sm" onclick="showAddTask()">+ Add Task</button>
+    </div>
+    ${overdueTasks.length ? `<div style="margin-bottom:10px;padding:8px 12px;background:var(--danger-l);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--danger)">⚠️ ${overdueTasks.length} overdue task${overdueTasks.length>1?'s':''}</div>` : ''}
+    ${todayTasks.length ? todayTasks.map(t => taskItem(t)).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-sub">No tasks for today. Add one above!</div></div>`}
+    ${tasks.length > 5 ? `<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost" onclick="App.navigate('tasks')">View all ${tasks.length} tasks →</button></div>` : ''}
+  </div>
+
+  <!-- Journal prompt -->
+  <div class="card" style="background:linear-gradient(135deg,var(--primary-l),var(--bg2))">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">📝 Daily Reflection</div>
+    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">${log.journal?.wentWell ? 'You\'ve reflected today. View or update below.' : 'Take 2 minutes to reflect on your day.'}</div>
+    <button class="btn btn-primary" onclick="App.navigate('journal')">
+      ${log.journal?.wentWell ? '📓 View Journal' : '✍️ Write Reflection'}
+    </button>
+  </div>
+</div>`;
+}
+
+function taskItem(t) {
+  const done = t.status === 'completed';
+  const pClass = t.priority==='high'?'priority-h':t.priority==='low'?'priority-l':'priority-m';
+  return `<div class="task-item ${done?'done':''} ${pClass}" id="task-${t.id}">
+    <div class="task-check ${done?'checked':''}" onclick="toggleTask('${t.id}')">${done?'✓':''}</div>
+    <div style="flex:1">
+      <div class="task-title">${Utils.escape(t.title)}</div>
+      <div class="task-meta">${t.category?Utils.escape(t.category)+' · ':''} ${t.dueDate?Utils.fmtDay(t.dueDate)+' · ':''}<span class="tag tag-${t.priority==='high'?'danger':t.priority==='low'?'success':'warn'}">${t.priority||'medium'}</span></div>
+    </div>
+    <div class="task-actions">
+      <button class="btn-icon" onclick="deleteTask('${t.id}')" title="Delete">🗑️</button>
+    </div>
+  </div>`;
+}
+// VIEWS PART 2: Check-In Wizard, Water, Exercise, Routines
+
+// ─── CHECK-IN WIZARD ────────────────────────────────
+const CHECKIN_STEPS = [
+  'weight_sleep','mood_energy','water_steps','exercise','meditation',
+  'morning','evening','food','learning_reading','relationships','journal','summary'
+];
+const STEP_LABELS = ['Weight & Sleep','Mood & Energy','Water & Steps','Exercise','Meditation','Morning Routine','Evening Routine','Food','Learning & Reading','Relationships','Reflection','Summary'];
+
+let ciStep = 0;
+
+function viewCheckin() {
+  ciStep = parseInt(App.state.checkinStep || 0);
+  return renderCheckinStep();
+}
+
+function renderCheckinStep() {
+  const totalSteps = CHECKIN_STEPS.length;
+  const progress = CHECKIN_STEPS.map((s,i) => `<div class="wizard-step ${i<ciStep?'done':i===ciStep?'active':''}"></div>`).join('');
+  const stepKey = CHECKIN_STEPS[ciStep];
+  const stepContent = getStepContent(stepKey);
+  return `<div class="anim-fade">
+    <div class="page-header">
+      <div class="page-title">Daily Check-In</div>
+      <div class="page-sub">Step ${ciStep+1} of ${totalSteps} · ${STEP_LABELS[ciStep]}</div>
+    </div>
+    <div class="wizard-progress">${progress}</div>
+    <div class="card">${stepContent}
+      <div class="wizard-nav">
+        <button class="btn btn-secondary" onclick="ciPrev()" ${ciStep===0?'style="visibility:hidden"':''}>← Back</button>
+        <button class="btn btn-primary" onclick="ciNext()">${ciStep===totalSteps-1?'✓ Finish':'Next →'}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function getStepContent(key) {
+  const log = DB.todayLog();
+  const s = DB.settings();
+  switch(key) {
+    case 'weight_sleep': return `
+      <div class="step-title">Weight & Sleep</div>
+      <div class="step-sub">Log your physical baseline for today.</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" step="0.1" class="form-control" id="ci-weight" value="${log.weight||''}" placeholder="72.0"></div>
+        <div class="form-group"><label class="form-label">Sleep Duration (hours)</label><input type="number" step="0.5" class="form-control" id="ci-sleep" value="${log.sleep||''}" placeholder="7.5"></div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Sleep Quality</label>
+        <div class="star-rating" id="ci-sleep-quality">${[1,2,3,4,5].map(i=>`<span class="star ${i<=(log.sleepQuality||0)?'filled':''}" onclick="setStarRating('ci-sleep-quality',${i},'ci-sleep-q-val')">${i<=(log.sleepQuality||0)?'★':'☆'}</span>`).join('')}</div>
+        <input type="hidden" id="ci-sleep-q-val" value="${log.sleepQuality||0}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Energy Level (1-5)</label>
+        <div class="range-wrap">
+          <input type="range" min="1" max="5" step="1" id="ci-energy" value="${log.energy||3}" oninput="document.getElementById('ci-energy-v').textContent=this.value">
+          <div class="range-labels"><span>Exhausted</span><span id="ci-energy-v" style="font-weight:700;color:var(--primary)">${log.energy||3}</span><span>Energized</span></div>
+        </div>
+      </div>`;
+
+    case 'mood_energy': return `
+      <div class="step-title">Mood & Mindset</div>
+      <div class="step-sub">How are you feeling today?</div>
+      ${['mood','stress','focus','mentalClarity'].map((f,i) => {
+        const labels = [['Very Low','Mood','Amazing'],['Calm','Stress','Very Stressed'],['Scattered','Focus','Laser Sharp'],['Foggy','Mental Clarity','Crystal Clear']];
+        const l = labels[i]; const v = log[f]||3;
+        return `<div class="form-group">
+          <label class="form-label">${l[1]}</label>
+          <div class="range-wrap">
+            <input type="range" min="1" max="5" step="1" id="ci-${f}" value="${v}" oninput="document.getElementById('ci-${f}-v').textContent=this.value">
+            <div class="range-labels"><span>${l[0]}</span><span id="ci-${f}-v" style="font-weight:700;color:var(--primary)">${v}</span><span>${l[2]}</span></div>
+          </div>
+        </div>`;
+      }).join('')}
+      <div class="form-group"><label class="form-label">Gratitude (optional)</label><input type="text" class="form-control" id="ci-gratitude" value="${Utils.escape(log.gratitude||'')}" placeholder="I'm grateful for..."></div>`;
+
+    case 'water_steps': return `
+      <div class="step-title">Water & Steps</div>
+      <div class="step-sub">Track your hydration and movement.</div>
+      <div class="form-group">
+        <label class="form-label">Water Intake (glasses)</label>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+          <button class="btn btn-secondary" onclick="adjWater(-1)">−</button>
+          <span id="ci-water-disp" style="font-size:28px;font-weight:800;color:var(--info);min-width:60px;text-align:center">${log.water||0}</span>
+          <button class="btn btn-primary" onclick="adjWater(1)">+</button>
+          <span style="font-size:13px;color:var(--muted)">/ ${DB.settings().waterGoal} glasses</span>
+        </div>
+        <input type="hidden" id="ci-water" value="${log.water||0}">
+        <div class="water-btns">
+          <button class="water-btn" onclick="setWater(2)">2 glasses</button>
+          <button class="water-btn" onclick="setWater(4)">4 glasses</button>
+          <button class="water-btn" onclick="setWater(6)">6 glasses</button>
+          <button class="water-btn" onclick="setWater(DB.settings().waterGoal)">Full goal</button>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Steps Today</label><input type="number" class="form-control" id="ci-steps" value="${log.steps||''}" placeholder="${s.stepGoal}"></div>
+        <div class="form-group"><label class="form-label">Walk Duration (min)</label><input type="number" class="form-control" id="ci-walk" value="${log.walkDuration||''}" placeholder="30"></div>
+      </div>`;
+
+    case 'exercise': return `
+      <div class="step-title">Exercise</div>
+      <div class="step-sub">Did you exercise today?</div>
+      <div class="toggle-wrap" style="margin-bottom:16px">
+        <label class="toggle"><input type="checkbox" id="ci-exercised" ${log.exercised?'checked':''} onchange="toggleExerciseForm()"><span class="toggle-slider"></span></label>
+        <span style="font-weight:600">Yes, I exercised today</span>
+      </div>
+      <div id="exercise-form" style="${!log.exercised?'display:none':''}">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Exercise Type</label>
+            <select class="form-control" id="ci-extype">
+              ${['Walking','Running','Strength Training','Yoga','Stretching','Cycling','Home Workout','Sports','Other'].map(t=>`<option ${log.exercises?.[0]?.type===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="ci-exdur" value="${log.exercises?.[0]?.duration||''}" placeholder="30"></div>
+        </div>
+        <div class="form-group"><label class="form-label">Intensity</label>
+          <select class="form-control" id="ci-exint">
+            ${['Light','Moderate','Vigorous','Intense'].map(i=>`<option ${log.exercises?.[0]?.intensity===i?'selected':''}>${i}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="ci-exnotes" value="${Utils.escape(log.exercises?.[0]?.notes||'')}" placeholder="How did it go?"></div>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <div style="font-weight:600;font-size:13px;margin-bottom:10px">Break-time exercises (optional)</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${['2-min walk','Stretching','Squats','Push-ups','Breathing','Eye exercise'].map(b=>`<button class="break-chip" style="cursor:pointer" onclick="addBreakEx('${b}')">${b}</button>`).join('')}
+        </div>
+        <div id="break-ex-list" style="margin-top:10px">${(log.breakExercises||[]).map(b=>`<span class="break-chip">⚡ ${Utils.escape(b.type)}</span>`).join('')}</div>
+      </div>`;
+
+    case 'meditation': return `
+      <div class="step-title">Meditation</div>
+      <div class="step-sub">Did you meditate today?</div>
+      <div class="toggle-wrap" style="margin-bottom:16px">
+        <label class="toggle"><input type="checkbox" id="ci-meditated" ${log.meditated?'checked':''} onchange="toggleMeditationForm()"><span class="toggle-slider"></span></label>
+        <span style="font-weight:600">Yes, I meditated today</span>
+      </div>
+      <div id="meditation-form" style="${!log.meditated?'display:none':''}">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="ci-medmin" value="${log.meditationDuration||''}" placeholder="15"></div>
+          <div class="form-group"><label class="form-label">Type</label>
+            <select class="form-control" id="ci-medtype">
+              ${['Mindfulness','Breathing','Body Scan','Guided','Mantra','Visualization','Other'].map(t=>`<option ${log.meditationType===t?'selected':''}>${t}</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Mood Before (1-5)</label><input type="range" min="1" max="5" class="form-control" style="padding:0" id="ci-moodb" value="${log.moodBefore||3}"></div>
+          <div class="form-group"><label class="form-label">Mood After (1-5)</label><input type="range" min="1" max="5" class="form-control" style="padding:0" id="ci-mooda" value="${log.moodAfter||3}"></div>
+        </div>
+      </div>`;
+
+    case 'morning': { const mh = s.morningHabits.filter(h=>h.enabled); return `
+      <div class="step-title">Morning Routine</div>
+      <div class="step-sub">Which morning habits did you complete?</div>
+      ${mh.map(h=>`<div class="routine-habit" onclick="toggleRoutineHabit('morning','${h.id}')">
+        <div class="routine-check ${log.morningRoutine[h.id]?'done':''}" id="mh-${h.id}">${log.morningRoutine[h.id]?'✓':''}</div>
+        <span class="routine-name">${Utils.escape(h.name)}</span>
+      </div>`).join('')}`; }
+
+    case 'evening': { const eh = s.eveningHabits.filter(h=>h.enabled); return `
+      <div class="step-title">Evening Routine</div>
+      <div class="step-sub">Which evening habits did you complete?</div>
+      ${eh.map(h=>`<div class="routine-habit" onclick="toggleRoutineHabit('evening','${h.id}')">
+        <div class="routine-check ${log.eveningRoutine[h.id]?'done':''}" id="eh-${h.id}">${log.eveningRoutine[h.id]?'✓':''}</div>
+        <span class="routine-name">${Utils.escape(h.name)}</span>
+      </div>`).join('')}`; }
+
+    case 'food': return `
+      <div class="step-title">Food & Nutrition</div>
+      <div class="step-sub">How was your nutrition today?</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Overall Food Quality (1-5)</label>
+          <div class="range-wrap">
+            <input type="range" min="1" max="5" id="ci-foodq" value="${log.foodQuality||3}" oninput="document.getElementById('ci-foodq-v').textContent=this.value">
+            <div class="range-labels"><span>Poor</span><span id="ci-foodq-v" style="font-weight:700;color:var(--primary)">${log.foodQuality||3}</span><span>Excellent</span></div>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Junk Food today?</label>
+          <div class="toggle-wrap" style="margin-top:8px"><label class="toggle"><input type="checkbox" id="ci-junk" ${log.hadJunk?'checked':''}><span class="toggle-slider"></span></label><span>Had junk food</span></div>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Any meal notes</label><textarea class="form-control" id="ci-foodnotes" placeholder="What did you eat today? Any notable meals...">${Utils.escape(log.foodNotes||'')}</textarea></div>
+      <div style="margin-top:12px"><button class="btn btn-secondary" onclick="App.navigate('food')">📝 Log detailed meals</button></div>`;
+
+    case 'learning_reading': return `
+      <div class="step-title">Learning & Reading</div>
+      <div class="step-sub">What did you learn today?</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Learning (minutes)</label><input type="number" class="form-control" id="ci-learnmin" value="${log.learningMinutes||''}" placeholder="30"></div>
+        <div class="form-group"><label class="form-label">Topic</label><input type="text" class="form-control" id="ci-learntopic" value="${Utils.escape(log.learningTopic||'')}" placeholder="e.g. Stock Market"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Reading (pages)</label><input type="number" class="form-control" id="ci-readpages" value="${log.readingPages||''}" placeholder="20"></div>
+        <div class="form-group"><label class="form-label">Current Book</label><input type="text" class="form-control" id="ci-readbook" value="${Utils.escape(log.currentBook||'')}" placeholder="Book title..."></div>
+      </div>
+      <div class="form-group"><label class="form-label">Key Takeaway</label><input type="text" class="form-control" id="ci-learntakeaway" value="${Utils.escape(log.learningTakeaway||'')}" placeholder="What's your biggest learning today?"></div>`;
+
+    case 'relationships': return `
+      <div class="step-title">Relationships</div>
+      <div class="step-sub">Did you meaningfully connect with someone today?</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <button class="btn ${DB.todayLog().connection?'btn-success':'btn-secondary'} btn-lg" style="flex:1" onclick="setConnection(true)">✅ Yes, I connected</button>
+        <button class="btn ${!DB.todayLog().connection?'btn-secondary':'btn-secondary'} btn-lg" style="flex:1" onclick="setConnection(false)">⭕ Not today</button>
+      </div>
+      <div class="form-group"><label class="form-label">Note (optional)</label><input type="text" class="form-control" id="ci-connote" value="${Utils.escape(log.connectionNote||'')}" placeholder="Who did you connect with?"></div>
+      <div class="toggle-wrap" style="margin-top:12px">
+        <label class="toggle"><input type="checkbox" id="ci-family" ${log.familyTime?'checked':''}><span class="toggle-slider"></span></label>
+        <span style="font-weight:600">Had quality family time</span>
+      </div>`;
+
+    case 'journal': return `
+      <div class="step-title">Daily Reflection</div>
+      <div class="step-sub">Quick reflections to close the day well.</div>
+      <div class="form-group"><label class="form-label">What went well today?</label><textarea class="form-control" id="ci-jwent" placeholder="Something positive...">${Utils.escape(log.journal?.wentWell||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">What didn't go well?</label><textarea class="form-control" id="ci-jdidnt" placeholder="Something to improve...">${Utils.escape(log.journal?.didntGoWell||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Biggest achievement</label><input type="text" class="form-control" id="ci-achieve" value="${Utils.escape(log.biggestAchievement||'')}" placeholder="I accomplished..."></div>
+      <div class="form-group"><label class="form-label">Tomorrow's priority</label><input type="text" class="form-control" id="ci-tomorrow" value="${Utils.escape(log.tomorrowPriority||'')}" placeholder="Tomorrow I will focus on..."></div>`;
+
+    case 'summary': {
+      const log2 = DB.todayLog();
+      const score2 = Score.calc(log2, s);
+      return `<div class="step-title" style="text-align:center">Today's Summary</div>
+      <div class="step-sub" style="text-align:center">Great work! Here's your day at a glance.</div>
+      <div style="text-align:center;margin:20px 0">
+        <div style="font-size:64px;font-weight:900;color:${Score.color(score2.total)}">${score2.total}</div>
+        <div style="font-size:13px;color:var(--muted)">Life Score · ${Score.grade(score2.total)}</div>
+      </div>
+      <div class="grid-2" style="gap:10px">
+        ${Object.entries(score2.breakdown).map(([k,v])=>`
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--bg2);border-radius:var(--r-sm)">
+            <div style="flex:1;font-size:12px;font-weight:600">${k.replace(/([A-Z])/g,' $1').trim()}</div>
+            <div style="font-size:14px;font-weight:800;color:${Score.color(v)}">${v}</div>
+          </div>`).join('')}
+      </div>`; }
+    default: return '<div>Step not found</div>';
+  }
+}
+
+function ciPrev() { if(ciStep > 0) { saveCurrentStep(); ciStep--; App.state.checkinStep=ciStep; document.getElementById('content').innerHTML = renderCheckinStep(); } }
+function ciNext() { saveCurrentStep(); if(ciStep < CHECKIN_STEPS.length-1) { ciStep++; App.state.checkinStep=ciStep; document.getElementById('content').innerHTML = renderCheckinStep(); } else { finishCheckin(); } }
+
+function saveCurrentStep() {
+  const log = DB.todayLog();
+  const key = CHECKIN_STEPS[ciStep];
+  const s = DB.settings();
+  const g = id => document.getElementById(id);
+  const v = id => { const el=g(id); return el?el.value:null; };
+  const n = id => { const val=parseFloat(v(id)); return isNaN(val)?null:val; };
+  const ni = id => { const val=parseInt(v(id)); return isNaN(val)?null:val; };
+
+  if(key==='weight_sleep'){
+    log.weight=n('ci-weight'); log.sleep=n('ci-sleep');
+    log.sleepQuality=ni('ci-sleep-q-val'); log.energy=ni('ci-energy');
+  } else if(key==='mood_energy'){
+    log.mood=ni('ci-mood'); log.stress=ni('ci-stress'); log.focus=ni('ci-focus'); log.mentalClarity=ni('ci-mentalClarity');
+    log.gratitude=v('ci-gratitude')||'';
+  } else if(key==='water_steps'){
+    log.water=ni('ci-water')||0; log.steps=ni('ci-steps'); log.walkDuration=ni('ci-walk');
+  } else if(key==='exercise'){
+    log.exercised=g('ci-exercised')?.checked||false;
+    if(log.exercised){ log.exercises=[{type:v('ci-extype'),duration:ni('ci-exdur'),intensity:v('ci-exint'),notes:v('ci-exnotes'),id:Utils.uid()}]; }
+  } else if(key==='meditation'){
+    log.meditated=g('ci-meditated')?.checked||false;
+    if(log.meditated){ log.meditationDuration=ni('ci-medmin'); log.meditationType=v('ci-medtype'); log.moodBefore=ni('ci-moodb'); log.moodAfter=ni('ci-mooda'); }
+  } else if(key==='food'){
+    log.foodQuality=ni('ci-foodq'); log.hadJunk=g('ci-junk')?.checked||false; log.foodNotes=v('ci-foodnotes')||'';
+  } else if(key==='learning_reading'){
+    log.learningMinutes=ni('ci-learnmin'); log.learningTopic=v('ci-learntopic')||'';
+    log.readingPages=ni('ci-readpages'); log.currentBook=v('ci-readbook')||''; log.learningTakeaway=v('ci-learntakeaway')||'';
+  } else if(key==='relationships'){
+    log.connectionNote=v('ci-connote')||''; log.familyTime=g('ci-family')?.checked||false;
+  } else if(key==='journal'){
+    if(!log.journal) log.journal={};
+    log.journal.wentWell=v('ci-jwent')||''; log.journal.didntGoWell=v('ci-jdidnt')||'';
+    log.biggestAchievement=v('ci-achieve')||''; log.tomorrowPriority=v('ci-tomorrow')||'';
+  }
+  const sc = Score.calc(log, s);
+  log.score=sc.total; log.scoreBreakdown=sc.breakdown;
+  DB.saveTodayLog(log);
+}
+
+function finishCheckin() { saveCurrentStep(); App.state.checkinStep=0; App.navigate('dashboard'); App.toast('✅ Check-in saved! Great job today!'); }
+function toggleExerciseForm(){ const el=document.getElementById('exercise-form'); if(el) el.style.display=document.getElementById('ci-exercised')?.checked?'':'none'; }
+function toggleMeditationForm(){ const el=document.getElementById('meditation-form'); if(el) el.style.display=document.getElementById('ci-meditated')?.checked?'':'none'; }
+function adjWater(d){ const inp=document.getElementById('ci-water'); const disp=document.getElementById('ci-water-disp'); if(!inp||!disp)return; const v=Math.max(0,(parseInt(inp.value)||0)+d); inp.value=v; disp.textContent=v; }
+function setWater(v){ const inp=document.getElementById('ci-water'); const disp=document.getElementById('ci-water-disp'); if(!inp||!disp)return; inp.value=v; disp.textContent=v; }
+function setStarRating(containerId,v,hiddenId){ document.querySelectorAll(`#${containerId} .star`).forEach((s,i)=>{ s.textContent=i<v?'★':'☆'; s.classList.toggle('filled',i<v); }); const h=document.getElementById(hiddenId); if(h)h.value=v; }
+function toggleRoutineHabit(type, id){ const log=DB.todayLog(); if(!log[type+'Routine'])log[type+'Routine']={}; log[type+'Routine'][id]=!log[type+'Routine'][id]; DB.saveTodayLog(log); const el=document.getElementById(`${type==='morning'?'mh':'eh'}-${id}`); if(el){el.className='routine-check'+(log[type+'Routine'][id]?' done':'');el.textContent=log[type+'Routine'][id]?'✓':'';} }
+function addBreakEx(type){ const log=DB.todayLog(); if(!log.breakExercises)log.breakExercises=[]; log.breakExercises.push({type,time:Utils.now(),id:Utils.uid()}); DB.saveTodayLog(log); const list=document.getElementById('break-ex-list'); if(list) list.innerHTML+= `<span class="break-chip">⚡ ${Utils.escape(type)}</span>`; }
+function setConnection(v){ const log=DB.todayLog(); log.connection=v; DB.saveTodayLog(log); document.querySelectorAll('.wizard-nav~* .btn, .card .btn').forEach(b=>{/* handled via re-render if needed */}); }
+
+// ─── WATER VIEW ─────────────────────────────────────
+function viewWater() {
+  const log = DB.todayLog();
+  const s = DB.settings();
+  const goal = s.waterGoal;
+  const current = log.water || 0;
+  const pct = Utils.pct(current, goal);
+  const glasses = Array.from({length:goal},(_, i)=>`<span class="glass" style="font-size:28px">${i<current?'🥛':'⬜'}</span>`).join('');
+  const allLogs = DB.recentLogs(7);
+  const weekAvg = Utils.round1(Utils.avg(allLogs.map(l=>l.water||0)));
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">💧 Water Tracker</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="card" style="text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Today's Intake</div>
+      <div class="water-display" id="water-count">${current}</div>
+      <div style="font-size:15px;color:var(--muted);margin-bottom:16px">of ${goal} glasses (${pct}%)</div>
+      <div style="max-width:500px;margin:0 auto"><div class="progress-bar" style="height:12px"><div class="progress-fill" id="water-prog" style="width:${pct}%;background:var(--info)"></div></div></div>
+      <div class="water-glasses" style="justify-content:center;margin-top:16px" id="water-glasses">${glasses}</div>
+      <div class="water-btns" style="justify-content:center;margin-top:16px">
+        <button class="water-btn" onclick="addWater(1)">+1 Glass</button>
+        <button class="water-btn" onclick="addWater(2)">+2 Glasses</button>
+        <button class="water-btn" onclick="addWaterMl(250)">+250ml</button>
+        <button class="water-btn" onclick="addWaterMl(500)">+500ml</button>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
+        <button class="btn btn-secondary btn-sm" onclick="setWaterDirect(Math.max(0,(DB.todayLog().water||0)-1))">− Remove</button>
+        <button class="btn btn-ghost btn-sm" onclick="setWaterDirect(0)">Reset</button>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value" style="color:var(--info)">${current} <span style="font-size:14px">glasses</span></div></div>
+      <div class="stat-card"><div class="stat-label">7-Day Average</div><div class="stat-value">${weekAvg} <span style="font-size:14px">glasses</span></div></div>
+      <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-value">${goal} <span style="font-size:14px">glasses</span></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">This Week</div>
+      <div style="display:flex;gap:8px;align-items:flex-end;height:80px">
+        ${allLogs.slice(-7).map(l=>{const p=Math.min(100,Utils.pct(l.water||0,goal));const day=new Date(l.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'});return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:var(--info);border-radius:4px 4px 0 0;height:${p}%;min-height:4px"></div><div style="font-size:10px;color:var(--muted)">${day}</div></div>`}).join('')}
+      </div>
+    </div>
+    <div style="margin-top:16px;text-align:center"><button class="btn btn-primary" onclick="setWaterGoalModal()">⚙️ Change Daily Goal (${goal} glasses)</button></div>
+  </div>`;
+}
+function addWater(n){ const log=DB.todayLog(); log.water=(log.water||0)+n; DB.saveTodayLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); App.toast(`+${n} glass${n>1?'es':''}! 💧`); }
+function addWaterMl(ml){ const glasses=Math.round(ml/250*10)/10; addWater(Math.ceil(glasses)); }
+function setWaterDirect(v){ const log=DB.todayLog(); log.water=Math.max(0,v); DB.saveTodayLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); }
+function refreshWaterUI(current, goal){ const pct=Utils.pct(current,goal); const c=document.getElementById('water-count'); const p=document.getElementById('water-prog'); const g=document.getElementById('water-glasses'); if(c)c.textContent=current; if(p)p.style.width=pct+'%'; if(g)g.innerHTML=Array.from({length:goal},(_,i)=>`<span class="glass">${i<current?'🥛':'⬜'}</span>`).join(''); }
+function setWaterGoalModal(){ showModal('Set Water Goal',`<div class="form-group"><label class="form-label">Daily glasses target</label><input type="number" class="form-control" id="m-watergoal" value="${DB.settings().waterGoal}" min="1" max="20"></div><div style="margin-top:16px;text-align:right"><button class="btn btn-primary" onclick="saveWaterGoal()">Save</button></div>`); }
+function saveWaterGoal(){ const v=parseInt(document.getElementById('m-watergoal')?.value); if(v>0){const s=DB.settings();s.waterGoal=v;DB.saveSettings(s);closeModal();App.navigate('water');} }
+// VIEWS PART 3: Exercise, Routines, Mindset, Meditation, Tasks, Journal
+
+// ─── EXERCISE VIEW ──────────────────────────────────
+function viewExercise() {
+  const log = DB.todayLog();
+  const exercises = log.exercises || [];
+  const s = DB.settings();
+  const allLogs = DB.recentLogs(30);
+  const exerciseDays = allLogs.filter(l=>l.exercised).length;
+  const totalMin = exercises.reduce((sum,e)=>sum+(e.duration||0),0);
+  const weekLogs = allLogs.slice(-7);
+  const weekMin = weekLogs.reduce((sum,l)=>sum+(l.exercises||[]).reduce((s2,e)=>s2+(e.duration||0),0),0);
+
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">🏃 Exercise Tracker</div></div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${totalMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">Active Days (30d)</div><div class="stat-value">${exerciseDays}<span style="font-size:14px"> days</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">Log Exercise</div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-control" id="ex-type">
+            ${['Walking','Running','Strength Training','Yoga','Stretching','Cycling','Home Workout','Swimming','Sports','Break Exercise','Other'].map(t=>`<option>${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="ex-dur" placeholder="30" min="1"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Intensity</label>
+          <select class="form-control" id="ex-int">
+            <option>Light</option><option selected>Moderate</option><option>Vigorous</option><option>Intense</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">Calories (optional)</label><input type="number" class="form-control" id="ex-cal" placeholder="200"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-control" id="ex-notes" placeholder="How did it feel?"></div>
+      <button class="btn btn-primary" onclick="logExercise()">+ Log Exercise</button>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Today's Sessions</div>
+      ${exercises.length ? exercises.map(e=>`
+        <div class="exercise-item">
+          <div class="exercise-icon">${e.type==='Walking'?'🚶':e.type==='Running'?'🏃':e.type==='Yoga'?'🧘':e.type==='Cycling'?'🚴':'💪'}</div>
+          <div class="exercise-info">
+            <div class="exercise-name">${Utils.escape(e.type)}</div>
+            <div class="exercise-meta">${e.duration||0} min · ${Utils.escape(e.intensity||'')} ${e.calories?'· '+e.calories+' kcal':''}</div>
+            ${e.notes?`<div style="font-size:11px;color:var(--muted)">${Utils.escape(e.notes)}</div>`:''}
+          </div>
+          <button class="btn-icon" onclick="deleteExercise('${e.id}')">🗑️</button>
+        </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏃</div><div class="empty-sub">No exercise logged yet today</div></div>`}
+    </div>
+    <div class="card">
+      <div class="card-title">Break-Time Exercises</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+        ${['2-min walk','Stretching','Squats','Push-ups','Neck roll','Breathing','Eye exercise','Standing break'].map(b=>`<button class="break-chip" style="cursor:pointer" onclick="logBreakExercise('${b}')">${b}</button>`).join('')}
+      </div>
+      <div id="break-list">${(log.breakExercises||[]).map(b=>`<span class="break-chip">⚡ ${Utils.escape(b.type)} · ${Utils.escape(b.time)}</span>`).join('')}</div>
+    </div>
+  </div>`;
+}
+function logExercise(){ const t=document.getElementById('ex-type')?.value; const d=parseInt(document.getElementById('ex-dur')?.value); if(!t||!d){App.toast('Enter type and duration');return;} const log=DB.todayLog(); if(!log.exercises)log.exercises=[]; log.exercised=true; log.exercises.push({id:Utils.uid(),type:t,duration:d,intensity:document.getElementById('ex-int')?.value||'Moderate',calories:parseInt(document.getElementById('ex-cal')?.value)||null,notes:document.getElementById('ex-notes')?.value||''}); DB.saveTodayLog(log); App.navigate('exercise'); App.toast('Exercise logged! 💪'); }
+function deleteExercise(id){ const log=DB.todayLog(); log.exercises=(log.exercises||[]).filter(e=>e.id!==id); if(!log.exercises.length)log.exercised=false; DB.saveTodayLog(log); App.navigate('exercise'); }
+function logBreakExercise(type){ const log=DB.todayLog(); if(!log.breakExercises)log.breakExercises=[]; log.breakExercises.push({type,time:Utils.now(),id:Utils.uid()}); DB.saveTodayLog(log); const list=document.getElementById('break-list'); if(list)list.innerHTML+= `<span class="break-chip">⚡ ${Utils.escape(type)} · ${Utils.now()}</span>`; App.toast('Break exercise logged! ⚡'); }
+
+// ─── ROUTINES ────────────────────────────────────────
+function viewRoutine(type) {
+  const label = type==='morning'?'☀️ Morning':'🌙 Evening';
+  const s = DB.settings();
+  const log = DB.todayLog();
+  const habits = type==='morning' ? s.morningHabits.filter(h=>h.enabled) : s.eveningHabits.filter(h=>h.enabled);
+  const done = habits.filter(h=>log[type+'Routine']?.[h.id]).length;
+  const pct = habits.length ? Utils.pct(done, habits.length) : 0;
+  const allLogs = DB.recentLogs(30);
+  const streak = Utils.streak(allLogs, l => {
+    const rh = type==='morning' ? s.morningHabits : s.eveningHabits;
+    const enabled = rh.filter(h=>h.enabled);
+    if(!enabled.length)return false;
+    const d = enabled.filter(h=>l[type+'Routine']?.[h.id]).length;
+    return d/enabled.length >= 0.7;
+  });
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">${label} Routine</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="card" style="margin-bottom:20px;text-align:center">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Today's Progress</div>
+      <div class="routine-score" style="color:${pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)'}">${pct}%</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${done} of ${habits.length} habits completed</div>
+      <div class="progress-bar" style="max-width:300px;margin:0 auto;height:10px"><div class="progress-fill" style="width:${pct}%;background:${type==='morning'?'var(--warn)':'var(--primary)'}"></div></div>
+      <div style="margin-top:12px;font-size:13px;color:var(--warn)">🔥 ${streak} day streak</div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="section-header">
+        <div class="section-title">Habits</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-secondary btn-sm" onclick="markAllRoutine('${type}',true)">✓ All</button>
+          <button class="btn btn-ghost btn-sm" onclick="markAllRoutine('${type}',false)">Clear</button>
+        </div>
+      </div>
+      ${habits.map(h=>`<div class="routine-habit" onclick="toggleRoutineItem('${type}','${h.id}')">
+        <div class="routine-check ${log[type+'Routine']?.[h.id]?'done':''}" id="ri-${type}-${h.id}">${log[type+'Routine']?.[h.id]?'✓':''}</div>
+        <span class="routine-name">${Utils.escape(h.name)}</span>
+      </div>`).join('')}
+    </div>
+    <div style="text-align:center"><button class="btn btn-secondary" onclick="App.navigate('settings')">⚙️ Customize Habits</button></div>
+  </div>`;
+}
+function toggleRoutineItem(type, id){ const log=DB.todayLog(); if(!log[type+'Routine'])log[type+'Routine']={}; log[type+'Routine'][id]=!log[type+'Routine'][id]; DB.saveTodayLog(log); const el=document.getElementById(`ri-${type}-${id}`); if(el){el.className='routine-check'+(log[type+'Routine'][id]?' done':'');el.textContent=log[type+'Routine'][id]?'✓':'';} const s=DB.settings(); const h=type==='morning'?s.morningHabits:s.eveningHabits; const en=h.filter(x=>x.enabled); const done=en.filter(x=>log[type+'Routine']?.[x.id]).length; App.toast(done===en.length&&en.length>0?'🎉 All habits done!':log[type+'Routine'][id]?'✓ Habit completed!':'Habit unchecked'); }
+function markAllRoutine(type, v){ const s=DB.settings(); const log=DB.todayLog(); const habits=(type==='morning'?s.morningHabits:s.eveningHabits).filter(h=>h.enabled); if(!log[type+'Routine'])log[type+'Routine']={}; habits.forEach(h=>{log[type+'Routine'][h.id]=v;}); DB.saveTodayLog(log); App.navigate(type==='morning'?'morning':'evening'); }
+
+// ─── MINDSET ──────────────────────────────────────────
+function viewMindset() {
+  const log = DB.todayLog();
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">🧠 Mindset Tracker</div></div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Today's Mental State</div>
+      ${[['mood','Mood','Very Low','Amazing'],['energy','Energy','Exhausted','Energized'],['focus','Focus','Scattered','Laser Sharp'],['stress','Stress','Calm','Very Stressed'],['mentalClarity','Mental Clarity','Foggy','Crystal Clear']].map(([f,l,lo,hi])=>`
+        <div class="form-group">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <label class="form-label">${l}</label>
+            <span style="font-size:14px;font-weight:800;color:var(--primary)" id="ms-${f}-v">${log[f]||'—'}</span>
+          </div>
+          <input type="range" min="1" max="5" step="1" id="ms-${f}" value="${log[f]||3}"
+            oninput="document.getElementById('ms-${f}-v').textContent=this.value;saveMindset()">
+          <div class="range-labels"><span>${lo}</span><span>${hi}</span></div>
+        </div>`).join('')}
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Reflections</div>
+      <div class="form-group"><label class="form-label">Gratitude</label><textarea class="form-control" id="ms-gratitude" oninput="saveMindset()" placeholder="I am grateful for...">${Utils.escape(log.gratitude||'')}</textarea></div>
+      <div class="form-group"><label class="form-label">Biggest Achievement Today</label><input type="text" class="form-control" id="ms-achieve" oninput="saveMindset()" value="${Utils.escape(log.biggestAchievement||'')}" placeholder="What did you accomplish?"></div>
+      <div class="form-group"><label class="form-label">Biggest Challenge</label><input type="text" class="form-control" id="ms-challenge" oninput="saveMindset()" value="${Utils.escape(log.biggestChallenge||'')}" placeholder="What was difficult?"></div>
+    </div>
+  </div>`;
+}
+function saveMindset(){ const log=DB.todayLog(); ['mood','energy','focus','stress','mentalClarity'].forEach(f=>{const v=parseInt(document.getElementById('ms-'+f)?.value);if(!isNaN(v))log[f]=v;}); log.gratitude=document.getElementById('ms-gratitude')?.value||''; log.biggestAchievement=document.getElementById('ms-achieve')?.value||''; log.biggestChallenge=document.getElementById('ms-challenge')?.value||''; DB.saveTodayLog(log); }
+
+// ─── MEDITATION ──────────────────────────────────────
+function viewMeditation() {
+  const log = DB.todayLog();
+  const allLogs = DB.recentLogs(30);
+  const streak = Utils.streak(allLogs, l=>l.meditated);
+  const weekMin = allLogs.slice(-7).reduce((s,l)=>s+(l.meditationDuration||0),0);
+  const monthMin = allLogs.reduce((s,l)=>s+(l.meditationDuration||0),0);
+  const sessions = allLogs.filter(l=>l.meditated).length;
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">🧘 Meditation</div></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${log.meditationDuration||0}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${monthMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak}<span style="font-size:14px"> days</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Log Today's Session</div>
+      <div class="toggle-wrap" style="margin-bottom:16px">
+        <label class="toggle"><input type="checkbox" id="med-done" ${log.meditated?'checked':''} onchange="saveMeditation()"><span class="toggle-slider"></span></label>
+        <span style="font-weight:600">Meditated today</span>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="med-min" value="${log.meditationDuration||''}" placeholder="${DB.settings().meditationGoal}" onchange="saveMeditation()"></div>
+        <div class="form-group"><label class="form-label">Type</label>
+          <select class="form-control" id="med-type" onchange="saveMeditation()">
+            ${['Mindfulness','Breathing','Body Scan','Guided','Mantra','Visualization','Other'].map(t=>`<option ${log.meditationType===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Mood Before: <span id="med-mb-v" style="font-weight:700;color:var(--primary)">${log.moodBefore||3}</span>/5</label><input type="range" min="1" max="5" id="med-mb" value="${log.moodBefore||3}" oninput="document.getElementById('med-mb-v').textContent=this.value"></div>
+        <div class="form-group"><label class="form-label">Mood After: <span id="med-ma-v" style="font-weight:700;color:var(--success)">${log.moodAfter||3}</span>/5</label><input type="range" min="1" max="5" id="med-ma" value="${log.moodAfter||3}" oninput="document.getElementById('med-ma-v').textContent=this.value"></div>
+      </div>
+      <button class="btn btn-primary" onclick="saveMeditation();App.toast('Meditation saved 🧘')">Save</button>
+    </div>
+  </div>`;
+}
+function saveMeditation(){ const log=DB.todayLog(); log.meditated=document.getElementById('med-done')?.checked||false; log.meditationDuration=parseInt(document.getElementById('med-min')?.value)||null; log.meditationType=document.getElementById('med-type')?.value||'Mindfulness'; log.moodBefore=parseInt(document.getElementById('med-mb')?.value)||null; log.moodAfter=parseInt(document.getElementById('med-ma')?.value)||null; DB.saveTodayLog(log); }
+
+// ─── TASKS ───────────────────────────────────────────
+function viewTasks() {
+  const filter = App.state.taskFilter || 'today';
+  const all = DB.tasks();
+  const today = Utils.today();
+  let tasks;
+  if(filter==='today') tasks = all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&(!t.dueDate||t.dueDate===today));
+  else if(filter==='overdue') tasks = all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&t.dueDate&&t.dueDate<today);
+  else if(filter==='upcoming') tasks = all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&t.dueDate&&t.dueDate>today);
+  else if(filter==='completed') tasks = all.filter(t=>t.status==='completed').slice(-30);
+  else tasks = all.filter(t=>t.status!=='cancelled');
+  tasks.sort((a,b)=>{ const p={'high':0,'medium':1,'low':2}; return (p[a.priority]||1)-(p[b.priority]||1); });
+  const counts = { today:all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&(!t.dueDate||t.dueDate===today)).length, overdue:all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&t.dueDate&&t.dueDate<today).length, upcoming:all.filter(t=>t.status!=='completed'&&t.status!=='cancelled'&&t.dueDate&&t.dueDate>today).length, completed:all.filter(t=>t.status==='completed').length };
+  return `<div class="anim-fade">
+    <div class="section-header"><div><div class="page-title">☑️ Tasks</div></div><button class="btn btn-primary" onclick="showAddTask()">+ Add Task</button></div>
+    <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap">
+      ${Object.entries({today:'Today',overdue:'Overdue',upcoming:'Upcoming',completed:'Done',all:'All'}).map(([k,l])=>`
+        <button class="period-btn ${filter===k?'active':''}" onclick="App.state.taskFilter='${k}';App.navigate('tasks')">${l}${counts[k]?` (${counts[k]})`:''}</button>`).join('')}
+    </div>
+    ${tasks.length ? tasks.map(t=>taskItemFull(t)).join('') : `<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">${filter==='completed'?'No completed tasks yet':'All clear!'}</div><div class="empty-sub">${filter==='today'?'Add tasks for today to get started.':filter==='overdue'?'No overdue tasks!':'Nothing here.'}</div></div>`}
+  </div>`;
+}
+function taskItemFull(t){ const done=t.status==='completed'; const pClass=t.priority==='high'?'priority-h':t.priority==='low'?'priority-l':'priority-m'; return `<div class="task-item ${done?'done':''} ${pClass}" id="task-${t.id}">
+  <div class="task-check ${done?'checked':''}" onclick="toggleTask('${t.id}')">${done?'✓':''}</div>
+  <div style="flex:1">
+    <div class="task-title">${Utils.escape(t.title)}</div>
+    <div class="task-meta" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      ${t.category?`<span class="tag tag-muted">${Utils.escape(t.category)}</span>`:''}
+      ${t.dueDate?`<span style="font-size:11px;color:${t.dueDate<Utils.today()&&!done?'var(--danger)':'var(--muted)'}">📅 ${Utils.fmtDay(t.dueDate)}</span>`:''}
+      <span class="tag tag-${t.priority==='high'?'danger':t.priority==='low'?'success':'warn'}">${t.priority||'medium'}</span>
+    </div>
+    ${t.notes?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${Utils.escape(t.notes)}</div>`:''}
+  </div>
+  <div class="task-actions">
+    <button class="btn-icon" onclick="editTask('${t.id}')" title="Edit">✏️</button>
+    <button class="btn-icon" onclick="deleteTask('${t.id}')" title="Delete">🗑️</button>
+  </div>
+</div>`; }
+function toggleTask(id){ const tasks=DB.tasks(); const t=tasks.find(x=>x.id===id); if(!t)return; t.status=t.status==='completed'?'not_started':'completed'; t.completedAt=t.status==='completed'?Utils.today():null; DB.saveTasks(tasks); const el=document.getElementById(`task-${id}`); if(el){el.classList.toggle('done',t.status==='completed'); const ch=el.querySelector('.task-check'); if(ch){ch.classList.toggle('checked',t.status==='completed');ch.textContent=t.status==='completed'?'✓':'';}} App.toast(t.status==='completed'?'Task completed! ✅':'Task reopened'); }
+function deleteTask(id){ if(!confirm('Delete this task?'))return; const tasks=DB.tasks().filter(t=>t.id!==id); DB.saveTasks(tasks); const el=document.getElementById(`task-${id}`); if(el)el.remove(); App.toast('Task deleted'); }
+function showAddTask(){ showModal('Add Task',`<div class="form-group"><label class="form-label">Task Title *</label><input type="text" class="form-control" id="at-title" placeholder="What needs to be done?"></div>
+<div class="form-row">
+  <div class="form-group"><label class="form-label">Priority</label><select class="form-control" id="at-pri"><option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option></select></div>
+  <div class="form-group"><label class="form-label">Category</label><select class="form-control" id="at-cat"><option value="">Select...</option>${['Personal','Work','Business','Finance','Health','Family','Learning','Other'].map(c=>`<option>${c}</option>`).join('')}</select></div>
+</div>
+<div class="form-row">
+  <div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-control" id="at-due" value="${Utils.today()}"></div>
+  <div class="form-group"><label class="form-label">Est. Time (min)</label><input type="number" class="form-control" id="at-time" placeholder="30"></div>
+</div>
+<div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="at-notes" placeholder="Additional details..." rows="2"></textarea></div>
+<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveTask()">Add Task</button></div>`); setTimeout(()=>document.getElementById('at-title')?.focus(),100); }
+function saveTask(){ const title=document.getElementById('at-title')?.value?.trim(); if(!title){App.toast('Enter a task title');return;} const tasks=DB.tasks(); tasks.push({id:Utils.uid(),title,priority:document.getElementById('at-pri')?.value||'medium',category:document.getElementById('at-cat')?.value||'',dueDate:document.getElementById('at-due')?.value||'',estimatedTime:parseInt(document.getElementById('at-time')?.value)||null,notes:document.getElementById('at-notes')?.value||'',status:'not_started',createdAt:Utils.today()}); DB.saveTasks(tasks); closeModal(); App.navigate('tasks'); App.toast('Task added! ✅'); }
+function editTask(id){ const tasks=DB.tasks(); const t=tasks.find(x=>x.id===id); if(!t)return; showModal('Edit Task',`<div class="form-group"><label class="form-label">Task Title</label><input type="text" class="form-control" id="et-title" value="${Utils.escape(t.title)}"></div>
+<div class="form-row"><div class="form-group"><label class="form-label">Priority</label><select class="form-control" id="et-pri">${['high','medium','low'].map(p=>`<option ${t.priority===p?'selected':''}>${p}</option>`).join('')}</select></div>
+<div class="form-group"><label class="form-label">Status</label><select class="form-control" id="et-status">${['not_started','in_progress','completed','cancelled'].map(s=>`<option value="${s}" ${t.status===s?'selected':''}>${s.replace('_',' ')}</option>`).join('')}</select></div></div>
+<div class="form-group"><label class="form-label">Due Date</label><input type="date" class="form-control" id="et-due" value="${t.dueDate||''}"></div>
+<div class="form-group"><label class="form-label">Notes</label><textarea class="form-control" id="et-notes">${Utils.escape(t.notes||'')}</textarea></div>
+<div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="updateTask('${id}')">Save</button></div>`); }
+function updateTask(id){ const tasks=DB.tasks(); const t=tasks.find(x=>x.id===id); if(!t)return; t.title=document.getElementById('et-title')?.value?.trim()||t.title; t.priority=document.getElementById('et-pri')?.value||t.priority; t.status=document.getElementById('et-status')?.value||t.status; t.dueDate=document.getElementById('et-due')?.value||t.dueDate; t.notes=document.getElementById('et-notes')?.value||t.notes; DB.saveTasks(tasks); closeModal(); App.navigate('tasks'); App.toast('Task updated'); }
+
+// ─── JOURNAL ────────────────────────────────────────
+function viewJournal() {
+  const log = DB.todayLog();
+  const j = log.journal || {};
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">📓 Daily Journal</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="card">
+      <div style="margin-bottom:20px;padding:14px;background:var(--primary-l);border-radius:var(--r-sm)"><div style="font-size:13px;font-weight:600;color:var(--primary)">Take 2 minutes to reflect. It will improve tomorrow.</div></div>
+      ${[['wentWell','✅ What went well today?','Something positive, big or small...'],['didntGoWell','❌ What didn\'t go well?','Something to learn from...'],['learned','💡 What did I learn?','Any insight or lesson...'],['grateful','🙏 What am I grateful for?','Something I appreciate...'],['improve','🎯 What should I improve tomorrow?','One concrete action...'],['achievement','🏆 Biggest achievement','What I\'m most proud of today...'],['distraction','⚠️ Biggest distraction','What pulled me off track...']].map(([k,label,ph])=>`
+        <div class="form-group">
+          <label class="form-label">${label}</label>
+          <textarea class="form-control" id="jrn-${k}" rows="2" placeholder="${ph}" oninput="saveJournal()">${Utils.escape(j[k]||'')}</textarea>
+        </div>`).join('')}
+      <div class="form-group"><label class="form-label">Tomorrow's Priority</label><input type="text" class="form-control" id="jrn-tomorrow" value="${Utils.escape(log.tomorrowPriority||'')}" placeholder="Tomorrow I will..." oninput="saveJournal()"></div>
+      <button class="btn btn-primary" onclick="saveJournal();App.toast('Journal saved 📓')">Save Reflection</button>
+    </div>
+  </div>`;
+}
+function saveJournal(){ const log=DB.todayLog(); if(!log.journal)log.journal={}; ['wentWell','didntGoWell','learned','grateful','improve','achievement','distraction'].forEach(k=>{const el=document.getElementById('jrn-'+k);if(el)log.journal[k]=el.value;}); const tm=document.getElementById('jrn-tomorrow'); if(tm)log.tomorrowPriority=tm.value; DB.saveTodayLog(log); }
+// VIEWS PART 4: Food, Learning, Reading, Relationships, Goals, Habits, Health, Analytics, Settings, More
+
+// ─── FOOD ────────────────────────────────────────────
+function viewFood() {
+  const log = DB.todayLog();
+  const meals = log.meals || [];
+  const healthy = meals.filter(m=>m.isHealthy).length;
+  const junk = meals.filter(m=>m.isJunk).length;
+  return `<div class="anim-fade">
+    <div class="section-header"><div><div class="page-title">🍎 Food & Nutrition</div><div style="color:var(--muted);font-size:13px">${Utils.fmtDate(Utils.today())}</div></div>
+      <button class="btn btn-primary" onclick="showAddMeal()">+ Log Meal</button>
+    </div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Meals Logged</div><div class="stat-value">${meals.length}</div></div>
+      <div class="stat-card"><div class="stat-label">Healthy Meals</div><div class="stat-value" style="color:var(--success)">${healthy}</div></div>
+      <div class="stat-card"><div class="stat-label">Junk Food</div><div class="stat-value" style="color:${junk>0?'var(--danger)':'var(--success)'}">${junk}</div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Today's Meals</div>
+      ${meals.length ? meals.map(m=>`<div class="meal-card">
+        <div class="meal-type">${Utils.escape(m.mealType)}</div>
+        <div class="meal-desc">${Utils.escape(m.description)}</div>
+        ${m.quantity?`<div style="font-size:12px;color:var(--muted)">${Utils.escape(m.quantity)}</div>`:''}
+        <div class="meal-tags">
+          ${m.isHealthy?'<span class="tag tag-success">Healthy</span>':''}
+          ${m.isJunk?'<span class="tag tag-danger">Junk</span>':''}
+          ${m.hasProtein?'<span class="tag tag-primary">Protein</span>':''}
+          ${m.hasFruits?'<span class="tag tag-success">Fruits/Veg</span>':''}
+          ${m.hasSugar?'<span class="tag tag-warn">Sugar</span>':''}
+          ${m.calories?`<span class="tag tag-muted">${m.calories} kcal</span>`:''}
+        </div>
+        <button class="btn-icon" style="margin-top:4px" onclick="deleteMeal('${m.id}')">🗑️</button>
+      </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🍽️</div><div class="empty-sub">No meals logged yet. Tap + to log your first meal.</div></div>`}
+    </div>
+    <div class="card" style="background:var(--info-l)">
+      <div style="font-size:13px;font-weight:600;color:var(--info)">💡 Focus on awareness, not perfection. Log consistently to spot patterns.</div>
+    </div>
+  </div>`;
+}
+function showAddMeal(){ showModal('Log Meal',`
+  <div class="form-group"><label class="form-label">Meal Type</label><select class="form-control" id="ml-type">${['Early Morning','Breakfast','Mid-Morning Snack','Lunch','Evening Snack','Dinner','Other'].map(t=>`<option>${t}</option>`).join('')}</select></div>
+  <div class="form-group"><label class="form-label">Description *</label><input type="text" class="form-control" id="ml-desc" placeholder="What did you eat?"></div>
+  <div class="form-row">
+    <div class="form-group"><label class="form-label">Quantity</label><input type="text" class="form-control" id="ml-qty" placeholder="1 bowl, 200g..."></div>
+    <div class="form-group"><label class="form-label">Calories (optional)</label><input type="number" class="form-control" id="ml-cal" placeholder="300"></div>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px">
+    ${[['ml-healthy','✅ Healthy'],['ml-junk','🍔 Junk Food'],['ml-protein','💪 Protein'],['ml-fruits','🥦 Fruits/Veg'],['ml-sugar','🍬 Sugar']].map(([id,l])=>`<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="${id}" style="accent-color:var(--primary)">${l}</label>`).join('')}
+  </div>
+  <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveMeal()">Log Meal</button></div>`); }
+function saveMeal(){ const desc=document.getElementById('ml-desc')?.value?.trim(); if(!desc){App.toast('Enter meal description');return;} const log=DB.todayLog(); if(!log.meals)log.meals=[]; log.meals.push({id:Utils.uid(),mealType:document.getElementById('ml-type')?.value||'Other',description:desc,quantity:document.getElementById('ml-qty')?.value||'',calories:parseInt(document.getElementById('ml-cal')?.value)||null,isHealthy:document.getElementById('ml-healthy')?.checked||false,isJunk:document.getElementById('ml-junk')?.checked||false,hasProtein:document.getElementById('ml-protein')?.checked||false,hasFruits:document.getElementById('ml-fruits')?.checked||false,hasSugar:document.getElementById('ml-sugar')?.checked||false}); DB.saveTodayLog(log); closeModal(); App.navigate('food'); App.toast('Meal logged! 🍽️'); }
+function deleteMeal(id){ const log=DB.todayLog(); log.meals=(log.meals||[]).filter(m=>m.id!==id); DB.saveTodayLog(log); App.navigate('food'); }
+
+// ─── EXPENSES ─────────────────────────────────────────
+const EXPENSE_CATS = ['🍔 Food','🚌 Transport','🛒 Shopping','🎬 Entertainment','💊 Health','🏠 Bills & Rent','📚 Education','✈️ Travel','💇 Personal Care','🎁 Gifts','💼 Business','❓ Other'];
+
+function viewExpenses() {
+  const expenses = DB.expenses().sort((a,b)=>b.date.localeCompare(a.date));
+  const s = DB.settings();
+  const today = Utils.today();
+  const now = new Date();
+  const monthStr = today.slice(0,7);
+  const prevMonthDate = new Date(now.getFullYear(), now.getMonth()-1, 1);
+  const prevMonthStr = prevMonthDate.toISOString().slice(0,7);
+
+  const thisMonthExp = expenses.filter(e=>e.date.startsWith(monthStr));
+  const prevMonthExp = expenses.filter(e=>e.date.startsWith(prevMonthStr));
+  const todayExp = expenses.filter(e=>e.date===today);
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-6);
+  const weekStr = weekStart.toISOString().slice(0,10);
+  const weekExp = expenses.filter(e=>e.date>=weekStr);
+
+  const totalMonth = thisMonthExp.reduce((s,e)=>s+e.amount,0);
+  const totalPrevMonth = prevMonthExp.reduce((s,e)=>s+e.amount,0);
+  const totalToday = todayExp.reduce((s,e)=>s+e.amount,0);
+  const totalWeek = weekExp.reduce((s,e)=>s+e.amount,0);
+  const budget = s.expenseBudget || 30000;
+  const budgetPct = Math.min(100, Math.round((totalMonth/budget)*100));
+  const budgetColor = budgetPct>=90?'var(--danger)':budgetPct>=70?'var(--warn)':'var(--success)';
+  const remaining = budget - totalMonth;
+
+  // Category breakdown for this month
+  const catMap = {};
+  thisMonthExp.forEach(e=>{ const c=e.category||'Other'; catMap[c]=(catMap[c]||0)+e.amount; });
+  const catList = Object.entries(catMap).sort((a,b)=>b[1]-a[1]);
+
+  const fmt = v => '₹'+v.toLocaleString('en-IN',{maximumFractionDigits:0});
+  const monthName = now.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
+  const diff = totalMonth - totalPrevMonth;
+  const diffStr = diff>0?`<span style="color:var(--danger)">↑ ${fmt(Math.abs(diff))} more</span>`:diff<0?`<span style="color:var(--success)">↓ ${fmt(Math.abs(diff))} less</span>`:`<span style="color:var(--muted)">→ Same</span>`;
+
+  return `<div class="anim-fade">
+    <div class="page-header">
+      <div class="page-title">💰 Expense Tracker</div>
+      <div class="page-sub">${monthName}</div>
+    </div>
+
+    <!-- Budget Overview -->
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Monthly Spend</div>
+          <div style="font-size:36px;font-weight:900;color:${budgetColor}">${fmt(totalMonth)}</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Budget: ${fmt(budget)} · ${diffStr} vs last month</div>
+        </div>
+        <button class="btn btn-primary" onclick="showAddExpense()">+ Add</button>
+      </div>
+      <div class="progress-bar" style="height:12px;margin-bottom:6px"><div class="progress-fill" style="width:${budgetPct}%;background:${budgetColor};transition:width .4s"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted)">
+        <span>${budgetPct}% used</span>
+        <span style="color:${remaining>=0?'var(--success)':'var(--danger)'};font-weight:600">${remaining>=0?fmt(remaining)+' left':fmt(Math.abs(remaining))+' over budget'}</span>
+      </div>
+    </div>
+
+    <!-- Stats row -->
+    <div class="grid-3" style="margin-bottom:16px;gap:10px">
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">TODAY</div>
+        <div style="font-size:20px;font-weight:800">${fmt(totalToday)}</div>
+        <div style="font-size:11px;color:var(--muted)">${todayExp.length} entries</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">THIS WEEK</div>
+        <div style="font-size:20px;font-weight:800">${fmt(totalWeek)}</div>
+        <div style="font-size:11px;color:var(--muted)">${weekExp.length} entries</div>
+      </div>
+      <div class="card" style="text-align:center;padding:14px">
+        <div style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:4px">LAST MONTH</div>
+        <div style="font-size:20px;font-weight:800">${fmt(totalPrevMonth)}</div>
+        <div style="font-size:11px;color:var(--muted)">${prevMonthExp.length} entries</div>
+      </div>
+    </div>
+
+    <!-- Category Breakdown -->
+    ${catList.length>0?`<div class="card" style="margin-bottom:16px">
+      <div class="section-header"><div class="section-title">By Category (${monthName})</div></div>
+      ${catList.map(([cat,amt])=>{const pct=totalMonth>0?Math.round((amt/totalMonth)*100):0;return `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+            <span style="font-weight:600">${Utils.escape(cat)}</span>
+            <span style="font-weight:700">${fmt(amt)} <span style="color:var(--muted);font-weight:400">(${pct}%)</span></span>
+          </div>
+          <div class="progress-bar progress-sm"><div class="progress-fill" style="width:${pct}%;background:var(--primary)"></div></div>
+        </div>`;}).join('')}
+    </div>`:''}
+
+    <!-- Expense List -->
+    <div class="card">
+      <div class="section-header">
+        <div class="section-title">All Expenses</div>
+        <div style="display:flex;gap:8px">
+          <select class="form-control" style="padding:4px 8px;font-size:12px;width:auto" id="exp-filter" onchange="filterExpenses(this.value)">
+            <option value="all">All Time</option>
+            <option value="today">Today</option>
+            <option value="week">This Week</option>
+            <option value="month" selected>This Month</option>
+          </select>
+        </div>
+      </div>
+      <div id="exp-list">
+        ${renderExpenseList(thisMonthExp)}
+      </div>
+    </div>
+
+    <!-- Set Budget -->
+    <div style="text-align:center;margin-top:16px">
+      <button class="btn btn-secondary" onclick="showExpenseBudgetModal()">⚙️ Set Monthly Budget</button>
+    </div>
+  </div>`;
+}
+
+function renderExpenseList(list) {
+  if(!list.length) return `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">💸</div><div class="empty-title">No expenses</div><div class="empty-sub">Tap + Add to log your first expense.</div></div>`;
+  const fmt = v => '₹'+v.toLocaleString('en-IN',{maximumFractionDigits:0});
+  // Group by date
+  const byDate = {};
+  list.forEach(e=>{ if(!byDate[e.date])byDate[e.date]=[]; byDate[e.date].push(e); });
+  return Object.entries(byDate).sort((a,b)=>b[0].localeCompare(a[0])).map(([date,entries])=>{
+    const dayTotal = entries.reduce((s,e)=>s+e.amount,0);
+    return `<div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)">
+        <span>${Utils.fmtDay(date)}</span><span>${fmt(dayTotal)}</span>
+      </div>
+      ${entries.sort((a,b)=>(b.time||'').localeCompare(a.time||'')).map(e=>`
+        <div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div style="font-size:24px;width:36px;text-align:center">${getCatEmoji(e.category)}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:14px">${Utils.escape(e.description)}</div>
+            <div style="font-size:11px;color:var(--muted)">${Utils.escape(e.category||'Other')}${e.note?` · ${Utils.escape(e.note)}`:''}${e.time?' · '+e.time:''}</div>
+          </div>
+          <div style="font-size:16px;font-weight:800;color:var(--text);white-space:nowrap">${fmt(e.amount)}</div>
+          <button class="btn-icon" onclick="deleteExpense('${e.id}')" style="color:var(--danger)">🗑️</button>
+        </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function getCatEmoji(cat) {
+  if(!cat)return'💸';
+  if(cat.includes('Food'))return'🍔';
+  if(cat.includes('Transport'))return'🚌';
+  if(cat.includes('Shopping'))return'🛒';
+  if(cat.includes('Entertainment'))return'🎬';
+  if(cat.includes('Health'))return'💊';
+  if(cat.includes('Bills'))return'🏠';
+  if(cat.includes('Education'))return'📚';
+  if(cat.includes('Travel'))return'✈️';
+  if(cat.includes('Personal'))return'💇';
+  if(cat.includes('Gift'))return'🎁';
+  if(cat.includes('Business'))return'💼';
+  return'💸';
+}
+
+function filterExpenses(period) {
+  const today = Utils.today();
+  const now = new Date();
+  const monthStr = today.slice(0,7);
+  const weekStart = new Date(now); weekStart.setDate(now.getDate()-6);
+  const weekStr = weekStart.toISOString().slice(0,10);
+  let filtered = DB.expenses().sort((a,b)=>b.date.localeCompare(a.date));
+  if(period==='today') filtered = filtered.filter(e=>e.date===today);
+  else if(period==='week') filtered = filtered.filter(e=>e.date>=weekStr);
+  else if(period==='month') filtered = filtered.filter(e=>e.date.startsWith(monthStr));
+  const el = document.getElementById('exp-list');
+  if(el) el.innerHTML = renderExpenseList(filtered);
+}
+
+function showAddExpense() {
+  const today = Utils.today();
+  showModal('💰 Add Expense', `
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Amount (₹) *</label>
+        <input type="number" class="form-control" id="ex-amount" placeholder="500" min="0" step="1" autofocus>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Date</label>
+        <input type="date" class="form-control" id="ex-date" value="${today}">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Description *</label>
+      <input type="text" class="form-control" id="ex-desc" placeholder="e.g. Lunch at restaurant">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-control" id="ex-cat">
+          ${EXPENSE_CATS.map(c=>`<option>${c}</option>`).join('')}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Payment Method</label>
+        <select class="form-control" id="ex-pay">
+          <option>UPI / GPay</option>
+          <option>Cash</option>
+          <option>Debit Card</option>
+          <option>Credit Card</option>
+          <option>Net Banking</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Note (optional)</label>
+      <input type="text" class="form-control" id="ex-note" placeholder="Any notes...">
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpense()">Save Expense</button>
+    </div>`);
+  setTimeout(()=>document.getElementById('ex-amount')?.focus(),100);
+}
+
+function saveExpense() {
+  const amtEl = document.getElementById('ex-amount');
+  const descEl = document.getElementById('ex-desc');
+  const amt = parseFloat(amtEl?.value);
+  const desc = descEl?.value?.trim();
+  if(!amt||amt<=0){App.toast('Enter a valid amount');return;}
+  if(!desc){App.toast('Enter a description');return;}
+  const expenses = DB.expenses();
+  expenses.push({
+    id: Utils.uid(),
+    amount: amt,
+    description: desc,
+    category: document.getElementById('ex-cat')?.value||'Other',
+    paymentMethod: document.getElementById('ex-pay')?.value||'',
+    note: document.getElementById('ex-note')?.value||'',
+    date: document.getElementById('ex-date')?.value||Utils.today(),
+    time: Utils.now(),
+  });
+  DB.saveExpenses(expenses);
+  closeModal();
+  if(App.state.view==='expenses') App.navigate('expenses');
+  App.toast('Expense saved! 💰');
+}
+
+function deleteExpense(id) {
+  DB.saveExpenses(DB.expenses().filter(e=>e.id!==id));
+  if(App.state.view==='expenses') App.navigate('expenses');
+  else { const sel=document.getElementById('exp-filter'); filterExpenses(sel?sel.value:'month'); }
+}
+
+function showExpenseBudgetModal() {
+  const s = DB.settings();
+  showModal('⚙️ Monthly Budget', `
+    <div class="form-group">
+      <label class="form-label">Monthly Budget (₹)</label>
+      <input type="number" class="form-control" id="eb-budget" value="${s.expenseBudget||30000}" min="0" step="1000">
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveExpenseBudget()">Save</button>
+    </div>`);
+}
+
+function saveExpenseBudget() {
+  const s = DB.settings();
+  const v = parseFloat(document.getElementById('eb-budget')?.value);
+  if(!isNaN(v)&&v>=0){ s.expenseBudget=v; DB.saveSettings(s); closeModal(); App.navigate('expenses'); App.toast('Budget updated!'); }
+}
+
+// ─── LEARNING ─────────────────────────────────────────
+function viewLearning() {
+  const log = DB.todayLog();
+  const allLogs = DB.recentLogs(30);
+  const weekMin = allLogs.slice(-7).reduce((s,l)=>s+(l.learningMinutes||0),0);
+  const monthMin = allLogs.reduce((s,l)=>s+(l.learningMinutes||0),0);
+  const streak = Utils.streak(allLogs, l=>l.learningMinutes>0);
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">📚 Learning Tracker</div></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${log.learningMinutes||0}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${Utils.round1(monthMin/60)}<span style="font-size:14px"> hrs</span></div></div>
+      <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak}<span style="font-size:14px"> days</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Log Today's Learning</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Minutes Spent</label><input type="number" class="form-control" id="lrn-min" value="${log.learningMinutes||''}" placeholder="${DB.settings().learningGoal}" oninput="saveLearning()"></div>
+        <div class="form-group"><label class="form-label">Category</label><select class="form-control" id="lrn-cat" onchange="saveLearning()">${['Professional','Finance','Stock Market','Technology','AI','Business','Personal Development','Spirituality','Other'].map(c=>`<option ${log.learningCategory===c?'selected':''}>${c}</option>`).join('')}</select></div>
+      </div>
+      <div class="form-group"><label class="form-label">Topic</label><input type="text" class="form-control" id="lrn-topic" value="${Utils.escape(log.learningTopic||'')}" placeholder="What did you study?" oninput="saveLearning()"></div>
+      <div class="form-group"><label class="form-label">Key Takeaway</label><textarea class="form-control" id="lrn-takeaway" placeholder="What's the most important thing you learned?" oninput="saveLearning()">${Utils.escape(log.learningTakeaway||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="saveLearning();App.toast('Learning logged! 📚')">Save</button>
+    </div>
+  </div>`;
+}
+function saveLearning(){ const log=DB.todayLog(); log.learningMinutes=parseInt(document.getElementById('lrn-min')?.value)||null; log.learningTopic=document.getElementById('lrn-topic')?.value||''; log.learningCategory=document.getElementById('lrn-cat')?.value||''; log.learningTakeaway=document.getElementById('lrn-takeaway')?.value||''; DB.saveTodayLog(log); }
+
+// ─── READING ──────────────────────────────────────────
+function viewReading() {
+  const log = DB.todayLog();
+  const books = DB.books();
+  const current = books.filter(b=>b.status==='reading');
+  const completed = books.filter(b=>b.status==='completed');
+  const allLogs = DB.recentLogs(30);
+  const weekPages = allLogs.slice(-7).reduce((s,l)=>s+(l.readingPages||0),0);
+  const streak = Utils.streak(allLogs, l=>l.readingPages>0);
+  return `<div class="anim-fade">
+    <div class="section-header"><div><div class="page-title">📖 Reading Tracker</div></div><button class="btn btn-primary" onclick="showAddBook()">+ Add Book</button></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Pages Today</div><div class="stat-value">${log.readingPages||0}</div></div>
+      <div class="stat-card"><div class="stat-label">Pages This Week</div><div class="stat-value">${weekPages}</div></div>
+      <div class="stat-card"><div class="stat-label">Books Completed</div><div class="stat-value">${completed.length}</div></div>
+      <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak} <span style="font-size:14px">days</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Log Today's Reading</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Pages Read</label><input type="number" class="form-control" id="rd-pages" value="${log.readingPages||''}" placeholder="${DB.settings().readingGoal}" oninput="saveReading()"></div>
+        <div class="form-group"><label class="form-label">Current Book</label><input type="text" class="form-control" id="rd-book" value="${Utils.escape(log.currentBook||current[0]?.title||'')}" placeholder="Book title..." oninput="saveReading()"></div>
+      </div>
+    </div>
+    ${current.length?`<div class="card" style="margin-bottom:16px"><div class="card-title">Currently Reading</div>${current.map(b=>bookCard(b)).join('')}</div>`:''}
+    ${books.length?`<div class="card"><div class="section-header"><div class="card-title" style="margin-bottom:0">All Books</div></div>${books.slice(-10).reverse().map(b=>bookCard(b)).join('')}</div>`:`<div class="empty-state"><div class="empty-icon">📚</div><div class="empty-title">No books yet</div><div class="empty-sub">Add books to your library</div><button class="btn btn-primary mt-3" onclick="showAddBook()">+ Add First Book</button></div>`}
+  </div>`;
+}
+function bookCard(b){ const colors=['var(--primary)','var(--success)','var(--warn)','var(--danger)','var(--info)']; const c=colors[b.title.charCodeAt(0)%colors.length]; const pct=b.pages&&b.pagesRead?Utils.pct(b.pagesRead,b.pages):0; return `<div class="book-card" style="margin-bottom:10px"><div class="book-spine" style="background:${c}"></div><div class="book-info"><div class="book-title">${Utils.escape(b.title)}</div><div class="book-author">${Utils.escape(b.author||'')}</div><div style="margin-top:6px"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${c}"></div></div><div style="font-size:11px;color:var(--muted);margin-top:3px">${b.pagesRead||0}/${b.pages||'?'} pages · <span class="tag tag-${b.status==='completed'?'success':b.status==='reading'?'primary':'muted'}">${b.status}</span></div></div></div></div>`; }
+function saveReading(){ const log=DB.todayLog(); log.readingPages=parseInt(document.getElementById('rd-pages')?.value)||null; log.currentBook=document.getElementById('rd-book')?.value||''; DB.saveTodayLog(log); }
+function showAddBook(){ showModal('Add Book',`<div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-control" id="bk-title" placeholder="Book title"></div><div class="form-row"><div class="form-group"><label class="form-label">Author</label><input type="text" class="form-control" id="bk-author"></div><div class="form-group"><label class="form-label">Total Pages</label><input type="number" class="form-control" id="bk-pages" placeholder="300"></div></div><div class="form-group"><label class="form-label">Status</label><select class="form-control" id="bk-status"><option value="want_to_read">Want to Read</option><option value="reading" selected>Currently Reading</option><option value="completed">Completed</option></select></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveBook()">Add Book</button></div>`); }
+function saveBook(){ const t=document.getElementById('bk-title')?.value?.trim(); if(!t){App.toast('Enter book title');return;} const books=DB.books(); books.push({id:Utils.uid(),title:t,author:document.getElementById('bk-author')?.value||'',pages:parseInt(document.getElementById('bk-pages')?.value)||null,pagesRead:0,status:document.getElementById('bk-status')?.value||'reading',startDate:Utils.today()}); DB.saveBooks(books); closeModal(); App.navigate('reading'); App.toast('Book added! 📖'); }
+
+// ─── RELATIONSHIPS ────────────────────────────────────
+function viewRelationships() {
+  const log = DB.todayLog();
+  const allLogs = DB.recentLogs(30);
+  const connectionDays = allLogs.filter(l=>l.connection).length;
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">❤️ Relationships</div></div>
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Connection Today</div><div class="stat-value" style="color:${log.connection?'var(--success)':'var(--muted)'}">${log.connection?'✅ Yes':'⭕ No'}</div></div>
+      <div class="stat-card"><div class="stat-label">Connected (30d)</div><div class="stat-value">${connectionDays}<span style="font-size:14px"> days</span></div></div>
+      <div class="stat-card"><div class="stat-label">Connection Rate</div><div class="stat-value">${Utils.pct(connectionDays,Math.min(30,allLogs.length))}<span style="font-size:14px">%</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">Did you meaningfully connect with someone important to you today?</div>
+      <div style="display:flex;gap:12px;margin-bottom:16px">
+        <button class="btn ${log.connection?'btn-success':'btn-secondary'} btn-lg" style="flex:1" onclick="logConnection(true)">✅ Yes, I connected</button>
+        <button class="btn ${!log.connection?'btn-secondary':'btn-secondary'} btn-lg" style="flex:1" onclick="logConnection(false)">⭕ Not today</button>
+      </div>
+      <div class="form-group"><label class="form-label">Note (optional)</label><input type="text" class="form-control" id="rel-note" value="${Utils.escape(log.connectionNote||'')}" placeholder="Who did you connect with? How?" onchange="saveRelationship()"></div>
+      <div class="toggle-wrap" style="margin-top:12px">
+        <label class="toggle"><input type="checkbox" id="rel-family" ${log.familyTime?'checked':''} onchange="saveRelationship()"><span class="toggle-slider"></span></label>
+        <span>Had quality family time today</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Connection Calendar (30 days)</div>
+      <div class="heatmap" style="margin-top:8px">
+        ${allLogs.slice(-30).map(l=>`<div class="heatmap-day ${l.connection?'l4':l.familyTime?'l2':''}" title="${l.date}"></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+function logConnection(v){ const log=DB.todayLog(); log.connection=v; DB.saveTodayLog(log); App.navigate('relationships'); App.toast(v?'Great! Connection logged ❤️':'Logged. Try to connect tomorrow!'); }
+function saveRelationship(){ const log=DB.todayLog(); log.connectionNote=document.getElementById('rel-note')?.value||''; log.familyTime=document.getElementById('rel-family')?.checked||false; DB.saveTodayLog(log); }
+
+// ─── GOALS ───────────────────────────────────────────
+function viewGoals() {
+  const goals = DB.goals();
+  const active = goals.filter(g=>g.status!=='completed');
+  const done = goals.filter(g=>g.status==='completed');
+  return `<div class="anim-fade">
+    <div class="section-header"><div><div class="page-title">🎯 Goals</div></div><button class="btn btn-primary" onclick="showAddGoal()">+ Add Goal</button></div>
+    ${active.length ? `<div style="margin-bottom:20px">${active.map(g=>goalCard(g)).join('')}</div>` : `<div class="empty-state"><div class="empty-icon">🎯</div><div class="empty-title">No active goals</div><div class="empty-sub">Set meaningful goals to work towards</div><button class="btn btn-primary mt-3" onclick="showAddGoal()">+ Add Your First Goal</button></div>`}
+    ${done.length?`<div class="card"><div class="card-title">✅ Completed Goals</div>${done.map(g=>goalCard(g)).join('')}</div>`:''}
+  </div>`;
+}
+function goalCard(g){ const pct=g.targetValue?Utils.pct(g.currentValue||0,g.targetValue):g.status==='completed'?100:0; const catColors={'Health':'var(--success)','Fitness':'var(--info)','Finance':'var(--warn)','Learning':'var(--primary)','Mindset':'var(--danger)'}; const c=catColors[g.category]||'var(--primary)'; return `<div class="goal-card"><div class="goal-header"><div><div class="goal-title">${Utils.escape(g.title)}</div><div class="goal-meta">${Utils.escape(g.category||'')} ${g.targetDate?'· Target: '+Utils.fmtDay(g.targetDate):''}</div></div><div class="goal-pct" style="color:${c}">${pct}%</div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${c}"></div></div>${g.targetValue?`<div style="font-size:11px;color:var(--muted);margin-top:4px">${g.currentValue||0} / ${g.targetValue} ${Utils.escape(g.unit||'')}</div>`:''}<div style="display:flex;gap:6px;margin-top:10px"><button class="btn btn-secondary btn-sm" onclick="updateGoalProgress('${g.id}')">Update Progress</button><button class="btn-icon" onclick="deleteGoal('${g.id}')">🗑️</button></div></div>`; }
+function showAddGoal(){ showModal('Add Goal',`<div class="form-group"><label class="form-label">Goal *</label><input type="text" class="form-control" id="gl-title" placeholder="e.g. Walk 8,000 steps daily"></div><div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-control" id="gl-cat">${['Health','Fitness','Mindset','Learning','Finance','Career','Relationship','Personal','Other'].map(c=>`<option>${c}</option>`).join('')}</select></div><div class="form-group"><label class="form-label">Target Date</label><input type="date" class="form-control" id="gl-date"></div></div><div class="form-row"><div class="form-group"><label class="form-label">Target Value</label><input type="number" class="form-control" id="gl-target" placeholder="e.g. 12"></div><div class="form-group"><label class="form-label">Unit</label><input type="text" class="form-control" id="gl-unit" placeholder="e.g. books, kg, steps"></div></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveGoal()">Add Goal</button></div>`); }
+function saveGoal(){ const t=document.getElementById('gl-title')?.value?.trim(); if(!t){App.toast('Enter goal title');return;} const goals=DB.goals(); goals.push({id:Utils.uid(),title:t,category:document.getElementById('gl-cat')?.value||'',targetDate:document.getElementById('gl-date')?.value||'',targetValue:parseFloat(document.getElementById('gl-target')?.value)||null,currentValue:0,unit:document.getElementById('gl-unit')?.value||'',status:'active',startDate:Utils.today()}); DB.saveGoals(goals); closeModal(); App.navigate('goals'); App.toast('Goal set! 🎯'); }
+function updateGoalProgress(id){ const goals=DB.goals(); const g=goals.find(x=>x.id===id); if(!g)return; showModal('Update Progress',`<div style="font-size:15px;font-weight:700;margin-bottom:16px">${Utils.escape(g.title)}</div><div class="form-row"><div class="form-group"><label class="form-label">Current Value ${g.unit?'('+g.unit+')':''}</label><input type="number" class="form-control" id="gp-val" value="${g.currentValue||0}" step="0.1"></div>${g.targetValue?`<div class="form-group"><label class="form-label">Target</label><input class="form-control" value="${g.targetValue} ${g.unit||''}" disabled></div>`:''}</div><div class="form-group"><label class="form-label">Status</label><select class="form-control" id="gp-status"><option value="active" ${g.status==='active'?'selected':''}>Active</option><option value="completed" ${g.status==='completed'?'selected':''}>Completed</option><option value="paused" ${g.status==='paused'?'selected':''}>Paused</option></select></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveGoalProgress('${id}')">Save</button></div>`); }
+function saveGoalProgress(id){ const goals=DB.goals(); const g=goals.find(x=>x.id===id); if(!g)return; g.currentValue=parseFloat(document.getElementById('gp-val')?.value)||0; g.status=document.getElementById('gp-status')?.value||'active'; DB.saveGoals(goals); closeModal(); App.navigate('goals'); App.toast('Progress updated! 🎯'); }
+function deleteGoal(id){ if(!confirm('Delete this goal?'))return; DB.saveGoals(DB.goals().filter(g=>g.id!==id)); App.navigate('goals'); }
+
+// ─── HABITS ──────────────────────────────────────────
+function viewHabits() {
+  const habits = DB.habits();
+  const habitLogs = DB.habitLogs();
+  const today = Utils.today();
+  return `<div class="anim-fade">
+    <div class="section-header"><div><div class="page-title">⚡ Habits</div></div><button class="btn btn-primary" onclick="showAddHabit()">+ Add Habit</button></div>
+    ${habits.length ? `<div>${habits.filter(h=>h.active!==false).map(h=>{const streak=calcHabitStreak(h.id,habitLogs);const doneTod=habitLogs[today]?.[h.id]||false;return`<div class="habit-item"><div class="habit-check ${doneTod?'done':''}" onclick="toggleHabit('${h.id}')">${doneTod?'✓':''}</div><div class="habit-info"><div class="habit-name">${Utils.escape(h.name)}</div><div class="habit-streak">🔥 ${streak} day streak · ${Utils.escape(h.category||'')}</div></div><button class="btn-icon" onclick="deleteHabit('${h.id}')">🗑️</button></div>`;}).join('')}</div>` : `<div class="empty-state"><div class="empty-icon">⚡</div><div class="empty-title">No habits yet</div><div class="empty-sub">Track custom habits beyond routines</div><button class="btn btn-primary mt-3" onclick="showAddHabit()">+ Add First Habit</button></div>`}
+  </div>`;
+}
+function calcHabitStreak(habitId, habitLogs){ let s=0,d=new Date(); for(let i=0;i<365;i++){const key=d.toISOString().slice(0,10);if(habitLogs[key]?.[habitId])s++;else if(i>0)break;d.setDate(d.getDate()-1);} return s; }
+function toggleHabit(id){ const logs=DB.habitLogs(); const today=Utils.today(); if(!logs[today])logs[today]={}; logs[today][id]=!logs[today][id]; DB.saveHabitLogs(logs); App.navigate('habits'); App.toast(logs[today][id]?'Habit done! ⚡':'Habit unchecked'); }
+function showAddHabit(){ showModal('Add Habit',`<div class="form-group"><label class="form-label">Habit Name *</label><input type="text" class="form-control" id="hb-name" placeholder="e.g. Morning walk"></div><div class="form-row"><div class="form-group"><label class="form-label">Category</label><select class="form-control" id="hb-cat"><option>Health</option><option>Fitness</option><option>Mindset</option><option>Learning</option><option>Productivity</option><option>Other</option></select></div><div class="form-group"><label class="form-label">Frequency</label><select class="form-control" id="hb-freq"><option value="daily">Daily</option><option value="weekly">Weekly</option></select></div></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveHabit()">Add Habit</button></div>`); }
+function saveHabit(){ const name=document.getElementById('hb-name')?.value?.trim(); if(!name){App.toast('Enter habit name');return;} const habits=DB.habits(); habits.push({id:Utils.uid(),name,category:document.getElementById('hb-cat')?.value||'',frequency:document.getElementById('hb-freq')?.value||'daily',startDate:Utils.today(),active:true}); DB.saveHabits(habits); closeModal(); App.navigate('habits'); App.toast('Habit added! ⚡'); }
+function deleteHabit(id){ if(!confirm('Delete this habit?'))return; DB.saveHabits(DB.habits().filter(h=>h.id!==id)); App.navigate('habits'); }
+
+// ─── HEALTH OVERVIEW ──────────────────────────────────
+function viewHealth() {
+  const log = DB.todayLog();
+  const allLogs = DB.recentLogs(30);
+  const weights = allLogs.filter(l=>l.weight).map(l=>l.weight);
+  const avgWeight = weights.length ? Utils.round1(Utils.avg(weights)) : null;
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">❤️ Health Overview</div></div>
+    <div class="grid-4" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">Weight</div><div class="stat-value">${log.weight||'—'}<span style="font-size:14px">${log.weight?' kg':''}</span></div><div class="stat-sub">30d avg: ${avgWeight||'—'}${avgWeight?' kg':''}</div></div>
+      <div class="stat-card"><div class="stat-label">Sleep</div><div class="stat-value">${log.sleep||'—'}<span style="font-size:14px">${log.sleep?' h':''}</span></div><div class="stat-sub">Quality: ${log.sleepQuality?'★'.repeat(log.sleepQuality):'—'}</div></div>
+      <div class="stat-card"><div class="stat-label">Energy</div><div class="stat-value" style="color:${log.energy?Score.color(log.energy*20):'var(--muted)'}">${log.energy||'—'}<span style="font-size:14px">${log.energy?' /5':''}</span></div></div>
+      <div class="stat-card"><div class="stat-label">Mood</div><div class="stat-value" style="color:${log.mood?Score.color(log.mood*20):'var(--muted)'}">${log.mood||'—'}<span style="font-size:14px">${log.mood?' /5':''}</span></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Log Today's Health Metrics</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" step="0.1" class="form-control" id="hl-weight" value="${log.weight||''}" placeholder="72.0" onchange="saveHealthLog()"></div>
+        <div class="form-group"><label class="form-label">Sleep (hours)</label><input type="number" step="0.5" class="form-control" id="hl-sleep" value="${log.sleep||''}" placeholder="7.5" onchange="saveHealthLog()"></div>
+      </div>
+      <div class="form-group"><label class="form-label">General Notes</label><textarea class="form-control" id="hl-notes" placeholder="Any health observations..." onchange="saveHealthLog()">${Utils.escape(log.notes||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="saveHealthLog();App.toast('Health logged ❤️')">Save</button>
+    </div>
+    <div class="card">
+      <div class="card-title">Weight Trend (30 days)</div>
+      <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+    </div>
+  </div>`;
+}
+function saveHealthLog(){ const log=DB.todayLog(); log.weight=parseFloat(document.getElementById('hl-weight')?.value)||null; log.sleep=parseFloat(document.getElementById('hl-sleep')?.value)||null; log.notes=document.getElementById('hl-notes')?.value||''; DB.saveTodayLog(log); }
+
+// ─── MORE VIEW ────────────────────────────────────────
+function viewMore() {
+  const sections = [[
+    {icon:'❤️',label:'Health',view:'health'},{icon:'💧',label:'Water',view:'water'},{icon:'🏃',label:'Exercise',view:'exercise'},{icon:'🧘',label:'Meditation',view:'meditation'}
+  ],[
+    {icon:'☀️',label:'Morning',view:'morning'},{icon:'🌙',label:'Evening',view:'evening'},{icon:'🧠',label:'Mindset',view:'mindset'},{icon:'🍎',label:'Food',view:'food'}
+  ],[
+    {icon:'📚',label:'Learning',view:'learning'},{icon:'📖',label:'Reading',view:'reading'},{icon:'❤',label:'Relationships',view:'relationships'},{icon:'📓',label:'Journal',view:'journal'}
+  ],[
+    {icon:'🎯',label:'Goals',view:'goals'},{icon:'⚡',label:'Habits',view:'habits'},{icon:'📈',label:'Weekly',view:'weekly'},{icon:'📅',label:'Monthly',view:'monthly'}
+  ],[
+    {icon:'📅',label:'Calendar',view:'calendar'},{icon:'⚙️',label:'Settings',view:'settings'}
+  ]];
+  return `<div class="anim-fade"><div class="page-title" style="margin-bottom:20px">All Modules</div>
+    ${sections.map(sec=>`<div class="quick-grid" style="margin-bottom:14px">${sec.map(({icon,label,view})=>`<div class="quick-btn" onclick="App.navigate('${view}')"><div class="q-icon">${icon}</div><div class="q-label">${label}</div></div>`).join('')}</div>`).join('')}
+  </div>`;
+}
+// VIEWS PART 5: Analytics, Weekly, Monthly, Calendar, Settings
+
+// ─── ANALYTICS ────────────────────────────────────────
+let currentCharts = {};
+function destroyCharts(){ Object.values(currentCharts).forEach(c=>{try{c.destroy();}catch(e){}}); currentCharts={}; }
+
+function viewAnalytics() {
+  const period = App.state.analyticsPeriod || 30;
+  return `<div class="anim-fade">
+    <div class="section-header">
+      <div><div class="page-title">📊 Analytics</div><div class="page-sub">Your progress over time</div></div>
+      <div class="period-selector">
+        ${[7,30,90].map(d=>`<button class="period-btn ${period===d?'active':''}" onclick="App.state.analyticsPeriod=${d};App.navigate('analytics')">${d}d</button>`).join('')}
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card"><div class="card-title">Life Score</div><div class="chart-wrap"><canvas id="chart-score"></canvas></div></div>
+      <div class="card"><div class="card-title">Mood & Energy</div><div class="chart-wrap"><canvas id="chart-mood"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card"><div class="card-title">Steps & Water</div><div class="chart-wrap"><canvas id="chart-steps"></canvas></div></div>
+      <div class="card"><div class="card-title">Exercise Minutes</div><div class="chart-wrap"><canvas id="chart-exercise"></canvas></div></div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card"><div class="card-title">Learning & Reading</div><div class="chart-wrap"><canvas id="chart-learning"></canvas></div></div>
+      <div class="card"><div class="card-title">Routine Completion</div><div class="chart-wrap"><canvas id="chart-routine"></canvas></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">Weight Trend</div>
+      <div class="chart-wrap"><canvas id="chart-weight"></canvas></div>
+    </div>
+  </div>`;
+}
+
+function initAnalyticsCharts() {
+  destroyCharts();
+  const period = App.state.analyticsPeriod || 30;
+  const logs = DB.recentLogs(period);
+  const s = DB.settings();
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  const textColor = isDark ? '#64748b' : '#9ca3af';
+  const baseOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:textColor,boxWidth:12,font:{size:11}}}}, scales:{x:{grid:{color:gridColor},ticks:{color:textColor,maxTicksLimit:8,font:{size:11}}},y:{grid:{color:gridColor},ticks:{color:textColor,font:{size:11}}}} };
+  const labels = logs.map(l=>{const d=new Date(l.date+'T12:00:00');return d.toLocaleDateString('en-GB',{month:'short',day:'numeric'});});
+
+  const mk = (id,type,data,extraOpts={})=>{const el=document.getElementById(id);if(!el)return;try{const c=new Chart(el,{type,data,options:{...baseOpts,...extraOpts}});currentCharts[id]=c;}catch(e){}};
+
+  // Score
+  mk('chart-score','line',{labels,datasets:[{label:'Life Score',data:logs.map(l=>l.score||null),borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.15)',tension:.4,fill:true,pointRadius:3}]});
+  // Mood & Energy
+  mk('chart-mood','line',{labels,datasets:[{label:'Mood',data:logs.map(l=>l.mood||null),borderColor:'#10b981',tension:.4,pointRadius:3},{label:'Energy',data:logs.map(l=>l.energy||null),borderColor:'#f59e0b',tension:.4,pointRadius:3},{label:'Focus',data:logs.map(l=>l.focus||null),borderColor:'#3b82f6',tension:.4,pointRadius:3}]},{scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:5}}});
+  // Steps & Water
+  const stepsData=logs.map(l=>l.steps||null); const waterData=logs.map(l=>l.water||0);
+  mk('chart-steps','bar',{labels,datasets:[{label:'Steps',data:stepsData,backgroundColor:'rgba(59,130,246,.6)',yAxisID:'y'},{label:'Water (glasses)',data:waterData,backgroundColor:'rgba(16,185,129,.6)',yAxisID:'y2'}]},{scales:{x:baseOpts.scales.x,y:{...baseOpts.scales.y,position:'left'},y2:{...baseOpts.scales.y,position:'right',grid:{display:false}}}});
+  // Exercise
+  mk('chart-exercise','bar',{labels,datasets:[{label:'Exercise (min)',data:logs.map(l=>(l.exercises||[]).reduce((s,e)=>s+(e.duration||0),0)),backgroundColor:'rgba(239,68,68,.6)'}]});
+  // Learning & Reading
+  mk('chart-learning','bar',{labels,datasets:[{label:'Learning (min)',data:logs.map(l=>l.learningMinutes||0),backgroundColor:'rgba(99,102,241,.6)'},{label:'Reading (pages)',data:logs.map(l=>l.readingPages||0),backgroundColor:'rgba(245,158,11,.6)'}]});
+  // Routines
+  const mhEnabled=s.morningHabits.filter(h=>h.enabled); const ehEnabled=s.eveningHabits.filter(h=>h.enabled);
+  mk('chart-routine','line',{labels,datasets:[{label:'Morning %',data:logs.map(l=>mhEnabled.length?Math.round((mhEnabled.filter(h=>l.morningRoutine?.[h.id]).length/mhEnabled.length)*100):null),borderColor:'#f59e0b',tension:.4,pointRadius:3},{label:'Evening %',data:logs.map(l=>ehEnabled.length?Math.round((ehEnabled.filter(h=>l.eveningRoutine?.[h.id]).length/ehEnabled.length)*100):null),borderColor:'#6366f1',tension:.4,pointRadius:3}]},{scales:{...baseOpts.scales,y:{...baseOpts.scales.y,min:0,max:100}}});
+  // Weight
+  mk('chart-weight','line',{labels:logs.filter(l=>l.weight).map(l=>new Date(l.date+'T12:00:00').toLocaleDateString('en-GB',{month:'short',day:'numeric'})),datasets:[{label:'Weight (kg)',data:logs.filter(l=>l.weight).map(l=>l.weight),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',tension:.4,fill:true,pointRadius:4}]});
+  // Health chart (if on health page)
+  const wc = document.getElementById('weight-chart'); if(wc){ try{ const c=new Chart(wc,{type:'line',data:{labels:logs.filter(l=>l.weight).map(l=>new Date(l.date+'T12:00:00').toLocaleDateString('en-GB',{month:'short',day:'numeric'})),datasets:[{label:'Weight (kg)',data:logs.filter(l=>l.weight).map(l=>l.weight),borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',tension:.4,fill:true,pointRadius:4}]},options:{...baseOpts}}); currentCharts['weight-chart']=c; }catch(e){} }
+}
+
+// ─── WEEKLY REVIEW ────────────────────────────────────
+function viewWeekly() {
+  const today = new Date(); const weekStart = new Date(today); weekStart.setDate(today.getDate()-6);
+  const allLogs = DB.allLogs();
+  const weekLogs = allLogs.filter(l=>{ const d=new Date(l.date+'T12:00:00'); return d>=weekStart&&d<=today; });
+  if(!weekLogs.length) return `<div class="anim-fade"><div class="page-title" style="margin-bottom:20px">📈 Weekly Review</div><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data yet</div><div class="empty-sub">Start tracking to see your weekly review</div></div></div>`;
+  const s = DB.settings();
+  const avgScore = Utils.round1(Utils.avg(weekLogs.filter(l=>l.score).map(l=>l.score)));
+  const exerciseDays = weekLogs.filter(l=>l.exercised).length;
+  const avgSteps = Utils.round1(Utils.avg(weekLogs.filter(l=>l.steps).map(l=>l.steps)));
+  const avgWater = Utils.round1(Utils.avg(weekLogs.map(l=>l.water||0)));
+  const avgMood = Utils.round1(Utils.avg(weekLogs.filter(l=>l.mood).map(l=>l.mood)));
+  const avgEnergy = Utils.round1(Utils.avg(weekLogs.filter(l=>l.energy).map(l=>l.energy)));
+  const meditationDays = weekLogs.filter(l=>l.meditated).length;
+  const totalLearning = weekLogs.reduce((s,l)=>s+(l.learningMinutes||0),0);
+  const totalReading = weekLogs.reduce((s,l)=>s+(l.readingPages||0),0);
+  const connectionDays = weekLogs.filter(l=>l.connection).length;
+  const tasks = DB.tasks();
+  const weekTasks = tasks.filter(t=>t.completedAt&&t.completedAt>=weekStart.toISOString().slice(0,10));
+  const mhEnabled=s.morningHabits.filter(h=>h.enabled); const ehEnabled=s.eveningHabits.filter(h=>h.enabled);
+  const avgMorning = mhEnabled.length?Utils.round1(Utils.avg(weekLogs.map(l=>Utils.pct(mhEnabled.filter(h=>l.morningRoutine?.[h.id]).length,mhEnabled.length)))):0;
+  const avgEvening = ehEnabled.length?Utils.round1(Utils.avg(weekLogs.map(l=>Utils.pct(ehEnabled.filter(h=>l.eveningRoutine?.[h.id]).length,ehEnabled.length)))):0;
+  const breakdown = {health:Utils.round1(Utils.avg(weekLogs.map(l=>l.scoreBreakdown?.health||50))),mindset:Utils.round1(Utils.avg(weekLogs.map(l=>l.scoreBreakdown?.mindset||50))),exercise:Utils.round1(Utils.avg(weekLogs.map(l=>l.scoreBreakdown?.exercise||50))),learning:Utils.round1(Utils.avg(weekLogs.map(l=>l.scoreBreakdown?.learning||50)))};
+  const best = Object.entries(breakdown).sort((a,b)=>b[1]-a[1])[0];
+  const worst = Object.entries(breakdown).sort((a,b)=>a[1]-b[1])[0];
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">📈 Weekly Review</div><div class="page-sub">${Utils.fmtDay(weekStart.toISOString().slice(0,10))} — ${Utils.fmtDay(Utils.today())}</div></div>
+    <div class="card" style="text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Week's Life Score</div>
+      <div class="score-num" style="color:${Score.color(avgScore)}">${avgScore||'—'}</div>
+      <div style="font-size:13px;color:var(--muted)">Average · ${weekLogs.length} days tracked</div>
+    </div>
+    <div class="grid-2" style="margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">✅ Best Area</div>
+        <div style="font-size:20px;font-weight:800;color:var(--success)">${best[0].replace(/([A-Z])/g,' $1').trim()}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--success)">${best[1]}<span style="font-size:14px">/100</span></div>
+      </div>
+      <div class="card">
+        <div class="card-title">⚠️ Needs Attention</div>
+        <div style="font-size:20px;font-weight:800;color:var(--warn)">${worst[0].replace(/([A-Z])/g,' $1').trim()}</div>
+        <div style="font-size:24px;font-weight:900;color:var(--warn)">${worst[1]}<span style="font-size:14px">/100</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">📊 Week Metrics</div>
+      ${[['Exercise Days',exerciseDays+' / 7',exerciseDays>=4?'success':exerciseDays>=2?'warn':'danger'],['Avg Steps',avgSteps?avgSteps.toLocaleString():'—',avgSteps>=s.stepGoal?'success':'warn'],['Avg Water',avgWater+' glasses',avgWater>=s.waterGoal?'success':'warn'],['Avg Mood',avgMood+' / 5',avgMood>=4?'success':avgMood>=3?'warn':'danger'],['Avg Energy',avgEnergy+' / 5',avgEnergy>=4?'success':avgEnergy>=3?'warn':'danger'],['Meditation',meditationDays+' days',meditationDays>=5?'success':meditationDays>=3?'warn':'danger'],['Learning',Math.round(totalLearning/60)+'h '+totalLearning%60+'m','primary'],['Reading',totalReading+' pages','primary'],['Connection',connectionDays+' days',connectionDays>=5?'success':'warn'],['Morning Routine',avgMorning+'%',avgMorning>=80?'success':avgMorning>=60?'warn':'danger'],['Evening Routine',avgEvening+'%',avgEvening>=80?'success':avgEvening>=60?'warn':'danger'],['Tasks Done',weekTasks.length,'primary']].map(([l,v,c])=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border2)"><span style="font-size:13px;color:var(--muted)">${l}</span><span style="font-size:13px;font-weight:700;color:var(--${c})">${v}</span></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">💡 Insights & Suggestions</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${avgScore>=80?'<div class="review-area review-good">🎉 Outstanding week! You\'re in excellent form. Keep the momentum going!</div>':avgScore>=65?'<div class="review-area">👍 Good week overall. Some areas have room to grow.</div>':'<div class="review-area review-bad">⚠️ Below your potential this week. Focus on the basics: sleep, water, and movement.</div>'}
+        ${exerciseDays<3?'<div class="review-area review-bad">🏃 You exercised only '+exerciseDays+' days this week. Aim for at least 4 days next week.</div>':''}
+        ${avgWater<s.waterGoal*0.8?'<div class="review-area review-bad">💧 Your average water intake was below target. Try keeping a water bottle at your desk.</div>':''}
+        ${meditationDays<4?'<div class="review-area">🧘 Only '+meditationDays+' meditation sessions this week. Even 5 minutes counts!</div>':''}
+        ${connectionDays<3?'<div class="review-area">❤️ Relationship connection was low this week. Reach out to someone important tomorrow.</div>':''}
+        <div class="review-area review-good">🎯 Next week, focus on: <strong>${worst[0].replace(/([A-Z])/g,' $1').trim()}</strong></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ─── MONTHLY REVIEW ───────────────────────────────────
+function viewMonthly() {
+  const allLogs = DB.allLogs();
+  const now = new Date(); const curMonth = now.getMonth(); const curYear = now.getFullYear();
+  const prevMonth = curMonth===0?11:curMonth-1; const prevYear = curMonth===0?curYear-1:curYear;
+  const curLogs = allLogs.filter(l=>{ const d=new Date(l.date+'T12:00:00'); return d.getMonth()===curMonth&&d.getFullYear()===curYear; });
+  const prevLogs = allLogs.filter(l=>{ const d=new Date(l.date+'T12:00:00'); return d.getMonth()===prevMonth&&d.getFullYear()===prevYear; });
+  if(!curLogs.length) return `<div class="anim-fade"><div class="page-title" style="margin-bottom:20px">📅 Monthly Review</div><div class="empty-state"><div class="empty-icon">📊</div><div class="empty-title">No data for this month yet</div><div class="empty-sub">Start tracking to see monthly insights</div></div></div>`;
+  const compare = (cur,prev,label,format=(v)=>v,higherBetter=true) => {
+    const diff = prev?cur-prev:null; const improved = diff!==null&&(higherBetter?diff>0:diff<0);
+    const stable = diff!==null&&Math.abs(diff)<0.5; const arrow = stable?'→':improved?'↑':'↓';
+    const color = stable?'var(--muted)':improved?'var(--success)':'var(--danger)';
+    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border2)">
+      <span style="font-size:13px;color:var(--muted)">${label}</span>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${prev!==null?`<span style="font-size:11px;color:var(--muted)">${format(prev)}</span>`:''}
+        <span style="font-size:15px;font-weight:800">${format(cur)}</span>
+        ${diff!==null?`<span style="color:${color};font-weight:700">${arrow}</span>`:''}
+      </div>
+    </div>`;
+  };
+  const avg=(arr,key,filter=(l)=>true)=>{ const vals=arr.filter(filter).map(l=>typeof key==='function'?key(l):l[key]).filter(v=>v!==null&&v!==undefined); return vals.length?Utils.round1(Utils.avg(vals)):null; };
+  const curScore=avg(curLogs,'score'); const prevScore=avg(prevLogs,'score');
+  const curMood=avg(curLogs,'mood'); const prevMood=avg(prevLogs,'mood');
+  const curEnergy=avg(curLogs,'energy'); const prevEnergy=avg(prevLogs,'energy');
+  const curSteps=avg(curLogs,'steps',l=>l.steps); const prevSteps=avg(prevLogs,'steps',l=>l.steps);
+  const curWater=avg(curLogs,'water'); const prevWater=avg(prevLogs,'water');
+  const curLearn=curLogs.reduce((s,l)=>s+(l.learningMinutes||0),0); const prevLearn=prevLogs.reduce((s,l)=>s+(l.learningMinutes||0),0);
+  const curRead=curLogs.reduce((s,l)=>s+(l.readingPages||0),0); const prevRead=prevLogs.reduce((s,l)=>s+(l.readingPages||0),0);
+  const curExDays=curLogs.filter(l=>l.exercised).length; const prevExDays=prevLogs.filter(l=>l.exercised).length;
+  const curMedDays=curLogs.filter(l=>l.meditated).length; const prevMedDays=prevLogs.filter(l=>l.meditated).length;
+  const curConnDays=curLogs.filter(l=>l.connection).length; const prevConnDays=prevLogs.filter(l=>l.connection).length;
+  const monthNames=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">📅 Monthly Review</div><div class="page-sub">${monthNames[curMonth]} ${curYear} vs ${monthNames[prevMonth]} ${prevYear}</div></div>
+    <div class="card" style="text-align:center;margin-bottom:20px">
+      <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;margin-bottom:8px">Monthly Avg Score</div>
+      <div class="score-num" style="color:${Score.color(curScore||0)}">${curScore||'—'}</div>
+      <div style="font-size:13px;color:var(--muted)">${curLogs.length} days tracked</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Month vs Last Month</div>
+      ${compare(curScore,prevScore,'Life Score',v=>v?.toFixed(1)||'—')}
+      ${compare(curMood,prevMood,'Avg Mood',v=>v?.toFixed(1)+'/5'||'—')}
+      ${compare(curEnergy,prevEnergy,'Avg Energy',v=>v?.toFixed(1)+'/5'||'—')}
+      ${compare(curSteps,prevSteps,'Avg Steps',v=>v?.toLocaleString()||'—')}
+      ${compare(curWater,prevWater,'Avg Water',v=>v?.toFixed(1)+' glasses'||'—')}
+      ${compare(curExDays,prevExDays,'Exercise Days',v=>v+' days')}
+      ${compare(curMedDays,prevMedDays,'Meditation Days',v=>v+' days')}
+      ${compare(curLearn,prevLearn,'Total Learning',v=>Math.round(v/60)+'h')}
+      ${compare(curRead,prevRead,'Pages Read',v=>v+' pages')}
+      ${compare(curConnDays,prevConnDays,'Connection Days',v=>v+' days')}
+    </div>
+  </div>`;
+}
+
+// ─── CALENDAR ────────────────────────────────────────
+function viewCalendar() {
+  const now = new Date(); const year=now.getFullYear(); const month=now.getMonth();
+  const firstDay=new Date(year,month,1).getDay(); const daysInMonth=new Date(year,month+1,0).getDate();
+  const allLogs=DB.allLogs(); const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const getLog=(day)=>{ const d=`${year}-${String(month+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`; return allLogs.find(l=>l.date===d); };
+  const dayNames=['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let cells=''; for(let i=0;i<firstDay;i++)cells+=`<div></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const log=getLog(d); const isToday=d===now.getDate();
+    const bgColor=log?.score?Score.color(log.score):'transparent';
+    cells+=`<div style="position:relative;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:${isToday?'50%':'8px'};cursor:${log?'pointer':'default'};background:${isToday?'var(--primary)':log?`${bgColor}22`:'transparent'};border:${isToday?'2px solid var(--primary)':'1px solid var(--border2)'}" onclick="${log?`showDayDetail('${log.date}')`:''}" title="${log?'Score: '+(log.score||'—'):''}">
+      <span style="font-size:12px;font-weight:${isToday?800:500};color:${isToday?'#fff':log?bgColor:'var(--text)'}">${d}</span>
+      ${log?.score?`<span style="font-size:8px;color:${isToday?'rgba(255,255,255,.8)':bgColor}">${log.score}</span>`:''}
+      ${log?.exercised?`<span style="font-size:7px" title="Exercised">•</span>`:''}
+    </div>`;
+  }
+  return `<div class="anim-fade">
+    <div class="page-header"><div class="page-title">📅 Calendar</div><div class="page-sub">${monthNames[month]} ${year}</div></div>
+    <div class="card">
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px">
+        ${dayNames.map(d=>`<div style="text-align:center;font-size:11px;font-weight:700;color:var(--muted);padding:4px">${d}</div>`).join('')}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px">${cells}</div>
+      <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--success)"></div><span style="font-size:11px;color:var(--muted)">Good (80+)</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--warn)"></div><span style="font-size:11px;color:var(--muted)">Fair (60-79)</span></div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="width:12px;height:12px;border-radius:3px;background:var(--danger)"></div><span style="font-size:11px;color:var(--muted)">Poor (&lt;60)</span></div>
+      </div>
+    </div>
+  </div>`;
+}
+function showDayDetail(date){ const log=DB.logForDate(date); if(!log)return; const s=DB.settings(); showModal(Utils.fmtDate(date),`<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+  ${[['Score',log.score,'primary'],['Mood',log.mood+'/5',''],['Energy',log.energy+'/5',''],['Steps',log.steps?.toLocaleString(),''],['Water',log.water+' glasses',''],['Sleep',log.sleep+'h',''],['Exercise',log.exercised?'Yes ✓':'—',''],['Meditation',log.meditated?log.meditationDuration+'min':'—','']].filter(([l,v])=>v&&v!=='—'&&v!=='null/5'&&v!=='undefinedh').map(([l,v,c])=>`<div style="padding:10px;background:var(--bg2);border-radius:var(--r-sm)"><div style="font-size:11px;color:var(--muted)">${l}</div><div style="font-size:16px;font-weight:800;color:${c?'var(--'+c+')':'var(--text)'}">${v||'—'}</div></div>`).join('')}
+</div>${log.journal?.wentWell?`<div class="form-group"><label class="form-label">What went well</label><div style="font-size:13px;padding:10px;background:var(--success-l);border-radius:var(--r-sm)">${Utils.escape(log.journal.wentWell)}</div></div>`:''}
+<div style="text-align:right;margin-top:12px"><button class="btn btn-secondary" onclick="closeModal()">Close</button></div>`); }
+
+// ─── SETTINGS ─────────────────────────────────────────
+function viewSettings() {
+  const s = DB.settings();
+  const theme = document.documentElement.getAttribute('data-theme')||'light';
+  return `<div class="anim-fade">
+    <div class="page-title" style="margin-bottom:24px">⚙️ Settings</div>
+
+    <!-- Profile -->
+    <div class="settings-section">
+      <div class="settings-title">Profile</div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Your Name</label><input type="text" class="form-control" id="st-name" value="${Utils.escape(s.name||'')}"></div>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="saveProfile()">Save Profile</button>
+    </div>
+
+    <!-- Theme -->
+    <div class="settings-section">
+      <div class="settings-title">Appearance</div>
+      <div class="setting-row">
+        <div><div class="setting-label">Dark Mode</div><div class="setting-sub">Switch between light and dark themes</div></div>
+        <label class="toggle"><input type="checkbox" id="st-dark" ${theme==='dark'?'checked':''} onchange="App.toggleTheme()"><span class="toggle-slider"></span></label>
+      </div>
+    </div>
+
+    <!-- Daily Targets -->
+    <div class="settings-section">
+      <div class="settings-title">Daily Targets</div>
+      ${[['Step Goal','st-steps',s.stepGoal,'steps','number'],['Water Goal (glasses)','st-water',s.waterGoal,'glasses','number'],['Exercise Goal (min)','st-exercise',s.exerciseGoal,'minutes','number'],['Meditation Goal (min)','st-meditation',s.meditationGoal,'minutes','number'],['Reading Goal (pages)','st-reading',s.readingGoal,'pages','number'],['Learning Goal (min)','st-learning',s.learningGoal,'minutes','number'],['Sleep Goal (hours)','st-sleep',s.sleepGoal,'hours','number']].map(([l,id,v,unit,type])=>`
+        <div class="setting-row">
+          <div><div class="setting-label">${l}</div><div class="setting-sub">Current: ${v} ${unit}</div></div>
+          <input type="${type}" class="form-control" id="${id}" value="${v}" style="width:90px;text-align:center">
+        </div>`).join('')}
+      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveTargets()">Save Targets</button></div>
+    </div>
+
+    <!-- Scoring Weights -->
+    <div class="settings-section">
+      <div class="settings-title">Life Score Weights</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Customize how each area contributes to your daily Life Score. Total should equal 100.</div>
+      <div id="weights-total" style="font-size:14px;font-weight:700;margin-bottom:12px">Total: <span id="wt-sum">${Object.values(s.scoreWeights).reduce((a,b)=>a+b,0)}</span> / 100</div>
+      ${Object.entries(s.scoreWeights).map(([k,v])=>`
+        <div class="setting-row">
+          <div class="setting-label">${k.replace(/([A-Z])/g,' $1').replace(/^./,c=>c.toUpperCase())}</div>
+          <input type="number" class="form-control" id="sw-${k}" value="${v}" min="0" max="100" style="width:70px;text-align:center" oninput="updateWeightTotal()">
+        </div>`).join('')}
+      <div style="margin-top:12px"><button class="btn btn-primary btn-sm" onclick="saveWeights()">Save Weights</button></div>
+    </div>
+
+    <!-- Morning Habits -->
+    <div class="settings-section">
+      <div class="settings-title">Morning Routine Habits</div>
+      ${s.morningHabits.map((h,i)=>`<div class="setting-row"><div class="setting-label">${Utils.escape(h.name)}</div><label class="toggle"><input type="checkbox" id="mh-en-${h.id}" ${h.enabled?'checked':''} onchange="toggleHabitEnabled('morning','${h.id}')"><span class="toggle-slider"></span></label></div>`).join('')}
+      <button class="btn btn-secondary btn-sm mt-3" onclick="showAddRoutineHabit('morning')">+ Add Habit</button>
+    </div>
+
+    <!-- Evening Habits -->
+    <div class="settings-section">
+      <div class="settings-title">Evening Routine Habits</div>
+      ${s.eveningHabits.map((h,i)=>`<div class="setting-row"><div class="setting-label">${Utils.escape(h.name)}</div><label class="toggle"><input type="checkbox" id="eh-en-${h.id}" ${h.enabled?'checked':''} onchange="toggleHabitEnabled('evening','${h.id}')"><span class="toggle-slider"></span></label></div>`).join('')}
+      <button class="btn btn-secondary btn-sm mt-3" onclick="showAddRoutineHabit('evening')">+ Add Habit</button>
+    </div>
+
+    <!-- Data Export -->
+    <div class="settings-section">
+      <div class="settings-title">Data Management</div>
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="exportData('json')">📥 Export JSON</button>
+        <button class="btn btn-secondary" onclick="exportData('csv')">📊 Export CSV</button>
+        <button class="btn btn-danger" onclick="clearAllData()" style="margin-left:auto">🗑️ Clear All Data</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function saveProfile(){ const s=DB.settings(); s.name=document.getElementById('st-name')?.value?.trim()||s.name; DB.saveSettings(s); App.toast('Profile saved!'); renderNav(); }
+function saveTargets(){ const s=DB.settings(); s.stepGoal=parseInt(document.getElementById('st-steps')?.value)||s.stepGoal; s.waterGoal=parseInt(document.getElementById('st-water')?.value)||s.waterGoal; s.exerciseGoal=parseInt(document.getElementById('st-exercise')?.value)||s.exerciseGoal; s.meditationGoal=parseInt(document.getElementById('st-meditation')?.value)||s.meditationGoal; s.readingGoal=parseInt(document.getElementById('st-reading')?.value)||s.readingGoal; s.learningGoal=parseInt(document.getElementById('st-learning')?.value)||s.learningGoal; s.sleepGoal=parseFloat(document.getElementById('st-sleep')?.value)||s.sleepGoal; DB.saveSettings(s); App.toast('Targets saved! ✅'); }
+function updateWeightTotal(){ const keys=['health','mindset','exercise','nutrition','morningRoutine','eveningRoutine','learning','relationships','tasks']; const sum=keys.reduce((t,k)=>t+(parseInt(document.getElementById('sw-'+k)?.value)||0),0); const el=document.getElementById('wt-sum'); if(el){el.textContent=sum;el.style.color=sum===100?'var(--success)':'var(--danger)';} }
+function saveWeights(){ const keys=['health','mindset','exercise','nutrition','morningRoutine','eveningRoutine','learning','relationships','tasks']; const s=DB.settings(); keys.forEach(k=>{const v=parseInt(document.getElementById('sw-'+k)?.value);if(!isNaN(v))s.scoreWeights[k]=v;}); DB.saveSettings(s); App.toast('Scoring weights saved!'); }
+function toggleHabitEnabled(type, id){ const s=DB.settings(); const arr=type==='morning'?s.morningHabits:s.eveningHabits; const h=arr.find(x=>x.id===id); if(h){h.enabled=!h.enabled;DB.saveSettings(s);} }
+function showAddRoutineHabit(type){ showModal(`Add ${type==='morning'?'Morning':'Evening'} Habit`,`<div class="form-group"><label class="form-label">Habit Name</label><input type="text" class="form-control" id="arh-name" placeholder="Habit name..."></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="addRoutineHabit('${type}')">Add</button></div>`); }
+function addRoutineHabit(type){ const name=document.getElementById('arh-name')?.value?.trim(); if(!name){App.toast('Enter habit name');return;} const s=DB.settings(); const arr=type==='morning'?s.morningHabits:s.eveningHabits; arr.push({id:'rh-'+Utils.uid(),name,enabled:true}); DB.saveSettings(s); closeModal(); App.navigate('settings'); App.toast('Habit added!'); }
+function exportData(format){ const logs=DB.allLogs(); const tasks=DB.tasks(); const goals=DB.goals(); if(format==='json'){const data=JSON.stringify({logs,tasks,goals,habits:DB.habits(),books:DB.books()},null,2);downloadFile('life-os-data.json',data,'application/json');}else{const rows=[['Date','Score','Mood','Energy','Focus','Stress','Weight','Sleep','Steps','Water','Exercised','Meditation','Learning','Reading','Connection'],...logs.map(l=>[l.date,l.score||'',l.mood||'',l.energy||'',l.focus||'',l.stress||'',l.weight||'',l.sleep||'',l.steps||'',l.water||'',l.exercised?'Yes':'No',l.meditated?l.meditationDuration+'min':'',l.learningMinutes||'',l.readingPages||'',l.connection?'Yes':'No'])];downloadFile('life-os-data.csv',rows.map(r=>r.join(',')).join('\n'),'text/csv');} App.toast(`Data exported as ${format.toUpperCase()}!`); }
+function downloadFile(name,content,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([content],{type})); a.download=name; a.click(); }
+function clearAllData(){ if(!confirm('⚠️ This will delete ALL your data permanently. Are you sure?'))return; if(!confirm('Last chance! This cannot be undone. Clear everything?'))return; Object.values(SK).forEach(k=>{if(k===SK.LOG_PREFIX)return;localStorage.removeItem(k);}); Object.keys(localStorage).filter(k=>k.startsWith(SK.LOG_PREFIX)).forEach(k=>localStorage.removeItem(k)); App.navigate('dashboard'); App.toast('All data cleared.'); }
+// APP CORE: Router, Modal, Toast, App Init
+
+// ─── MODAL SYSTEM ──────────────────────────────────────
+function showModal(title, content) {
+  document.getElementById('modal-content').innerHTML = `<div class="modal-header"><div class="modal-title">${Utils.escape(title)}</div><button class="modal-close" onclick="closeModal()">✕</button></div><div class="modal-body">${content}</div>`;
+  document.getElementById('modal-overlay').classList.remove('hidden');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+// ─── APP OBJECT ───────────────────────────────────────
+const App = {
+  state: { view:'dashboard', checkinStep:0, taskFilter:'today', analyticsPeriod:30 },
+
+  navigate(view) {
+    destroyCharts();
+    this.state.view = view;
+    const titles = {dashboard:'Dashboard',checkin:'Daily Check-In',analytics:'Analytics',calendar:'Calendar',health:'Health',water:'Water',exercise:'Exercise',meditation:'Meditation',morning:'Morning Routine',evening:'Evening Routine',mindset:'Mindset',learning:'Learning',reading:'Reading',relationships:'Relationships',food:'Food & Nutrition',tasks:'Tasks',journal:'Daily Journal',goals:'Goals',habits:'Habits',weekly:'Weekly Review',monthly:'Monthly Review',settings:'Settings',more:'More'};
+    document.getElementById('topbar-title').textContent = titles[view]||'Life OS';
+    const content = document.getElementById('content');
+    content.innerHTML = '';
+    content.scrollTop = 0;
+    content.innerHTML = this.renderView(view);
+    renderNav();
+    this.updateBottomNav(view);
+    window.scrollTo(0,0);
+    // Init charts after render
+    if(view==='analytics') setTimeout(initAnalyticsCharts, 100);
+    if(view==='health') setTimeout(()=>initAnalyticsCharts(), 100);
+    // Close sidebar on mobile
+    this.closeSidebar();
+  },
+
+  renderView(view) {
+    switch(view) {
+      case 'dashboard': return viewDashboard();
+      case 'checkin': return viewCheckin();
+      case 'water': return viewWater();
+      case 'exercise': return viewExercise();
+      case 'morning': return viewRoutine('morning');
+      case 'evening': return viewRoutine('evening');
+      case 'mindset': return viewMindset();
+      case 'meditation': return viewMeditation();
+      case 'tasks': return viewTasks();
+      case 'journal': return viewJournal();
+      case 'food': return viewFood();
+      case 'expenses': return viewExpenses();
+      case 'learning': return viewLearning();
+      case 'reading': return viewReading();
+      case 'relationships': return viewRelationships();
+      case 'goals': return viewGoals();
+      case 'habits': return viewHabits();
+      case 'health': return viewHealth();
+      case 'analytics': return viewAnalytics();
+      case 'weekly': return viewWeekly();
+      case 'monthly': return viewMonthly();
+      case 'calendar': return viewCalendar();
+      case 'settings': return viewSettings();
+      case 'more': return viewMore();
+      default: return `<div class="empty-state"><div class="empty-icon">🚧</div><div class="empty-title">Coming Soon</div><div class="empty-sub">This module is under development.</div></div>`;
+    }
+  },
+
+  updateBottomNav(view) {
+    document.querySelectorAll('.bnav-item').forEach(el => {
+      el.classList.toggle('active', el.getAttribute('data-view')===view);
+    });
+  },
+
+  openSidebar() {
+    document.getElementById('sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+  },
+
+  closeSidebar() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  },
+
+  toggleTheme() {
+    const curr = document.documentElement.getAttribute('data-theme')||'light';
+    const next = curr==='dark'?'light':'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    const s = DB.settings(); s.theme = next; DB.saveSettings(s);
+    destroyCharts();
+    if(this.state.view==='analytics'||this.state.view==='health') setTimeout(initAnalyticsCharts,100);
+  },
+
+  toast(msg, duration=2500) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(this._toastTimer);
+    this._toastTimer = setTimeout(()=>t.classList.remove('show'), duration);
+  },
+
+  init() {
+    // Apply saved theme
+    const s = DB.settings();
+    document.documentElement.setAttribute('data-theme', s.theme||'light');
+
+    // Build sidebar
+    renderNav();
+
+    // Setup modal close on overlay click
+    document.getElementById('modal-overlay').addEventListener('click', (e) => {
+      if(e.target===document.getElementById('modal-overlay')) closeModal();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if(e.key==='Escape') closeModal();
+      if(e.ctrlKey||e.metaKey) {
+        if(e.key==='d'){e.preventDefault();App.navigate('dashboard');}
+        if(e.key==='k'){e.preventDefault();App.navigate('checkin');}
+        if(e.key==='t'){e.preventDefault();App.navigate('tasks');}
+      }
+    });
+
+    // Navigate to dashboard
+    this.navigate('dashboard');
+  }
+};
+
+// Start the app
+window.addEventListener('DOMContentLoaded', () => App.init());
+</script>
+</body>
+</html>
