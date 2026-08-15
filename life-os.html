@@ -372,6 +372,195 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .lock-footer{margin-top:24px;font-size:12px;color:rgba(255,255,255,.2);}
 @keyframes lockShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-8px);}75%{transform:translateX(8px);}}
 .lock-shake{animation:lockShake .3s ease;}
+
+/* ═══════════════════════════════════════════════════════
+   LIFE OS — ENHANCED UI v2 (animations, gradients, polish)
+   ═══════════════════════════════════════════════════════ */
+@keyframes fadeInUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@keyframes bounceIn{0%{opacity:0;transform:scale(.35)}55%{transform:scale(1.12)}75%{transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
+@keyframes pulseGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,.45)}55%{box-shadow:0 0 0 10px rgba(99,102,241,0)}}
+@keyframes shimmer{0%{background-position:-600px 0}100%{background-position:600px 0}}
+@keyframes gradientFlow{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes rippleOut{0%{transform:scale(0);opacity:.55}100%{transform:scale(4.5);opacity:0}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.18)}28%{transform:scale(1)}}
+@keyframes dashFill{from{stroke-dashoffset:283}to{stroke-dashoffset:var(--dash)}}
+@keyframes numberPop{from{opacity:0;transform:translateY(8px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}
+@keyframes borderGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}50%{box-shadow:0 0 16px 2px rgba(99,102,241,.25)}}
+
+/* GRADIENT SIDEBAR */
+#sidebar{background:linear-gradient(175deg,#09091a 0%,#0f1124 45%,#0b0e1c 100%);position:relative;}
+#sidebar::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 35% 12%,rgba(99,102,241,.15) 0%,transparent 58%),radial-gradient(ellipse at 75% 88%,rgba(16,185,129,.09) 0%,transparent 52%);pointer-events:none;z-index:0;}
+#sidebar>*{position:relative;z-index:1;}
+
+/* LOGO GLOW */
+.sb-logo{animation:pulseGlow 3.5s ease-in-out infinite;background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 100%)!important;box-shadow:0 6px 20px rgba(99,102,241,.4);}
+
+/* SIDEBAR ITEMS */
+.sb-item{transition:all .2s cubic-bezier(.16,1,.3,1);border-radius:0 12px 12px 0;margin-right:12px;}
+.sb-item:hover{background:rgba(99,102,241,.13);color:rgba(255,255,255,.92);transform:translateX(4px);}
+.sb-item.active{background:linear-gradient(90deg,rgba(99,102,241,.28) 0%,rgba(99,102,241,.07) 100%);color:#fff;}
+.sb-icon{transition:transform .25s cubic-bezier(.34,1.56,.64,1);}
+.sb-item:hover .sb-icon,.sb-item.active .sb-icon{transform:scale(1.18);}
+
+/* CARDS */
+.card{transition:transform .22s ease,box-shadow .22s ease,background var(--t);}
+.card:hover{transform:translateY(-3px);box-shadow:0 14px 42px rgba(0,0,0,.13);}
+[data-theme=dark] .card:hover{box-shadow:0 14px 42px rgba(0,0,0,.52);}
+
+/* STAT CARDS */
+.stat-card{transition:transform .22s ease,box-shadow .22s ease;position:relative;overflow:hidden;}
+.stat-card::before{content:'';position:absolute;top:-40px;right:-40px;width:110px;height:110px;border-radius:50%;background:rgba(99,102,241,.055);transition:transform .4s ease,opacity .4s ease;}
+.stat-card:hover{transform:translateY(-5px);box-shadow:0 18px 50px rgba(0,0,0,.14);}
+.stat-card:hover::before{transform:scale(2.2);}
+.stat-card.accent-blue{border-top:3px solid var(--info);}
+.stat-card.accent-green{border-top:3px solid var(--success);}
+.stat-card.accent-yellow{border-top:3px solid var(--warn);}
+.stat-card.accent-purple{border-top:3px solid var(--primary);}
+.stat-card.accent-red{border-top:3px solid var(--danger);}
+
+/* SCORE GRADIENT TEXT */
+.score-num{background:linear-gradient(135deg,#6366f1 0%,#10b981 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:numberPop .5s cubic-bezier(.16,1,.3,1) both .1s;}
+
+/* SCORE RING SVG */
+.score-ring-svg{transform:rotate(-90deg);filter:drop-shadow(0 0 6px rgba(99,102,241,.4));}
+.score-ring-bg{stroke:var(--border);}
+.score-ring-fill{stroke-dasharray:283;stroke-dashoffset:var(--dash);animation:dashFill .9s cubic-bezier(.16,1,.3,1) both .15s;stroke-linecap:round;}
+
+/* BUTTONS */
+.btn{position:relative;overflow:hidden;transition:all .2s ease;}
+.btn::after{content:'';position:absolute;inset:0;background:rgba(255,255,255,0);transition:background .15s;}
+.btn:hover::after{background:rgba(255,255,255,.07);}
+.btn:active{transform:scale(.96)!important;}
+.btn-primary{background:linear-gradient(135deg,#6366f1 0%,#7c3aed 100%)!important;box-shadow:0 4px 16px rgba(99,102,241,.38);}
+.btn-primary:hover{box-shadow:0 7px 24px rgba(99,102,241,.55);transform:translateY(-2px);}
+.btn-success{background:linear-gradient(135deg,#10b981 0%,#059669 100%)!important;box-shadow:0 4px 16px rgba(16,185,129,.32);}
+.btn-success:hover{box-shadow:0 7px 24px rgba(16,185,129,.48);transform:translateY(-2px);}
+.btn-danger{background:linear-gradient(135deg,#ef4444 0%,#dc2626 100%)!important;box-shadow:0 4px 14px rgba(239,68,68,.3);}
+.btn-danger:hover{box-shadow:0 6px 20px rgba(239,68,68,.45);transform:translateY(-1px);}
+
+/* RIPPLE EFFECT */
+.ripple-el{position:absolute;border-radius:50%;background:rgba(255,255,255,.28);transform:scale(0);animation:rippleOut .65s ease-out forwards;pointer-events:none;}
+
+/* QUICK BUTTONS */
+.quick-btn{transition:all .25s cubic-bezier(.34,1.56,.64,1);position:relative;overflow:hidden;}
+.quick-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(99,102,241,.06),rgba(139,92,246,.04));opacity:0;transition:opacity .2s;}
+.quick-btn:hover::before{opacity:1;}
+.quick-btn:hover{transform:translateY(-6px) scale(1.05);box-shadow:0 12px 32px rgba(99,102,241,.28);border-color:rgba(99,102,241,.55);}
+.quick-btn:active{transform:translateY(-2px) scale(1.02);}
+.quick-btn .q-icon{transition:transform .3s cubic-bezier(.34,1.56,.64,1);}
+.quick-btn:hover .q-icon{transform:scale(1.28) rotate(6deg);}
+.quick-btn .q-label{transition:color .2s;}
+.quick-btn:hover .q-label{color:var(--primary);}
+
+/* PROGRESS BAR SHIMMER */
+.progress-fill::after,.stat-fill::after{content:'';position:absolute;top:0;left:-100%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);animation:shimmer 2.2s infinite;}
+.progress-fill,.stat-fill{position:relative;overflow:hidden;}
+
+/* CHECKMARKS BOUNCE */
+.habit-check,.task-check,.routine-check{transition:all .28s cubic-bezier(.34,1.56,.64,1);}
+.habit-check.done,.task-check.checked,.routine-check.done{animation:bounceIn .42s cubic-bezier(.34,1.56,.64,1) both;}
+
+/* STAR RATING */
+.star{transition:transform .22s cubic-bezier(.34,1.56,.64,1),color .15s;}
+.star:hover{transform:scale(1.35);}
+.star.filled{animation:heartbeat 1.6s ease-in-out;}
+
+/* EMPTY STATE */
+.empty-icon{animation:float 3.5s ease-in-out infinite;display:block;}
+
+/* PAGE ANIMATION */
+.anim-fade{animation:fadeInUp .38s cubic-bezier(.16,1,.3,1) both;}
+
+/* MODAL */
+#modal-box{animation:fadeInUp .28s cubic-bezier(.16,1,.3,1) both;}
+#modal-overlay{backdrop-filter:blur(6px);}
+
+/* TOAST */
+#toast{background:linear-gradient(135deg,#111330,#1a1e42);border:1px solid rgba(99,102,241,.22);box-shadow:0 10px 36px rgba(0,0,0,.55),inset 0 1px 0 rgba(255,255,255,.05);backdrop-filter:blur(14px);}
+
+/* BOTTOM NAV */
+.bnav-item.active .bnav-icon{animation:bounceIn .38s cubic-bezier(.34,1.56,.64,1);}
+.bnav-item{transition:color .18s,background .18s;}
+.bnav-item:hover{background:var(--bg2);border-radius:10px;}
+
+/* GOAL CARD */
+.goal-card{transition:transform .2s ease,box-shadow .2s ease;}
+.goal-card:hover{transform:translateY(-3px);box-shadow:0 10px 32px rgba(0,0,0,.11);}
+
+/* BOOK CARD */
+.book-card{transition:transform .2s ease,box-shadow .2s ease;}
+.book-card:hover{transform:translateX(5px);box-shadow:0 8px 28px rgba(0,0,0,.1);}
+
+/* TASK ITEM */
+.task-item{transition:transform .15s ease,box-shadow .15s ease,background .15s;}
+.task-item:hover{transform:translateX(4px);box-shadow:0 5px 18px rgba(0,0,0,.09);}
+
+/* WIZARD STEPS */
+.wizard-step.done{background:linear-gradient(90deg,#6366f1,#10b981);}
+.wizard-step.active{background:linear-gradient(90deg,rgba(99,102,241,.45),#6366f1);background-size:200% 200%;animation:gradientFlow 2s ease infinite;}
+
+/* SECTION PILLS */
+.section-pill{display:inline-flex;align-items:center;gap:5px;padding:3px 12px 3px 7px;border-radius:99px;font-size:11px;font-weight:700;letter-spacing:.4px;margin-bottom:10px;}
+.sp-purple{background:var(--primary-l);color:var(--primary);}
+.sp-green{background:var(--success-l);color:var(--success);}
+.sp-blue{background:var(--info-l);color:var(--info);}
+.sp-yellow{background:var(--warn-l);color:var(--warn);}
+.sp-red{background:var(--danger-l);color:var(--danger);}
+
+/* LOCK SCREEN ENHANCED */
+#lock-screen{background:linear-gradient(140deg,#060810 0%,#0c0f22 45%,#0f1228 100%);}
+#lock-screen::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 28% 38%,rgba(99,102,241,.2) 0%,transparent 55%),radial-gradient(ellipse at 72% 68%,rgba(16,185,129,.12) 0%,transparent 50%);pointer-events:none;}
+.lock-logo{animation:pulseGlow 3s ease-in-out infinite;background:linear-gradient(135deg,#6366f1,#8b5cf6)!important;box-shadow:0 10px 30px rgba(99,102,241,.5)!important;}
+.lock-btn{background:linear-gradient(135deg,#6366f1,#7c3aed)!important;transition:all .25s ease;box-shadow:0 6px 20px rgba(99,102,241,.4);}
+.lock-btn:hover{transform:translateY(-3px)!important;box-shadow:0 10px 30px rgba(99,102,241,.6)!important;}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:var(--muted);}
+
+/* RANGE SLIDER THUMB */
+input[type=range]::-webkit-slider-thumb{transition:transform .22s cubic-bezier(.34,1.56,.64,1),box-shadow .22s;}
+input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.32);box-shadow:0 0 0 7px rgba(99,102,241,.18);}
+
+/* FORM CONTROLS */
+.form-control:focus{box-shadow:0 0 0 3px rgba(99,102,241,.18),0 1px 4px rgba(99,102,241,.1);}
+
+/* STREAK BADGE */
+.streak-live{display:inline-block;animation:heartbeat 2s ease-in-out infinite;}
+
+/* HABIT ITEM */
+.habit-item{transition:transform .15s ease,box-shadow .15s ease;}
+.habit-item:hover{transform:translateX(4px);box-shadow:0 4px 16px rgba(0,0,0,.08);}
+
+/* WATER BTN */
+.water-btn{transition:all .2s cubic-bezier(.34,1.56,.64,1);}
+.water-btn:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(59,130,246,.3);}
+
+/* GLASS EMOJI */
+.glass{transition:transform .2s cubic-bezier(.34,1.56,.64,1);}
+.glass:hover{transform:scale(1.2);}
+
+/* EXERCISE ITEM */
+.exercise-item{transition:transform .15s,background .15s;}
+.exercise-item:hover{transform:translateX(3px);background:var(--border);}
+
+/* PERIOD BUTTONS */
+.period-btn{transition:all .2s ease;}
+.period-btn.active{background:linear-gradient(135deg,var(--primary),#7c3aed);color:#fff;box-shadow:0 3px 12px rgba(99,102,241,.3);}
+
+/* CHECK-IN STEP CARD */
+.wizard-card-glow{box-shadow:0 0 0 2px rgba(99,102,241,.15),var(--sh-md);}
+
+/* GRADIENT PAGE HEADER */
+.page-title-gradient{background:linear-gradient(135deg,var(--text) 0%,var(--primary) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+
+/* PULSE BADGE */
+.pulse-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--success);animation:pulseGlow 2s ease-in-out infinite;}
   </style>
 </head>
 <body>
@@ -727,6 +916,9 @@ function viewDashboard() {
   const stepPct = Utils.pct(log.steps||0, settings.stepGoal);
   const scoreColor = Score.color(score.total);
 
+  const scoreDash = Math.round(283 - (score.total / 100) * 283);
+  const scoreGrad = score.total >= 75 ? '#10b981' : score.total >= 50 ? '#f59e0b' : '#ef4444';
+
   return `<div class="anim-fade">
   <!-- Header -->
   <div style="margin-bottom:24px">
@@ -737,13 +929,20 @@ function viewDashboard() {
   <!-- Score + Quick Add Row -->
   <div class="grid-2" style="margin-bottom:20px">
     <!-- Life Score -->
-    <div class="card" style="display:flex;align-items:center;gap:20px">
-      <div style="text-align:center">
-        <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Life Score</div>
-        <div class="score-num" style="color:${scoreColor}">${score.total}</div>
-        <div style="font-size:12px;color:var(--muted)">/ 100 &nbsp; ${scoreDiffStr}</div>
+    <div class="card" style="display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,var(--card) 0%,var(--bg2) 100%);">
+      <!-- SVG Score Ring -->
+      <div style="position:relative;width:100px;height:100px;flex-shrink:0">
+        <svg class="score-ring-svg" width="100" height="100" viewBox="0 0 100 100">
+          <circle class="score-ring-bg" cx="50" cy="50" r="45" fill="none" stroke-width="8"/>
+          <circle class="score-ring-fill" cx="50" cy="50" r="45" fill="none" stroke="${scoreGrad}" stroke-width="8" style="--dash:${scoreDash}"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+          <div class="score-num" data-count="${score.total}">${score.total}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Score</div>
+        </div>
       </div>
       <div style="flex:1">
+        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${scoreDiffStr} from yesterday</div>
         ${Object.entries(score.breakdown).map(([k,v])=>`
           <div style="margin-bottom:7px">
             <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px">
@@ -756,7 +955,7 @@ function viewDashboard() {
 
     <!-- Quick Add -->
     <div class="card">
-      <div class="card-title">Quick Add</div>
+      <div class="card-title">⚡ Quick Add</div>
       <div class="quick-grid">
         <div class="quick-btn" onclick="App.navigate('water')"><div class="q-icon">💧</div><div class="q-label">Water</div></div>
         <div class="quick-btn" onclick="App.navigate('exercise')"><div class="q-icon">🏃</div><div class="q-label">Exercise</div></div>
@@ -772,36 +971,44 @@ function viewDashboard() {
   </div>
 
   <!-- Stats Row 1: Health -->
-  <div style="margin-bottom:8px;font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">❤️ Health</div>
+  <div class="section-pill sp-red" style="margin-bottom:10px">❤️ HEALTH TODAY</div>
   <div class="grid-4" style="margin-bottom:20px">
-    <div class="stat-card"><div class="stat-label">Weight</div><div class="stat-value">${log.weight ? log.weight+'<span style="font-size:14px;font-weight:500"> kg</span>' : '—'}</div></div>
-    <div class="stat-card">
-      <div class="stat-label">Steps</div>
-      <div class="stat-value">${log.steps ? log.steps.toLocaleString() : '—'}</div>
-      ${log.steps ? `<div class="stat-bar"><div class="stat-fill" style="width:${stepPct}%;background:var(--info)"></div></div><div class="stat-sub">${stepPct}% of ${settings.stepGoal.toLocaleString()}</div>` : '<div class="stat-sub text-muted">Goal: '+settings.stepGoal.toLocaleString()+'</div>'}
+    <div class="stat-card accent-purple" onclick="App.navigate('health')" style="cursor:pointer">
+      <div class="stat-icon">⚖️</div>
+      <div class="stat-label">Weight</div>
+      <div class="stat-value">${log.weight ? `<span data-count="${log.weight}" data-suffix=" kg">${log.weight} kg</span>` : '—'}</div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card accent-blue" onclick="App.navigate('health')" style="cursor:pointer">
+      <div class="stat-icon">👟</div>
+      <div class="stat-label">Steps</div>
+      <div class="stat-value">${log.steps ? `<span data-count="${log.steps}">${log.steps.toLocaleString()}</span>` : '—'}</div>
+      ${log.steps ? `<div class="stat-bar"><div class="stat-fill" style="width:${stepPct}%;background:var(--info)"></div></div><div class="stat-sub">${stepPct}% of goal</div>` : `<div class="stat-sub text-muted">Goal: ${settings.stepGoal.toLocaleString()}</div>`}
+    </div>
+    <div class="stat-card accent-blue" onclick="App.navigate('water')" style="cursor:pointer">
+      <div class="stat-icon">💧</div>
       <div class="stat-label">Water</div>
-      <div class="stat-value">${log.water}<span style="font-size:14px;font-weight:500"> / ${settings.waterGoal} 🥛</span></div>
+      <div class="stat-value"><span data-count="${log.water}">${log.water}</span><span style="font-size:14px;font-weight:500"> / ${settings.waterGoal} 🥛</span></div>
       <div class="stat-bar"><div class="stat-fill" style="width:${waterPct}%;background:var(--info)"></div></div>
     </div>
-    <div class="stat-card">
+    <div class="stat-card accent-purple" onclick="App.navigate('mindset')" style="cursor:pointer">
+      <div class="stat-icon">😴</div>
       <div class="stat-label">Sleep</div>
-      <div class="stat-value">${log.sleep ? log.sleep+'<span style="font-size:14px;font-weight:500">h</span>' : '—'}</div>
-      <div class="stat-sub">Quality: ${log.sleepQuality ? '★'.repeat(log.sleepQuality) : 'not logged'}</div>
+      <div class="stat-value">${log.sleep ? `<span data-count="${log.sleep}" data-suffix="h">${log.sleep}h</span>` : '—'}</div>
+      <div class="stat-sub">Quality: ${log.sleepQuality ? '<span style="color:var(--warn)">★</span>'.repeat(log.sleepQuality) : 'not logged'}</div>
     </div>
   </div>
 
   <!-- Row 2: Mind + Exercise -->
   <div class="grid-2" style="margin-bottom:20px">
     <!-- Mind -->
-    <div class="card">
-      <div class="card-title">🧠 Mind</div>
+    <div class="card" onclick="App.navigate('mindset')" style="cursor:pointer">
+      <div class="card-title">🧠 Mind & Mood</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        ${[['Mood',log.mood],['Energy',log.energy],['Focus',log.focus],['Stress',log.stress]].map(([l,v])=>`
-          <div>
-            <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px">${l}</div>
-            <div style="font-size:20px;font-weight:800;color:${v?'var(--text)':'var(--muted)'}">${v||'—'}${v?'<span style="font-size:12px;color:var(--muted)"> /5</span>':''}</div>
+        ${[['😊 Mood',log.mood,'var(--primary)'],['⚡ Energy',log.energy,'var(--warn)'],['🎯 Focus',log.focus,'var(--info)'],['😤 Stress',log.stress,'var(--danger)']].map(([l,v,c])=>`
+          <div style="padding:10px;background:var(--bg2);border-radius:10px;text-align:center">
+            <div style="font-size:10px;color:var(--muted);font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">${l}</div>
+            <div style="font-size:22px;font-weight:900;color:${v?c:'var(--muted)'};">${v||'—'}${v?'<span style="font-size:11px;color:var(--muted);font-weight:500"> /5</span>':''}</div>
+            ${v ? `<div style="margin-top:5px;height:3px;border-radius:2px;background:var(--border)"><div style="height:100%;border-radius:2px;background:${c};width:${v*20}%;transition:width .7s ease"></div></div>` : ''}
           </div>`).join('')}
       </div>
       ${log.meditated ? `<div class="mt-3" style="padding:8px 12px;background:var(--primary-l);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--primary)">🧘 ${log.meditationDuration||0} min meditation ✓</div>` : ''}
@@ -2527,6 +2734,118 @@ const App = {
     this.navigate('dashboard');
   }
 };
+
+// ─── ANIMATION ENGINE ──────────────────────────────────────
+const Anim = {
+  // Animate numeric value counting up
+  counter(el, target, duration=900, suffix='') {
+    const start = performance.now();
+    const update = (now) => {
+      const t = Math.min((now - start) / duration, 1);
+      const ease = 1 - Math.pow(1 - t, 3);
+      const val = Math.round(target * ease);
+      el.textContent = (val >= 1000 ? val.toLocaleString() : val) + suffix;
+      if (t < 1) requestAnimationFrame(update);
+    };
+    requestAnimationFrame(update);
+  },
+
+  // Animate all [data-count] elements in the DOM
+  counters() {
+    document.querySelectorAll('[data-count]').forEach(el => {
+      const target = parseFloat(el.getAttribute('data-count')) || 0;
+      const suffix = el.getAttribute('data-suffix') || '';
+      this.counter(el, target, 850, suffix);
+    });
+  },
+
+  // Animate progress bars from 0 → target width
+  progressBars() {
+    document.querySelectorAll('.progress-fill, .stat-fill').forEach(bar => {
+      const w = bar.style.width;
+      if (!w || w === '0%' || w === '0') return;
+      bar.style.width = '0';
+      bar.style.transition = 'none';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          bar.style.transition = 'width .85s cubic-bezier(.16,1,.3,1)';
+          bar.style.width = w;
+        });
+      });
+    });
+  },
+
+  // Ripple effect on button click
+  ripple(e) {
+    const btn = e.currentTarget;
+    const r = btn.getBoundingClientRect();
+    const size = Math.max(r.width, r.height) * 2.2;
+    const el = document.createElement('span');
+    el.className = 'ripple-el';
+    el.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX - r.left - size/2}px;top:${e.clientY - r.top - size/2}px;`;
+    btn.appendChild(el);
+    setTimeout(() => el.remove(), 700);
+  },
+
+  // Wire up all ripple targets
+  ripples() {
+    document.querySelectorAll('.btn-primary,.btn-success,.btn-danger,.quick-btn,.lock-btn').forEach(btn => {
+      btn.removeEventListener('click', this._rippleHandler);
+      this._rippleHandler = (e) => this.ripple(e);
+      btn.addEventListener('click', this._rippleHandler);
+    });
+  },
+
+  // Stagger-animate child elements
+  stagger(selector, delay=60) {
+    document.querySelectorAll(selector).forEach((el, i) => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(16px)';
+      el.style.transition = 'opacity .35s ease, transform .35s ease';
+      setTimeout(() => {
+        el.style.opacity = '';
+        el.style.transform = '';
+      }, i * delay + 40);
+    });
+  },
+
+  // SVG score ring
+  scoreRing(score) {
+    const ring = document.querySelector('.score-ring-fill');
+    if (!ring) return;
+    const circumference = 283;
+    const offset = circumference - (score / 100) * circumference;
+    ring.style.setProperty('--dash', offset);
+  },
+
+  // Run all on page change
+  all(view) {
+    setTimeout(() => {
+      this.counters();
+      this.progressBars();
+      this.ripples();
+      if (view === 'dashboard') {
+        const scoreEl = document.querySelector('.score-num');
+        if (scoreEl) {
+          const score = parseInt(scoreEl.textContent) || 0;
+          this.scoreRing(score);
+        }
+        // Stagger stat cards
+        this.stagger('.stat-card', 55);
+        this.stagger('.quick-btn', 35);
+      }
+    }, 40);
+  }
+};
+
+// Patch App.navigate to run animations after every page render
+(function() {
+  const orig = App.navigate.bind(App);
+  App.navigate = function(view) {
+    orig(view);
+    Anim.all(view);
+  };
+})();
 
 // Start the app
 window.addEventListener('DOMContentLoaded', () => App.init());
