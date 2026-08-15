@@ -385,7 +385,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
 @keyframes rippleOut{0%{transform:scale(0);opacity:.55}100%{transform:scale(4.5);opacity:0}}
 @keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.18)}28%{transform:scale(1)}}
-@keyframes dashFill{from{stroke-dashoffset:283}to{stroke-dashoffset:var(--dash)}}
+@keyframes dashFill{from{stroke-dashoffset:302}to{stroke-dashoffset:var(--dash)}}
 @keyframes numberPop{from{opacity:0;transform:translateY(8px) scale(.85)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes sparkle{0%,100%{opacity:0;transform:scale(0) rotate(0deg)}50%{opacity:1;transform:scale(1) rotate(180deg)}}
 @keyframes borderGlow{0%,100%{box-shadow:0 0 0 0 rgba(99,102,241,0)}50%{box-shadow:0 0 16px 2px rgba(99,102,241,.25)}}
@@ -427,7 +427,7 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 /* SCORE RING SVG */
 .score-ring-svg{transform:rotate(-90deg);filter:drop-shadow(0 0 6px rgba(99,102,241,.4));}
 .score-ring-bg{stroke:var(--border);}
-.score-ring-fill{stroke-dasharray:283;stroke-dashoffset:var(--dash);animation:dashFill .9s cubic-bezier(.16,1,.3,1) both .15s;stroke-linecap:round;}
+.score-ring-fill{stroke-dasharray:302;stroke-dashoffset:var(--dash);animation:dashFill .9s cubic-bezier(.16,1,.3,1) both .15s;stroke-linecap:round;}
 
 /* BUTTONS */
 .btn{position:relative;overflow:hidden;transition:all .2s ease;}
@@ -509,6 +509,26 @@ input[type=range]::-moz-range-thumb{width:18px;height:18px;border-radius:50%;bac
 .sp-blue{background:var(--info-l);color:var(--info);}
 .sp-yellow{background:var(--warn-l);color:var(--warn);}
 .sp-red{background:var(--danger-l);color:var(--danger);}
+
+/* METRIC CARDS (professional stat display) */
+.metric-card{min-height:132px;justify-content:space-between!important;}
+.mc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.mc-icon-wrap{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:19px;flex-shrink:0;}
+.mc-icon-blue{background:rgba(59,130,246,.13);}
+.mc-icon-purple{background:rgba(99,102,241,.13);}
+.mc-icon-green{background:rgba(16,185,129,.13);}
+.mc-icon-orange{background:rgba(245,158,11,.13);}
+.mc-meta-label{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.65px;margin-top:5px;}
+.mc-val{font-size:26px;font-weight:900;letter-spacing:-1px;line-height:1.15;color:var(--text);}
+.mc-unit{font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0;}
+.mc-context{font-size:11px;color:var(--muted);margin-top:3px;}
+.mc-empty-label{font-size:13px;font-weight:600;color:var(--xs);margin-top:4px;}
+.mc-cta-hint{font-size:10px;font-weight:700;color:var(--primary);opacity:.9;margin-top:5px;display:flex;align-items:center;gap:3px;}
+.mc-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;flex-shrink:0;white-space:nowrap;}
+.mc-badge-done{background:rgba(16,185,129,.15);color:var(--success);}
+.mc-badge-pending{background:rgba(245,158,11,.13);color:var(--warn);}
+.mc-ring-wrap{position:relative;width:48px;height:48px;flex-shrink:0;}
+.mc-ring-label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;letter-spacing:-.2px;}
 
 /* LOCK SCREEN ENHANCED */
 #lock-screen{background:linear-gradient(140deg,#060810 0%,#0c0f22 45%,#0f1228 100%);}
@@ -892,6 +912,14 @@ function renderNav() {
 }
 
 // ─── DASHBOARD ──────────────────────────────────────
+function miniRing(pct, color, sz) {
+  sz = sz || 48;
+  var r = sz/2 - 5;
+  var c = +(2 * Math.PI * r).toFixed(1);
+  var off = +(c - (c * Math.min(100, pct || 0) / 100)).toFixed(1);
+  return '<svg width="'+sz+'" height="'+sz+'" viewBox="0 0 '+sz+' '+sz+'" style="transform:rotate(-90deg);display:block"><circle cx="'+(sz/2)+'" cy="'+(sz/2)+'" r="'+r+'" fill="none" stroke="var(--border)" stroke-width="4.5"/><circle cx="'+(sz/2)+'" cy="'+(sz/2)+'" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="4.5" stroke-dasharray="'+c+'" stroke-dashoffset="'+off+'" stroke-linecap="round"/></svg>';
+}
+
 function viewDashboard() {
   const log = DB.todayLog();
   const settings = DB.settings();
@@ -922,34 +950,59 @@ function viewDashboard() {
   return `<div class="anim-fade">
   <!-- Header -->
   <div style="margin-bottom:24px">
-    <div style="font-size:13px;color:var(--muted);font-weight:500">${Utils.dayName()}, ${Utils.fmtDate(Utils.today())}</div>
-    <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-top:2px">${Utils.greeting()}, ${Utils.escape(settings.name||'there')} 👋</div>
+    <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:3px">${Utils.dayName()}, ${Utils.fmtDate(Utils.today())}</div>
+    <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px">${Utils.greeting()}, ${Utils.escape(settings.name||'there')} 👋</div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:var(--sh)">
+        <span style="font-size:14px">📊</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Score: </span>
+        <span style="font-size:12px;font-weight:800;color:${scoreColor}">${score.total}</span>
+        <span style="font-size:11px;color:var(--muted)">/100</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:var(--sh)">
+        <span style="font-size:14px">💧</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Water: </span>
+        <span style="font-size:12px;font-weight:800;color:var(--info)">${log.water}/${settings.waterGoal}</span>
+      </div>
+      <div style="display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:var(--sh)">
+        <span style="font-size:14px">📋</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">Tasks: </span>
+        <span style="font-size:12px;font-weight:800;color:var(--primary)">${todayTasks.length} pending</span>
+      </div>
+      ${overdueTasks.length ? `<div style="display:inline-flex;align-items:center;gap:6px;background:var(--danger-l);border:1px solid rgba(239,68,68,.2);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:var(--sh)"><span style="font-size:14px">⚠️</span><span style="font-size:12px;font-weight:800;color:var(--danger)">${overdueTasks.length} overdue</span></div>` : ''}
+    </div>
   </div>
 
   <!-- Score + Quick Add Row -->
   <div class="grid-2" style="margin-bottom:20px">
     <!-- Life Score -->
-    <div class="card" style="display:flex;align-items:center;gap:20px;background:linear-gradient(135deg,var(--card) 0%,var(--bg2) 100%);">
-      <!-- SVG Score Ring -->
-      <div style="position:relative;width:100px;height:100px;flex-shrink:0">
-        <svg class="score-ring-svg" width="100" height="100" viewBox="0 0 100 100">
-          <circle class="score-ring-bg" cx="50" cy="50" r="45" fill="none" stroke-width="8"/>
-          <circle class="score-ring-fill" cx="50" cy="50" r="45" fill="none" stroke="${scoreGrad}" stroke-width="8" style="--dash:${scoreDash}"/>
-        </svg>
-        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-          <div class="score-num" data-count="${score.total}">${score.total}</div>
-          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Score</div>
-        </div>
+    <div class="card" style="background:linear-gradient(135deg,var(--card) 0%,var(--bg2) 100%);padding:20px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Life Score</div>
+        <div style="flex:1;height:1px;background:var(--border)"></div>
+        <div style="font-size:11px;color:var(--muted)">${scoreDiffStr} from yesterday</div>
       </div>
-      <div style="flex:1">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:8px">${scoreDiffStr} from yesterday</div>
-        ${Object.entries(score.breakdown).map(([k,v])=>`
-          <div style="margin-bottom:7px">
-            <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:3px">
-              <span>${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</span><span style="font-weight:700;color:${Score.color(v)}">${v}</span>
-            </div>
-            <div class="progress-bar progress-sm"><div class="progress-fill" style="width:${v}%;background:${Score.color(v)}"></div></div>
+      <div style="display:flex;align-items:center;gap:20px">
+        <!-- Score Ring -->
+        <div style="position:relative;width:110px;height:110px;flex-shrink:0">
+          <svg class="score-ring-svg" width="110" height="110" viewBox="0 0 110 110">
+            <circle class="score-ring-bg" cx="55" cy="55" r="48" fill="none" stroke-width="9"/>
+            <circle class="score-ring-fill" cx="55" cy="55" r="48" fill="none" stroke="${scoreGrad}" stroke-width="9" stroke-dasharray="302" style="--dash:${Math.round(302 - (score.total/100)*302)}"/>
+          </svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+            <div class="score-num" data-count="${score.total}" style="font-size:36px">${score.total}</div>
+            <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">/ 100</div>
+          </div>
+        </div>
+        <!-- Breakdown -->
+        <div style="flex:1;min-width:0">
+          ${Object.entries(score.breakdown).map(([k,v])=>`
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <div style="font-size:10.5px;color:var(--muted);width:100px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${k.replace(/([A-Z])/g,' $1').replace(/^./,s=>s.toUpperCase())}</div>
+            <div style="flex:1;height:6px;border-radius:3px;background:var(--border);overflow:hidden"><div style="height:100%;border-radius:3px;width:${v}%;background:${Score.color(v)};transition:width .6s ease"></div></div>
+            <div style="font-size:11px;font-weight:800;color:${Score.color(v)};width:24px;text-align:right">${v}</div>
           </div>`).join('')}
+        </div>
       </div>
     </div>
 
@@ -973,28 +1026,62 @@ function viewDashboard() {
   <!-- Stats Row 1: Health -->
   <div class="section-pill sp-red" style="margin-bottom:10px">❤️ HEALTH TODAY</div>
   <div class="grid-4" style="margin-bottom:20px">
-    <div class="stat-card accent-purple" onclick="App.navigate('health')" style="cursor:pointer">
-      <div class="stat-icon">⚖️</div>
-      <div class="stat-label">Weight</div>
-      <div class="stat-value">${log.weight ? `<span data-count="${log.weight}" data-suffix=" kg">${log.weight} kg</span>` : '—'}</div>
+
+    <!-- Weight -->
+    <div class="stat-card metric-card accent-purple" onclick="App.navigate('health')" style="cursor:pointer">
+      <div class="mc-top">
+        <div>
+          <div class="mc-icon-wrap mc-icon-purple">⚖️</div>
+          <div class="mc-meta-label">Weight</div>
+        </div>
+        <span class="mc-badge ${log.weight ? 'mc-badge-done' : 'mc-badge-pending'}">${log.weight ? '✓ Logged' : 'Pending'}</span>
+      </div>
+      ${log.weight
+        ? `<div class="mc-val" data-count="${log.weight}" data-suffix=" kg">${log.weight}<span class="mc-unit"> kg</span></div><div class="mc-context">Log daily to track trend</div>`
+        : `<div class="mc-empty-label">Not recorded today</div><div class="mc-cta-hint">↗ Tap to add weight</div>`}
     </div>
-    <div class="stat-card accent-blue" onclick="App.navigate('health')" style="cursor:pointer">
-      <div class="stat-icon">👟</div>
-      <div class="stat-label">Steps</div>
-      <div class="stat-value">${log.steps ? `<span data-count="${log.steps}">${log.steps.toLocaleString()}</span>` : '—'}</div>
-      ${log.steps ? `<div class="stat-bar"><div class="stat-fill" style="width:${stepPct}%;background:var(--info)"></div></div><div class="stat-sub">${stepPct}% of goal</div>` : `<div class="stat-sub text-muted">Goal: ${settings.stepGoal.toLocaleString()}</div>`}
+
+    <!-- Steps -->
+    <div class="stat-card metric-card accent-blue" onclick="App.navigate('health')" style="cursor:pointer">
+      <div class="mc-top">
+        <div>
+          <div class="mc-icon-wrap mc-icon-blue">👟</div>
+          <div class="mc-meta-label">Steps</div>
+        </div>
+        <div class="mc-ring-wrap">${miniRing(stepPct, 'var(--info)', 48)}<div class="mc-ring-label" style="color:var(--info)">${stepPct}%</div></div>
+      </div>
+      ${log.steps
+        ? `<div class="mc-val" data-count="${log.steps}">${log.steps.toLocaleString()}</div><div class="mc-context">${stepPct}% of ${settings.stepGoal.toLocaleString()} goal</div>`
+        : `<div class="mc-empty-label">Not tracked today</div><div class="mc-context">Goal: ${settings.stepGoal.toLocaleString()}</div>`}
     </div>
-    <div class="stat-card accent-blue" onclick="App.navigate('water')" style="cursor:pointer">
-      <div class="stat-icon">💧</div>
-      <div class="stat-label">Water</div>
-      <div class="stat-value"><span data-count="${log.water}">${log.water}</span><span style="font-size:14px;font-weight:500"> / ${settings.waterGoal} 🥛</span></div>
-      <div class="stat-bar"><div class="stat-fill" style="width:${waterPct}%;background:var(--info)"></div></div>
+
+    <!-- Water -->
+    <div class="stat-card metric-card accent-blue" onclick="App.navigate('water')" style="cursor:pointer">
+      <div class="mc-top">
+        <div>
+          <div class="mc-icon-wrap mc-icon-blue">💧</div>
+          <div class="mc-meta-label">Water</div>
+        </div>
+        <div class="mc-ring-wrap">${miniRing(waterPct, 'var(--info)', 48)}<div class="mc-ring-label" style="color:var(--info)">${waterPct}%</div></div>
+      </div>
+      <div class="mc-val"><span data-count="${log.water}">${log.water}</span><span class="mc-unit"> / ${settings.waterGoal} 🥛</span></div>
+      <div class="mc-context">${waterPct >= 100 ? '🎉 Goal reached!' : log.water > 0 ? `${settings.waterGoal - log.water} more to go` : 'Start logging intake'}</div>
     </div>
-    <div class="stat-card accent-purple" onclick="App.navigate('mindset')" style="cursor:pointer">
-      <div class="stat-icon">😴</div>
-      <div class="stat-label">Sleep</div>
-      <div class="stat-value">${log.sleep ? `<span data-count="${log.sleep}" data-suffix="h">${log.sleep}h</span>` : '—'}</div>
-      <div class="stat-sub">Quality: ${log.sleepQuality ? '<span style="color:var(--warn)">★</span>'.repeat(log.sleepQuality) : 'not logged'}</div>
+
+    <!-- Sleep -->
+    <div class="stat-card metric-card accent-purple" onclick="App.navigate('mindset')" style="cursor:pointer">
+      <div class="mc-top">
+        <div>
+          <div class="mc-icon-wrap mc-icon-purple">😴</div>
+          <div class="mc-meta-label">Sleep</div>
+        </div>
+        ${log.sleep
+          ? `<div class="mc-ring-wrap">${miniRing(Math.min(100, log.sleep / 9 * 100), '#8b5cf6', 48)}<div class="mc-ring-label" style="color:#8b5cf6">${Math.round(log.sleep/9*100)}%</div></div>`
+          : `<span class="mc-badge mc-badge-pending">Pending</span>`}
+      </div>
+      ${log.sleep
+        ? `<div class="mc-val" data-count="${log.sleep}" data-suffix="h">${log.sleep}<span class="mc-unit"> hrs</span></div><div class="mc-context">Quality: ${log.sleepQuality ? '⭐'.repeat(log.sleepQuality) : 'not rated'}</div>`
+        : `<div class="mc-empty-label">Not logged yet</div><div class="mc-cta-hint">↗ Log last night's sleep</div>`}
     </div>
   </div>
 
@@ -1053,12 +1140,12 @@ function viewDashboard() {
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div style="padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
           <div style="font-size:11px;color:var(--muted);font-weight:600">LEARNING</div>
-          <div style="font-size:22px;font-weight:800;margin-top:4px">${log.learningMinutes||'—'}<span style="font-size:12px;font-weight:500;color:var(--muted)">${log.learningMinutes?' min':''}</span></div>
+          <div style="font-size:${log.learningMinutes?'22':'13'}px;font-weight:${log.learningMinutes?800:600};margin-top:4px;color:${log.learningMinutes?'var(--text)':'var(--xs)'};">${log.learningMinutes?log.learningMinutes+'<span style="font-size:12px;font-weight:500;color:var(--muted)"> min</span>':'Not logged today'}</div>
           ${log.learningTopic ? `<div style="font-size:11px;color:var(--primary)">${Utils.escape(log.learningTopic)}</div>` : ''}
         </div>
         <div style="padding:12px;background:var(--bg2);border-radius:var(--r-sm)">
           <div style="font-size:11px;color:var(--muted);font-weight:600">READING</div>
-          <div style="font-size:22px;font-weight:800;margin-top:4px">${log.readingPages||'—'}<span style="font-size:12px;font-weight:500;color:var(--muted)">${log.readingPages?' pages':''}</span></div>
+          <div style="font-size:${log.readingPages?'22':'13'}px;font-weight:${log.readingPages?800:600};margin-top:4px;color:${log.readingPages?'var(--text)':'var(--xs)'};">${log.readingPages?log.readingPages+'<span style="font-size:12px;font-weight:500;color:var(--muted)"> pages</span>':'Not logged today'}</div>
           ${log.currentBook ? `<div style="font-size:11px;color:var(--primary)">${Utils.escape(log.currentBook.slice(0,20))}...</div>` : ''}
         </div>
       </div>
