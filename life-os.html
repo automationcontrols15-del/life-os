@@ -54,11 +54,26 @@ input,select,textarea{font:inherit;color:inherit;}
 .sb-item:hover{background:rgba(255,255,255,.05);color:rgba(255,255,255,.8);}
 .sb-item.active{background:rgba(99,102,241,.15);color:#fff;border-left-color:var(--primary);}
 .sb-icon{font-size:16px;width:20px;text-align:center;flex-shrink:0;}
-.sb-bottom{padding:16px 20px;border-top:1px solid rgba(255,255,255,.06);}
+.sb-bottom{padding:12px 20px 16px;border-top:1px solid rgba(255,255,255,.06);}
 .sb-user{display:flex;align-items:center;gap:10px;}
 .sb-avatar{width:34px;height:34px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
 .sb-uname{font-size:13px;font-weight:600;color:#fff;}
 .sb-uemail{font-size:11px;color:rgba(255,255,255,.35);}
+/* Sidebar global date selector */
+.sb-date-wrap{margin-bottom:14px;padding:10px 12px;background:rgba(255,255,255,.05);border-radius:10px;}
+.sb-date-label{font-size:10px;font-weight:600;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px;}
+.sb-date-row{display:flex;align-items:center;gap:5px;}
+.sb-date-adj{width:26px;height:26px;border-radius:6px;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);font-size:14px;font-weight:700;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0;}
+.sb-date-adj:hover{background:rgba(255,255,255,.15);}
+.sb-date-adj:disabled{opacity:.3;cursor:default;}
+.sb-date-input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:#fff;padding:4px 7px;font-size:12px;font-weight:600;min-width:0;cursor:pointer;}
+.sb-date-input::-webkit-calendar-picker-indicator{filter:invert(1) opacity(.5);}
+.sb-today-btn{margin-top:6px;width:100%;padding:4px 0;background:rgba(99,102,241,.25);border:none;border-radius:6px;color:var(--primary);font-size:11px;font-weight:700;cursor:pointer;display:none;}
+.sb-today-btn.visible{display:block;}
+/* Topbar date chip */
+.topbar-date-chip{display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);border-radius:8px;padding:5px 10px;cursor:pointer;position:relative;}
+.topbar-date-chip span{font-size:12px;font-weight:700;color:var(--primary);white-space:nowrap;}
+.topbar-date-chip input[type=date]{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;cursor:pointer;}
 
 /* TOPBAR (mobile) */
 #topbar{display:none;align-items:center;justify-content:space-between;padding:0 16px;height:54px;background:var(--card);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-shrink:0;}
@@ -617,7 +632,10 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.32);box-shadow:0
     <div id="topbar">
       <button class="btn-menu" onclick="App.openSidebar()">☰</button>
       <span class="topbar-title" id="topbar-title">Dashboard</span>
-      <button class="btn-checkin-sm" onclick="App.navigate('checkin')">✓ Check In</button>
+      <div class="topbar-date-chip" title="Select entry date">
+        <span id="topbar-date-label">📅 Today</span>
+        <input type="date" id="topbar-date-input" max="" onchange="setEntryDate(this.value)">
+      </div>
     </div>
     <div id="content" class="anim-fade"></div>
   </main>
@@ -908,7 +926,17 @@ function renderNav() {
   if (!sidebar.querySelector('.sb-bottom')) {
     const bottom = document.createElement('div');
     bottom.className = 'sb-bottom';
-    bottom.innerHTML = `<div class="sb-user">
+    bottom.innerHTML = `
+    <div class="sb-date-wrap">
+      <div class="sb-date-label">📅 Entry Date</div>
+      <div class="sb-date-row">
+        <button class="sb-date-adj" id="sb-date-prev" onclick="globalDateAdj(-1)">‹</button>
+        <input type="date" id="sb-date-input" class="sb-date-input" onchange="setEntryDate(this.value)">
+        <button class="sb-date-adj" id="sb-date-next" onclick="globalDateAdj(1)">›</button>
+      </div>
+      <button class="sb-today-btn" id="sb-today-btn" onclick="setEntryDate(null)">↩ Back to Today</button>
+    </div>
+    <div class="sb-user">
       <div class="sb-avatar">${(s.name||'U')[0].toUpperCase()}</div>
       <div><div class="sb-uname">${Utils.escape(s.name||'User')}</div><div class="sb-uemail">Life OS v1.0</div></div>
     </div>`;
@@ -917,9 +945,54 @@ function renderNav() {
 }
 
 // ─── DATE PICKER + WEEK PERF HELPERS ────────────────
+function updateGlobalDateDisplay() {
+  const today = Utils.today();
+  const d = App.state.entryDate || today;
+  const isToday = d === today;
+
+  // Format label
+  let label;
+  if (isToday) {
+    label = '📅 Today';
+  } else {
+    const parts = d.split('-');
+    const dt = new Date(+parts[0], +parts[1]-1, +parts[2]);
+    label = '📅 ' + dt.toLocaleDateString('en-US', {month:'short', day:'numeric', year: dt.getFullYear()!==new Date().getFullYear()?'numeric':undefined});
+  }
+
+  // Topbar chip
+  const topbarLabel = document.getElementById('topbar-date-label');
+  const topbarInput = document.getElementById('topbar-date-input');
+  if (topbarLabel) topbarLabel.textContent = label;
+  if (topbarInput) { topbarInput.max = today; topbarInput.value = d; }
+
+  // Sidebar selectors
+  const sbInput = document.getElementById('sb-date-input');
+  const sbNext = document.getElementById('sb-date-next');
+  const sbTodayBtn = document.getElementById('sb-today-btn');
+  if (sbInput) { sbInput.max = today; sbInput.value = d; }
+  if (sbNext) sbNext.disabled = isToday;
+  if (sbTodayBtn) { sbTodayBtn.classList.toggle('visible', !isToday); }
+}
+
 function setEntryDate(date) {
-  App.state.entryDate = date || Utils.today();
+  const today = Utils.today();
+  // clamp to today at the latest
+  if (date && date > today) date = today;
+  App.state.entryDate = date || today;
+  updateGlobalDateDisplay();
   App.navigate(App.state.view);
+}
+
+function globalDateAdj(n) {
+  const today = Utils.today();
+  const cur = App.state.entryDate || today;
+  const parts = cur.split('-');
+  const dt = new Date(+parts[0], +parts[1]-1, +parts[2]);
+  dt.setDate(dt.getDate() + n);
+  const newDate = dt.toISOString().slice(0,10);
+  if (newDate > today) return;
+  setEntryDate(newDate);
 }
 
 function renderDatePicker() {
@@ -3246,11 +3319,12 @@ const Anim = {
   App.navigate = function(view) {
     orig(view);
     Anim.all(view);
+    updateGlobalDateDisplay();
   };
 })();
 
 // Start the app
-window.addEventListener('DOMContentLoaded', () => App.init());
+window.addEventListener('DOMContentLoaded', () => { App.init(); updateGlobalDateDisplay(); });
 </script>
 </body>
 </html>
