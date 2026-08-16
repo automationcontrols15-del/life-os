@@ -659,6 +659,7 @@ const SK = {
   FOOD: 'los_food',
   EXPENSES: 'los_expenses',
   AUTH_PWD: 'los_auth_pwd',
+  ACTION_PLAN: 'los_action_plan',
 };
 
 const DEFAULT_SETTINGS = {
@@ -738,6 +739,8 @@ const DB = {
   saveBooks(b){ this.set(SK.BOOKS,b); },
   expenses(){ return this.get(SK.EXPENSES,[]); },
   saveExpenses(e){ this.set(SK.EXPENSES,e); },
+  actionPlan(){ return this.get(SK.ACTION_PLAN,{}); },
+  saveActionPlan(a){ this.set(SK.ACTION_PLAN,a); },
 };
 
 const Utils = {
@@ -878,6 +881,7 @@ const NAV_ITEMS = [
   {section:'GOALS'},
   {id:'goals',icon:'🎯',label:'Goals'},
   {id:'habits',icon:'⚡',label:'Habits'},
+  {id:'actionplan',icon:'📋',label:'Action Plan'},
   {section:'REVIEWS'},
   {id:'weekly',icon:'📈',label:'Weekly Review'},
   {id:'monthly',icon:'📅',label:'Monthly Review'},
@@ -2366,6 +2370,109 @@ function showAddHabit(){ showModal('Add Habit',`<div class="form-group"><label c
 function saveHabit(){ const name=document.getElementById('hb-name')?.value?.trim(); if(!name){App.toast('Enter habit name');return;} const habits=DB.habits(); habits.push({id:Utils.uid(),name,category:document.getElementById('hb-cat')?.value||'',frequency:document.getElementById('hb-freq')?.value||'daily',startDate:Utils.today(),active:true}); DB.saveHabits(habits); closeModal(); App.navigate('habits'); App.toast('Habit added! ⚡'); }
 function deleteHabit(id){ if(!confirm('Delete this habit?'))return; DB.saveHabits(DB.habits().filter(h=>h.id!==id)); App.navigate('habits'); }
 
+// ─── ACTION PLAN ──────────────────────────────────────
+const ACTION_PLAN_POINTS = [
+  { id:1, area:'Consistent income through trading', workOn:'YES' },
+  { id:2, area:'अपने आपको शांत रखना', workOn:'YES' },
+  { id:3, area:'Office seniors की सोच / behaviour', workOn:'NO' },
+  { id:4, area:'बच्चे को positive mindset देना', workOn:'YES' },
+  { id:5, area:'Incomplete / pending काम', workOn:'YES' },
+  { id:6, area:'पुराने government-related pending काम', workOn:'YES' },
+  { id:7, area:'Family को समय देना', workOn:'YES' },
+  { id:8, area:'Work plans sustain नहीं होना', workOn:'YES' },
+  { id:9, area:'बढ़ते expenses', workOn:'YES' },
+  { id:10, area:'Home maintenance', workOn:'YES' },
+  { id:11, area:'Solar panel decision', workOn:'YES' },
+  { id:12, area:'Health / Fatty Liver improve/reverse करना', workOn:'YES' },
+  { id:13, area:'Children\'s Book — Amazon KDP पर publish करना', workOn:'YES' },
+];
+
+function viewActionPlan() {
+  const data = DB.actionPlan();
+  const rows = ACTION_PLAN_POINTS.map(p => {
+    const entry = data[p.id] || {};
+    const isNo = p.workOn === 'NO';
+    const rowBg = isNo ? 'background:var(--danger-l);opacity:.7;' : '';
+    const yesNo = isNo
+      ? `<span style="background:var(--danger-l);color:var(--danger);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">🔴 NO</span>`
+      : `<span style="background:var(--success-l);color:var(--success);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">🟢 YES</span>`;
+    return `<tr data-id="${p.id}" style="${rowBg}">
+      <td style="text-align:center;font-weight:700;color:var(--muted);font-size:13px;padding:12px 8px;white-space:nowrap;">${p.id}</td>
+      <td style="padding:12px 10px;font-size:13px;font-weight:600;min-width:180px;line-height:1.4;">${Utils.escape(p.area)}</td>
+      <td style="text-align:center;padding:12px 8px;">${yesNo}</td>
+      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="specific" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'specific',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.specific||'')}</div></td>
+      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="month" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'month',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.month||'')}</div></td>
+      <td style="padding:8px;min-width:130px;"><input type="date" class="form-control" style="font-size:12px;" value="${entry.deadline||''}" onchange="apSave(${p.id},'deadline',this.value)"></td>
+      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="someday" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'someday',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.someday||'')}</div></td>
+    </tr>`;
+  }).join('');
+
+  const filledCount = ACTION_PLAN_POINTS.filter(p => {
+    const e = data[p.id] || {};
+    return e.specific || e.month || e.deadline || e.someday;
+  }).length;
+
+  return `<div class="anim-fade">
+    <div class="section-header">
+      <div>
+        <div class="page-title">📋 Action Plan</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">अपने जीवन के लक्ष्यों की योजना बनाएं · ${filledCount} of 13 areas planned</div>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="apExport()">⬇️ Export</button>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
+        <table style="width:100%;border-collapse:collapse;min-width:900px;">
+          <thead>
+            <tr style="background:linear-gradient(135deg,var(--primary),#818cf8);color:#fff;">
+              <th style="padding:14px 8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">#</th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Life Goal Area</th>
+              <th style="padding:14px 8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Work On?</th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Specific &amp; Measurable<br><span style="font-weight:500;opacity:.85;">क्या करना है?</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">This Month Plan<br><span style="font-weight:500;opacity:.85;">मैं इस Month क्या कर सकता हूँ</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Deadline<br><span style="font-weight:500;opacity:.85;">कब करना है?</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Someday<br><span style="font-weight:500;opacity:.85;">कर सकता हूँ</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <div style="background:var(--success-l);color:var(--success);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;">🟢 YES — इस पर काम करना है</div>
+      <div style="background:var(--danger-l);color:var(--danger);padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;">🔴 NO — अभी focus नहीं</div>
+      <div style="margin-left:auto;font-size:12px;color:var(--muted);">💾 Auto-saved to device</div>
+    </div>
+  </div>`;
+}
+
+function apSave(id, field, value) {
+  const data = DB.actionPlan();
+  if (!data[id]) data[id] = {};
+  data[id][field] = value.trim();
+  DB.saveActionPlan(data);
+}
+
+function apExport() {
+  const data = DB.actionPlan();
+  let csv = '#,Life Goal Area,Work On?,Specific & Measurable,This Month Plan,Deadline,Someday\n';
+  ACTION_PLAN_POINTS.forEach(p => {
+    const e = data[p.id] || {};
+    const esc = v => '"' + (v||'').replace(/"/g,'""') + '"';
+    csv += [p.id, esc(p.area), p.workOn, esc(e.specific), esc(e.month), esc(e.deadline), esc(e.someday)].join(',') + '\n';
+  });
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'life-action-plan.csv';
+  a.click();
+  App.toast('Action Plan exported! 📊');
+}
+
 // ─── HEALTH OVERVIEW ──────────────────────────────────
 function viewHealth() {
   const log = DB.todayLog();
@@ -2867,6 +2974,7 @@ const App = {
       case 'relationships': return viewRelationships();
       case 'goals': return viewGoals();
       case 'habits': return viewHabits();
+      case 'actionplan': return viewActionPlan();
       case 'health': return viewHealth();
       case 'analytics': return viewAnalytics();
       case 'weekly': return viewWeekly();
