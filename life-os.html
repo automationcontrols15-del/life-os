@@ -625,7 +625,7 @@ input[type=range]::-webkit-slider-thumb:hover{transform:scale(1.32);box-shadow:0
   <!-- Mobile bottom nav -->
   <nav id="bottom-nav">
     <div class="bnav-item" data-view="dashboard" onclick="App.navigate('dashboard')"><div class="bnav-icon">⌂</div><div class="bnav-label">Home</div></div>
-    <div class="bnav-item" data-view="checkin" onclick="App.navigate('checkin')"><div class="bnav-icon">✓</div><div class="bnav-label">Check-In</div></div>
+    <div class="bnav-item" data-view="mindset" onclick="App.navigate('mindset')"><div class="bnav-icon">🧠</div><div class="bnav-label">Mindset</div></div>
     <div class="bnav-item" data-view="tasks" onclick="App.navigate('tasks')"><div class="bnav-icon">☑</div><div class="bnav-label">Tasks</div></div>
     <div class="bnav-item" data-view="analytics" onclick="App.navigate('analytics')"><div class="bnav-icon">📊</div><div class="bnav-label">Analytics</div></div>
     <div class="bnav-item" data-view="more" onclick="App.navigate('more')"><div class="bnav-icon">⋯</div><div class="bnav-label">More</div></div>
@@ -741,6 +741,8 @@ const DB = {
   saveExpenses(e){ this.set(SK.EXPENSES,e); },
   actionPlan(){ return this.get(SK.ACTION_PLAN,{}); },
   saveActionPlan(a){ this.set(SK.ACTION_PLAN,a); },
+  getEntryLog(){ const d=App.state.entryDate||Utils.today(); if(d===Utils.today())return this.todayLog(); const l=this.get(SK.LOG_PREFIX+d); return l?{...BLANK_LOG(),...l}:{...BLANK_LOG(),date:d}; },
+  saveEntryLog(log){ const d=App.state.entryDate||Utils.today(); log.date=log.date||d; this.set(SK.LOG_PREFIX+d,log); },
 };
 
 const Utils = {
@@ -857,7 +859,6 @@ const Score = {
 const NAV_ITEMS = [
   {section:'MAIN'},
   {id:'dashboard',icon:'⌂',label:'Dashboard'},
-  {id:'checkin',icon:'✅',label:'Daily Check-In'},
   {id:'analytics',icon:'📊',label:'Analytics'},
   {id:'calendar',icon:'📅',label:'Calendar'},
   {section:'HEALTH'},
@@ -915,6 +916,59 @@ function renderNav() {
   }
 }
 
+// ─── DATE PICKER + WEEK PERF HELPERS ────────────────
+function setEntryDate(date) {
+  App.state.entryDate = date || Utils.today();
+  App.navigate(App.state.view);
+}
+
+function renderDatePicker() {
+  const d = App.state.entryDate || Utils.today();
+  const prev = new Date(d+'T12:00:00'); prev.setDate(prev.getDate()-1);
+  const next = new Date(d+'T12:00:00'); next.setDate(next.getDate()+1);
+  const prevStr = prev.toISOString().slice(0,10);
+  const nextStr = next.toISOString().slice(0,10);
+  const isToday = d === Utils.today();
+  const isFuture = nextStr > Utils.today();
+  return `<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:12px;margin-bottom:16px;box-shadow:var(--sh)">
+    <button onclick="setEntryDate('${prevStr}')" style="background:var(--bg2);border:none;border-radius:7px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">‹</button>
+    <input type="date" value="${d}" max="${Utils.today()}" onchange="setEntryDate(this.value)"
+      style="flex:1;border:none;background:transparent;font:600 14px/1 inherit;color:var(--text);text-align:center;cursor:pointer;outline:none;">
+    <button onclick="setEntryDate('${nextStr}')" ${isFuture?'disabled':''}
+      style="background:var(--bg2);border:none;border-radius:7px;width:32px;height:32px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;opacity:${isFuture?.3:1}">›</button>
+    ${isToday?'':`<button onclick="setEntryDate('${Utils.today()}')" style="background:var(--primary);color:#fff;border:none;border-radius:7px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">Today</button>`}
+  </div>`;
+}
+
+function renderWeekPerf(getVal, label, unit, color) {
+  const logs = DB.recentLogs(7);
+  if (!logs.length) return '';
+  const vals = logs.map(getVal);
+  const maxVal = Math.max(...vals, 1);
+  const sel = App.state.entryDate || Utils.today();
+  const total = vals.reduce((a,b)=>a+b,0);
+  const avg = logs.length ? Utils.round1(total/logs.length) : 0;
+  return `<div class="card" style="margin-bottom:16px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div class="card-title" style="margin-bottom:0">📊 ${label} · Last 7 Days</div>
+      <div style="font-size:11px;color:var(--muted)">Avg: <strong>${avg}${unit}</strong> · Total: <strong>${total}${unit}</strong></div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:flex-end;height:72px">
+      ${logs.slice(-7).map(l=>{
+        const val=getVal(l);
+        const pct=Math.max(val/maxVal*100, val>0?6:2);
+        const day=new Date(l.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'});
+        const isSel=l.date===sel;
+        return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+          <div style="font-size:9px;font-weight:${isSel?700:400};color:${isSel?color:'var(--muted)'};">${val}${unit}</div>
+          <div style="width:100%;background:${isSel?color:'var(--primary)'};border-radius:4px 4px 0 0;height:${pct}%;min-height:3px;transition:.3s;opacity:${isSel?1:0.32}"></div>
+          <div style="font-size:9px;font-weight:${isSel?700:400};color:${isSel?color:'var(--muted)'}">${day}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
 // ─── DASHBOARD ──────────────────────────────────────
 function miniRing(pct, color, sz) {
   sz = sz || 48;
@@ -965,9 +1019,9 @@ function viewDashboard() {
   if (!log.water || log.water < 2) insights.push({icon:'💧', msg:'Start hydrating — you\'ve had very little water today.', color:'var(--info)', nav:'water'});
   if (!log.exercises || !log.exercises.length) insights.push({icon:'🏃', msg:'No exercise logged yet — even a 15-min walk counts!', color:'var(--success)', nav:'exercise'});
   if (!log.sleep) insights.push({icon:'😴', msg:'Log last night\'s sleep to improve your score.', color:'#8b5cf6', nav:'mindset'});
-  if (!log.mood) insights.push({icon:'🎯', msg:'Quick check-in: how\'s your mood & energy today?', color:'var(--primary)', nav:'checkin'});
+  if (!log.mood) insights.push({icon:'🎯', msg:'Quick check-in: how\'s your mood & energy today?', color:'var(--primary)', nav:'mindset'});
   if (waterPct >= 100 && log.exercises?.length && log.sleep) insights.push({icon:'🌟', msg:'Amazing — water, sleep & exercise all done! Keep it up.', color:'var(--success)', nav:null});
-  const topInsight = insights[0] || {icon:'✨', msg:'Check-in to track your daily progress.', color:'var(--primary)', nav:'checkin'};
+  const topInsight = insights[0] || {icon:'✨', msg:'Log your water, exercise, or mood to track progress.', color:'var(--primary)', nav:'water'};
 
   // Habit streaks
   const streakData = [
@@ -1079,7 +1133,7 @@ function viewDashboard() {
         <div class="quick-btn" onclick="App.navigate('learning')"><div class="q-icon">📚</div><div class="q-label">Learning</div></div>
         <div class="quick-btn" onclick="App.navigate('reading')"><div class="q-icon">📖</div><div class="q-label">Reading</div></div>
         <div class="quick-btn" onclick="App.navigate('tasks')"><div class="q-icon">☑️</div><div class="q-label">Task</div></div>
-        <div class="quick-btn" onclick="App.navigate('checkin')"><div class="q-icon">✅</div><div class="q-label">Check-In</div></div>
+        <div class="quick-btn" onclick="App.navigate('mindset')"><div class="q-icon">🧠</div><div class="q-label">Mindset</div></div>
       </div>
     </div>
   </div>
@@ -1296,7 +1350,7 @@ function viewDashboard() {
             <div style="font-size:10px;font-weight:700;color:${p>=100?c:'var(--muted)'};width:28px;text-align:right">${p >= 100 ? '✓' : p+'%'}</div>
           </div>`).join('')}
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="App.navigate('checkin')" style="width:100%">Complete Daily Check-In →</button>
+      <button class="btn btn-ghost btn-sm" onclick="App.navigate('mindset')" style="width:100%">Log Mindset & Mood →</button>
     </div>
   </div>
 </div>`;
@@ -1611,7 +1665,7 @@ function setConnection(v){ const log=DB.todayLog(); log.connection=v; DB.saveTod
 
 // ─── WATER VIEW ─────────────────────────────────────
 function viewWater() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const s = DB.settings();
   const goal = s.waterGoal;
   const current = log.water || 0;
@@ -1619,10 +1673,14 @@ function viewWater() {
   const glasses = Array.from({length:goal},(_, i)=>`<span class="glass" style="font-size:28px">${i<current?'🥛':'⬜'}</span>`).join('');
   const allLogs = DB.recentLogs(7);
   const weekAvg = Utils.round1(Utils.avg(allLogs.map(l=>l.water||0)));
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
-    <div class="page-header"><div class="page-title">💧 Water Tracker</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="page-header"><div class="page-title">💧 Water Tracker</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.water||0,'Water','g','var(--info)')}
     <div class="card" style="text-align:center;margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Today's Intake</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">${isToday?"Today's":"Selected Day's"} Intake · ${Utils.fmtDate(selDate)}</div>
       <div class="water-display" id="water-count">${current}</div>
       <div style="font-size:15px;color:var(--muted);margin-bottom:16px">of ${goal} glasses (${pct}%)</div>
       <div style="max-width:500px;margin:0 auto"><div class="progress-bar" style="height:12px"><div class="progress-fill" id="water-prog" style="width:${pct}%;background:var(--info)"></div></div></div>
@@ -1634,27 +1692,21 @@ function viewWater() {
         <button class="water-btn" onclick="addWaterMl(500)">+500ml</button>
       </div>
       <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-        <button class="btn btn-secondary btn-sm" onclick="setWaterDirect(Math.max(0,(DB.todayLog().water||0)-1))">− Remove</button>
+        <button class="btn btn-secondary btn-sm" onclick="setWaterDirect(Math.max(0,(DB.getEntryLog().water||0)-1))">− Remove</button>
         <button class="btn btn-ghost btn-sm" onclick="setWaterDirect(0)">Reset</button>
       </div>
     </div>
     <div class="grid-3" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value" style="color:var(--info)">${current} <span style="font-size:14px">glasses</span></div></div>
+      <div class="stat-card"><div class="stat-label">${isToday?'Today':'Selected'}</div><div class="stat-value" style="color:var(--info)">${current} <span style="font-size:14px">glasses</span></div></div>
       <div class="stat-card"><div class="stat-label">7-Day Average</div><div class="stat-value">${weekAvg} <span style="font-size:14px">glasses</span></div></div>
       <div class="stat-card"><div class="stat-label">Goal</div><div class="stat-value">${goal} <span style="font-size:14px">glasses</span></div></div>
     </div>
-    <div class="card">
-      <div class="card-title">This Week</div>
-      <div style="display:flex;gap:8px;align-items:flex-end;height:80px">
-        ${allLogs.slice(-7).map(l=>{const p=Math.min(100,Utils.pct(l.water||0,goal));const day=new Date(l.date+'T12:00:00').toLocaleDateString('en-GB',{weekday:'short'});return`<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px"><div style="width:100%;background:var(--info);border-radius:4px 4px 0 0;height:${p}%;min-height:4px"></div><div style="font-size:10px;color:var(--muted)">${day}</div></div>`}).join('')}
-      </div>
-    </div>
-    <div style="margin-top:16px;text-align:center"><button class="btn btn-primary" onclick="setWaterGoalModal()">⚙️ Change Daily Goal (${goal} glasses)</button></div>
+    <div style="margin-top:4px;text-align:center"><button class="btn btn-primary" onclick="setWaterGoalModal()">⚙️ Change Daily Goal (${goal} glasses)</button></div>
   </div>`;
 }
-function addWater(n){ const log=DB.todayLog(); log.water=(log.water||0)+n; DB.saveTodayLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); App.toast(`+${n} glass${n>1?'es':''}! 💧`); }
+function addWater(n){ const log=DB.getEntryLog(); log.water=(log.water||0)+n; DB.saveEntryLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); App.toast(`+${n} glass${n>1?'es':''}! 💧`); }
 function addWaterMl(ml){ const glasses=Math.round(ml/250*10)/10; addWater(Math.ceil(glasses)); }
-function setWaterDirect(v){ const log=DB.todayLog(); log.water=Math.max(0,v); DB.saveTodayLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); }
+function setWaterDirect(v){ const log=DB.getEntryLog(); log.water=Math.max(0,v); DB.saveEntryLog(log); refreshWaterUI(log.water, DB.settings().waterGoal); }
 function refreshWaterUI(current, goal){ const pct=Utils.pct(current,goal); const c=document.getElementById('water-count'); const p=document.getElementById('water-prog'); const g=document.getElementById('water-glasses'); if(c)c.textContent=current; if(p)p.style.width=pct+'%'; if(g)g.innerHTML=Array.from({length:goal},(_,i)=>`<span class="glass">${i<current?'🥛':'⬜'}</span>`).join(''); }
 function setWaterGoalModal(){ showModal('Set Water Goal',`<div class="form-group"><label class="form-label">Daily glasses target</label><input type="number" class="form-control" id="m-watergoal" value="${DB.settings().waterGoal}" min="1" max="20"></div><div style="margin-top:16px;text-align:right"><button class="btn btn-primary" onclick="saveWaterGoal()">Save</button></div>`); }
 function saveWaterGoal(){ const v=parseInt(document.getElementById('m-watergoal')?.value); if(v>0){const s=DB.settings();s.waterGoal=v;DB.saveSettings(s);closeModal();App.navigate('water');} }
@@ -1662,7 +1714,7 @@ function saveWaterGoal(){ const v=parseInt(document.getElementById('m-watergoal'
 
 // ─── EXERCISE VIEW ──────────────────────────────────
 function viewExercise() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const exercises = log.exercises || [];
   const s = DB.settings();
   const allLogs = DB.recentLogs(30);
@@ -1670,11 +1722,15 @@ function viewExercise() {
   const totalMin = exercises.reduce((sum,e)=>sum+(e.duration||0),0);
   const weekLogs = allLogs.slice(-7);
   const weekMin = weekLogs.reduce((sum,l)=>sum+(l.exercises||[]).reduce((s2,e)=>s2+(e.duration||0),0),0);
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
 
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">🏃 Exercise Tracker</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>(l.exercises||[]).reduce((s,e)=>s+(e.duration||0),0),'Exercise','min','var(--success)')}
     <div class="grid-3" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${totalMin}<span style="font-size:14px"> min</span></div></div>
+      <div class="stat-card"><div class="stat-label">${isToday?'Today':'Selected'}</div><div class="stat-value">${totalMin}<span style="font-size:14px"> min</span></div></div>
       <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
       <div class="stat-card"><div class="stat-label">Active Days (30d)</div><div class="stat-value">${exerciseDays}<span style="font-size:14px"> days</span></div></div>
     </div>
@@ -1700,7 +1756,7 @@ function viewExercise() {
       <button class="btn btn-primary" onclick="logExercise()">+ Log Exercise</button>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Today's Sessions</div>
+      <div class="card-title">${isToday?"Today's":"Selected Day's"} Sessions · ${Utils.fmtDate(selDate)}</div>
       ${exercises.length ? exercises.map(e=>`
         <div class="exercise-item">
           <div class="exercise-icon">${e.type==='Walking'?'🚶':e.type==='Running'?'🏃':e.type==='Yoga'?'🧘':e.type==='Cycling'?'🚴':'💪'}</div>
@@ -1710,7 +1766,7 @@ function viewExercise() {
             ${e.notes?`<div style="font-size:11px;color:var(--muted)">${Utils.escape(e.notes)}</div>`:''}
           </div>
           <button class="btn-icon" onclick="deleteExercise('${e.id}')">🗑️</button>
-        </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏃</div><div class="empty-sub">No exercise logged yet today</div></div>`}
+        </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏃</div><div class="empty-sub">No exercise logged yet</div></div>`}
     </div>
     <div class="card">
       <div class="card-title">Break-Time Exercises</div>
@@ -1721,15 +1777,15 @@ function viewExercise() {
     </div>
   </div>`;
 }
-function logExercise(){ const t=document.getElementById('ex-type')?.value; const d=parseInt(document.getElementById('ex-dur')?.value); if(!t||!d){App.toast('Enter type and duration');return;} const log=DB.todayLog(); if(!log.exercises)log.exercises=[]; log.exercised=true; log.exercises.push({id:Utils.uid(),type:t,duration:d,intensity:document.getElementById('ex-int')?.value||'Moderate',calories:parseInt(document.getElementById('ex-cal')?.value)||null,notes:document.getElementById('ex-notes')?.value||''}); DB.saveTodayLog(log); App.navigate('exercise'); App.toast('Exercise logged! 💪'); }
-function deleteExercise(id){ const log=DB.todayLog(); log.exercises=(log.exercises||[]).filter(e=>e.id!==id); if(!log.exercises.length)log.exercised=false; DB.saveTodayLog(log); App.navigate('exercise'); }
-function logBreakExercise(type){ const log=DB.todayLog(); if(!log.breakExercises)log.breakExercises=[]; log.breakExercises.push({type,time:Utils.now(),id:Utils.uid()}); DB.saveTodayLog(log); const list=document.getElementById('break-list'); if(list)list.innerHTML+= `<span class="break-chip">⚡ ${Utils.escape(type)} · ${Utils.now()}</span>`; App.toast('Break exercise logged! ⚡'); }
+function logExercise(){ const t=document.getElementById('ex-type')?.value; const d=parseInt(document.getElementById('ex-dur')?.value); if(!t||!d){App.toast('Enter type and duration');return;} const log=DB.getEntryLog(); if(!log.exercises)log.exercises=[]; log.exercised=true; log.exercises.push({id:Utils.uid(),type:t,duration:d,intensity:document.getElementById('ex-int')?.value||'Moderate',calories:parseInt(document.getElementById('ex-cal')?.value)||null,notes:document.getElementById('ex-notes')?.value||''}); DB.saveEntryLog(log); App.navigate('exercise'); App.toast('Exercise logged! 💪'); }
+function deleteExercise(id){ const log=DB.getEntryLog(); log.exercises=(log.exercises||[]).filter(e=>e.id!==id); if(!log.exercises.length)log.exercised=false; DB.saveEntryLog(log); App.navigate('exercise'); }
+function logBreakExercise(type){ const log=DB.getEntryLog(); if(!log.breakExercises)log.breakExercises=[]; log.breakExercises.push({type,time:Utils.now(),id:Utils.uid()}); DB.saveEntryLog(log); const list=document.getElementById('break-list'); if(list)list.innerHTML+= `<span class="break-chip">⚡ ${Utils.escape(type)} · ${Utils.now()}</span>`; App.toast('Break exercise logged! ⚡'); }
 
 // ─── ROUTINES ────────────────────────────────────────
 function viewRoutine(type) {
   const label = type==='morning'?'☀️ Morning':'🌙 Evening';
   const s = DB.settings();
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const habits = type==='morning' ? s.morningHabits.filter(h=>h.enabled) : s.eveningHabits.filter(h=>h.enabled);
   const done = habits.filter(h=>log[type+'Routine']?.[h.id]).length;
   const pct = habits.length ? Utils.pct(done, habits.length) : 0;
@@ -1741,10 +1797,14 @@ function viewRoutine(type) {
     const d = enabled.filter(h=>l[type+'Routine']?.[h.id]).length;
     return d/enabled.length >= 0.7;
   });
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
-    <div class="page-header"><div class="page-title">${label} Routine</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="page-header"><div class="page-title">${label} Routine</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>{ const rh=type==='morning'?s.morningHabits:s.eveningHabits; const en=rh.filter(h=>h.enabled); if(!en.length)return 0; return Math.round(en.filter(h=>l[type+'Routine']?.[h.id]).length/en.length*100); },'Routine Completion','%',type==='morning'?'var(--warn)':'var(--primary)')}
     <div class="card" style="margin-bottom:20px;text-align:center">
-      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">Today's Progress</div>
+      <div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px">${isToday?"Today's":"Selected Day's"} Progress · ${Utils.fmtDate(selDate)}</div>
       <div class="routine-score" style="color:${pct>=80?'var(--success)':pct>=50?'var(--warn)':'var(--danger)'}">${pct}%</div>
       <div style="font-size:13px;color:var(--muted);margin-bottom:12px">${done} of ${habits.length} habits completed</div>
       <div class="progress-bar" style="max-width:300px;margin:0 auto;height:10px"><div class="progress-fill" style="width:${pct}%;background:${type==='morning'?'var(--warn)':'var(--primary)'}"></div></div>
@@ -1766,16 +1826,20 @@ function viewRoutine(type) {
     <div style="text-align:center"><button class="btn btn-secondary" onclick="App.navigate('settings')">⚙️ Customize Habits</button></div>
   </div>`;
 }
-function toggleRoutineItem(type, id){ const log=DB.todayLog(); if(!log[type+'Routine'])log[type+'Routine']={}; log[type+'Routine'][id]=!log[type+'Routine'][id]; DB.saveTodayLog(log); const el=document.getElementById(`ri-${type}-${id}`); if(el){el.className='routine-check'+(log[type+'Routine'][id]?' done':'');el.textContent=log[type+'Routine'][id]?'✓':'';} const s=DB.settings(); const h=type==='morning'?s.morningHabits:s.eveningHabits; const en=h.filter(x=>x.enabled); const done=en.filter(x=>log[type+'Routine']?.[x.id]).length; App.toast(done===en.length&&en.length>0?'🎉 All habits done!':log[type+'Routine'][id]?'✓ Habit completed!':'Habit unchecked'); }
-function markAllRoutine(type, v){ const s=DB.settings(); const log=DB.todayLog(); const habits=(type==='morning'?s.morningHabits:s.eveningHabits).filter(h=>h.enabled); if(!log[type+'Routine'])log[type+'Routine']={}; habits.forEach(h=>{log[type+'Routine'][h.id]=v;}); DB.saveTodayLog(log); App.navigate(type==='morning'?'morning':'evening'); }
+function toggleRoutineItem(type, id){ const log=DB.getEntryLog(); if(!log[type+'Routine'])log[type+'Routine']={}; log[type+'Routine'][id]=!log[type+'Routine'][id]; DB.saveEntryLog(log); const el=document.getElementById(`ri-${type}-${id}`); if(el){el.className='routine-check'+(log[type+'Routine'][id]?' done':'');el.textContent=log[type+'Routine'][id]?'✓':'';} const s=DB.settings(); const h=type==='morning'?s.morningHabits:s.eveningHabits; const en=h.filter(x=>x.enabled); const done=en.filter(x=>log[type+'Routine']?.[x.id]).length; App.toast(done===en.length&&en.length>0?'🎉 All habits done!':log[type+'Routine'][id]?'✓ Habit completed!':'Habit unchecked'); }
+function markAllRoutine(type, v){ const s=DB.settings(); const log=DB.getEntryLog(); const habits=(type==='morning'?s.morningHabits:s.eveningHabits).filter(h=>h.enabled); if(!log[type+'Routine'])log[type+'Routine']={}; habits.forEach(h=>{log[type+'Routine'][h.id]=v;}); DB.saveEntryLog(log); App.navigate(type==='morning'?'morning':'evening'); }
 
 // ─── MINDSET ──────────────────────────────────────────
 function viewMindset() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">🧠 Mindset Tracker</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.mood||0,'Mood','/5','var(--primary)')}
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Today's Mental State</div>
+      <div class="card-title">${isToday?"Today's":"Selected Day's"} Mental State · ${Utils.fmtDate(selDate)}</div>
       ${[['mood','Mood','Very Low','Amazing'],['energy','Energy','Exhausted','Energized'],['focus','Focus','Scattered','Laser Sharp'],['stress','Stress','Calm','Very Stressed'],['mentalClarity','Mental Clarity','Foggy','Crystal Clear']].map(([f,l,lo,hi])=>`
         <div class="form-group">
           <div style="display:flex;justify-content:space-between;margin-bottom:4px">
@@ -1795,29 +1859,31 @@ function viewMindset() {
     </div>
   </div>`;
 }
-function saveMindset(){ const log=DB.todayLog(); ['mood','energy','focus','stress','mentalClarity'].forEach(f=>{const v=parseInt(document.getElementById('ms-'+f)?.value);if(!isNaN(v))log[f]=v;}); log.gratitude=document.getElementById('ms-gratitude')?.value||''; log.biggestAchievement=document.getElementById('ms-achieve')?.value||''; log.biggestChallenge=document.getElementById('ms-challenge')?.value||''; DB.saveTodayLog(log); }
+function saveMindset(){ const log=DB.getEntryLog(); ['mood','energy','focus','stress','mentalClarity'].forEach(f=>{const v=parseInt(document.getElementById('ms-'+f)?.value);if(!isNaN(v))log[f]=v;}); log.gratitude=document.getElementById('ms-gratitude')?.value||''; log.biggestAchievement=document.getElementById('ms-achieve')?.value||''; log.biggestChallenge=document.getElementById('ms-challenge')?.value||''; DB.saveEntryLog(log); }
 
 // ─── MEDITATION ──────────────────────────────────────
 function viewMeditation() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const allLogs = DB.recentLogs(30);
   const streak = Utils.streak(allLogs, l=>l.meditated);
   const weekMin = allLogs.slice(-7).reduce((s,l)=>s+(l.meditationDuration||0),0);
   const monthMin = allLogs.reduce((s,l)=>s+(l.meditationDuration||0),0);
-  const sessions = allLogs.filter(l=>l.meditated).length;
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">🧘 Meditation</div></div>
-    <div class="grid-4" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${log.meditationDuration||0}<span style="font-size:14px"> min</span></div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.meditationDuration||0,'Meditation','min','var(--secondary)')}
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">${isToday?'Today':'Selected'}</div><div class="stat-value">${log.meditationDuration||0}<span style="font-size:14px"> min</span></div></div>
       <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
-      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${monthMin}<span style="font-size:14px"> min</span></div></div>
       <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak}<span style="font-size:14px"> days</span></div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Log Today's Session</div>
+      <div class="card-title">Log ${isToday?"Today's":"Selected Day's"} Session · ${Utils.fmtDate(selDate)}</div>
       <div class="toggle-wrap" style="margin-bottom:16px">
         <label class="toggle"><input type="checkbox" id="med-done" ${log.meditated?'checked':''} onchange="saveMeditation()"><span class="toggle-slider"></span></label>
-        <span style="font-weight:600">Meditated today</span>
+        <span style="font-weight:600">Meditated ${isToday?'today':'on this day'}</span>
       </div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-control" id="med-min" value="${log.meditationDuration||''}" placeholder="${DB.settings().meditationGoal}" onchange="saveMeditation()"></div>
@@ -1835,7 +1901,7 @@ function viewMeditation() {
     </div>
   </div>`;
 }
-function saveMeditation(){ const log=DB.todayLog(); log.meditated=document.getElementById('med-done')?.checked||false; log.meditationDuration=parseInt(document.getElementById('med-min')?.value)||null; log.meditationType=document.getElementById('med-type')?.value||'Mindfulness'; log.moodBefore=parseInt(document.getElementById('med-mb')?.value)||null; log.moodAfter=parseInt(document.getElementById('med-ma')?.value)||null; DB.saveTodayLog(log); }
+function saveMeditation(){ const log=DB.getEntryLog(); log.meditated=document.getElementById('med-done')?.checked||false; log.meditationDuration=parseInt(document.getElementById('med-min')?.value)||null; log.meditationType=document.getElementById('med-type')?.value||'Mindfulness'; log.moodBefore=parseInt(document.getElementById('med-mb')?.value)||null; log.moodAfter=parseInt(document.getElementById('med-ma')?.value)||null; DB.saveEntryLog(log); }
 
 // ─── TASKS ───────────────────────────────────────────
 function viewTasks() {
@@ -1899,13 +1965,16 @@ function updateTask(id){ const tasks=DB.tasks(); const t=tasks.find(x=>x.id===id
 
 // ─── JOURNAL ────────────────────────────────────────
 function viewJournal() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const j = log.journal || {};
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
-    <div class="page-header"><div class="page-title">📓 Daily Journal</div><div class="page-sub">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="page-header"><div class="page-title">📓 Daily Journal</div></div>
+    ${renderDatePicker()}
     <div class="card">
-      <div style="margin-bottom:20px;padding:14px;background:var(--primary-l);border-radius:var(--r-sm)"><div style="font-size:13px;font-weight:600;color:var(--primary)">Take 2 minutes to reflect. It will improve tomorrow.</div></div>
-      ${[['wentWell','✅ What went well today?','Something positive, big or small...'],['didntGoWell','❌ What didn\'t go well?','Something to learn from...'],['learned','💡 What did I learn?','Any insight or lesson...'],['grateful','🙏 What am I grateful for?','Something I appreciate...'],['improve','🎯 What should I improve tomorrow?','One concrete action...'],['achievement','🏆 Biggest achievement','What I\'m most proud of today...'],['distraction','⚠️ Biggest distraction','What pulled me off track...']].map(([k,label,ph])=>`
+      <div style="margin-bottom:16px;padding:14px;background:var(--primary-l);border-radius:var(--r-sm)"><div style="font-size:13px;font-weight:600;color:var(--primary)">${isToday?'Take 2 minutes to reflect. It will improve tomorrow.':'Reviewing entry for '+Utils.fmtDate(selDate)}</div></div>
+      ${[['wentWell','✅ What went well?','Something positive, big or small...'],['didntGoWell','❌ What didn\'t go well?','Something to learn from...'],['learned','💡 What did I learn?','Any insight or lesson...'],['grateful','🙏 What am I grateful for?','Something I appreciate...'],['improve','🎯 What should I improve tomorrow?','One concrete action...'],['achievement','🏆 Biggest achievement','What I\'m most proud of...'],['distraction','⚠️ Biggest distraction','What pulled me off track...']].map(([k,label,ph])=>`
         <div class="form-group">
           <label class="form-label">${label}</label>
           <textarea class="form-control" id="jrn-${k}" rows="2" placeholder="${ph}" oninput="saveJournal()">${Utils.escape(j[k]||'')}</textarea>
@@ -1915,26 +1984,30 @@ function viewJournal() {
     </div>
   </div>`;
 }
-function saveJournal(){ const log=DB.todayLog(); if(!log.journal)log.journal={}; ['wentWell','didntGoWell','learned','grateful','improve','achievement','distraction'].forEach(k=>{const el=document.getElementById('jrn-'+k);if(el)log.journal[k]=el.value;}); const tm=document.getElementById('jrn-tomorrow'); if(tm)log.tomorrowPriority=tm.value; DB.saveTodayLog(log); }
+function saveJournal(){ const log=DB.getEntryLog(); if(!log.journal)log.journal={}; ['wentWell','didntGoWell','learned','grateful','improve','achievement','distraction'].forEach(k=>{const el=document.getElementById('jrn-'+k);if(el)log.journal[k]=el.value;}); const tm=document.getElementById('jrn-tomorrow'); if(tm)log.tomorrowPriority=tm.value; DB.saveEntryLog(log); }
 // VIEWS PART 4: Food, Learning, Reading, Relationships, Goals, Habits, Health, Analytics, Settings, More
 
 // ─── FOOD ────────────────────────────────────────────
 function viewFood() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const meals = log.meals || [];
   const healthy = meals.filter(m=>m.isHealthy).length;
   const junk = meals.filter(m=>m.isJunk).length;
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
-    <div class="section-header"><div><div class="page-title">🍎 Food & Nutrition</div><div style="color:var(--muted);font-size:13px">${Utils.fmtDate(Utils.today())}</div></div>
+    <div class="section-header"><div><div class="page-title">🍎 Food & Nutrition</div></div>
       <button class="btn btn-primary" onclick="showAddMeal()">+ Log Meal</button>
     </div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>(l.meals||[]).filter(m=>m.isHealthy).length,'Healthy Meals','','var(--success)')}
     <div class="grid-3" style="margin-bottom:20px">
       <div class="stat-card"><div class="stat-label">Meals Logged</div><div class="stat-value">${meals.length}</div></div>
       <div class="stat-card"><div class="stat-label">Healthy Meals</div><div class="stat-value" style="color:var(--success)">${healthy}</div></div>
       <div class="stat-card"><div class="stat-label">Junk Food</div><div class="stat-value" style="color:${junk>0?'var(--danger)':'var(--success)'}">${junk}</div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Today's Meals</div>
+      <div class="card-title">${isToday?"Today's":"Selected Day's"} Meals · ${Utils.fmtDate(selDate)}</div>
       ${meals.length ? meals.map(m=>`<div class="meal-card">
         <div class="meal-type">${Utils.escape(m.mealType)}</div>
         <div class="meal-desc">${Utils.escape(m.description)}</div>
@@ -1966,8 +2039,8 @@ function showAddMeal(){ showModal('Log Meal',`
     ${[['ml-healthy','✅ Healthy'],['ml-junk','🍔 Junk Food'],['ml-protein','💪 Protein'],['ml-fruits','🥦 Fruits/Veg'],['ml-sugar','🍬 Sugar']].map(([id,l])=>`<label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="${id}" style="accent-color:var(--primary)">${l}</label>`).join('')}
   </div>
   <div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveMeal()">Log Meal</button></div>`); }
-function saveMeal(){ const desc=document.getElementById('ml-desc')?.value?.trim(); if(!desc){App.toast('Enter meal description');return;} const log=DB.todayLog(); if(!log.meals)log.meals=[]; log.meals.push({id:Utils.uid(),mealType:document.getElementById('ml-type')?.value||'Other',description:desc,quantity:document.getElementById('ml-qty')?.value||'',calories:parseInt(document.getElementById('ml-cal')?.value)||null,isHealthy:document.getElementById('ml-healthy')?.checked||false,isJunk:document.getElementById('ml-junk')?.checked||false,hasProtein:document.getElementById('ml-protein')?.checked||false,hasFruits:document.getElementById('ml-fruits')?.checked||false,hasSugar:document.getElementById('ml-sugar')?.checked||false}); DB.saveTodayLog(log); closeModal(); App.navigate('food'); App.toast('Meal logged! 🍽️'); }
-function deleteMeal(id){ const log=DB.todayLog(); log.meals=(log.meals||[]).filter(m=>m.id!==id); DB.saveTodayLog(log); App.navigate('food'); }
+function saveMeal(){ const desc=document.getElementById('ml-desc')?.value?.trim(); if(!desc){App.toast('Enter meal description');return;} const log=DB.getEntryLog(); if(!log.meals)log.meals=[]; log.meals.push({id:Utils.uid(),mealType:document.getElementById('ml-type')?.value||'Other',description:desc,quantity:document.getElementById('ml-qty')?.value||'',calories:parseInt(document.getElementById('ml-cal')?.value)||null,isHealthy:document.getElementById('ml-healthy')?.checked||false,isJunk:document.getElementById('ml-junk')?.checked||false,hasProtein:document.getElementById('ml-protein')?.checked||false,hasFruits:document.getElementById('ml-fruits')?.checked||false,hasSugar:document.getElementById('ml-sugar')?.checked||false}); DB.saveEntryLog(log); closeModal(); App.navigate('food'); App.toast('Meal logged! 🍽️'); }
+function deleteMeal(id){ const log=DB.getEntryLog(); log.meals=(log.meals||[]).filter(m=>m.id!==id); DB.saveEntryLog(log); App.navigate('food'); }
 
 // ─── EXPENSES ─────────────────────────────────────────
 const EXPENSE_CATS = ['🍔 Food','🚌 Transport','🛒 Shopping','🎬 Entertainment','💊 Health','🏠 Bills & Rent','📚 Education','✈️ Travel','💇 Personal Care','🎁 Gifts','💼 Business','❓ Other'];
@@ -2241,21 +2314,24 @@ function saveExpenseBudget() {
 
 // ─── LEARNING ─────────────────────────────────────────
 function viewLearning() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const allLogs = DB.recentLogs(30);
   const weekMin = allLogs.slice(-7).reduce((s,l)=>s+(l.learningMinutes||0),0);
   const monthMin = allLogs.reduce((s,l)=>s+(l.learningMinutes||0),0);
   const streak = Utils.streak(allLogs, l=>l.learningMinutes>0);
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">📚 Learning Tracker</div></div>
-    <div class="grid-4" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Today</div><div class="stat-value">${log.learningMinutes||0}<span style="font-size:14px"> min</span></div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.learningMinutes||0,'Learning','min','var(--info)')}
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">${isToday?'Today':'Selected'}</div><div class="stat-value">${log.learningMinutes||0}<span style="font-size:14px"> min</span></div></div>
       <div class="stat-card"><div class="stat-label">This Week</div><div class="stat-value">${weekMin}<span style="font-size:14px"> min</span></div></div>
-      <div class="stat-card"><div class="stat-label">This Month</div><div class="stat-value">${Utils.round1(monthMin/60)}<span style="font-size:14px"> hrs</span></div></div>
       <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak}<span style="font-size:14px"> days</span></div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Log Today's Learning</div>
+      <div class="card-title">Log ${isToday?"Today's":"Selected Day's"} Learning · ${Utils.fmtDate(selDate)}</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Minutes Spent</label><input type="number" class="form-control" id="lrn-min" value="${log.learningMinutes||''}" placeholder="${DB.settings().learningGoal}" oninput="saveLearning()"></div>
         <div class="form-group"><label class="form-label">Category</label><select class="form-control" id="lrn-cat" onchange="saveLearning()">${['Professional','Finance','Stock Market','Technology','AI','Business','Personal Development','Spirituality','Other'].map(c=>`<option ${log.learningCategory===c?'selected':''}>${c}</option>`).join('')}</select></div>
@@ -2266,27 +2342,30 @@ function viewLearning() {
     </div>
   </div>`;
 }
-function saveLearning(){ const log=DB.todayLog(); log.learningMinutes=parseInt(document.getElementById('lrn-min')?.value)||null; log.learningTopic=document.getElementById('lrn-topic')?.value||''; log.learningCategory=document.getElementById('lrn-cat')?.value||''; log.learningTakeaway=document.getElementById('lrn-takeaway')?.value||''; DB.saveTodayLog(log); }
+function saveLearning(){ const log=DB.getEntryLog(); log.learningMinutes=parseInt(document.getElementById('lrn-min')?.value)||null; log.learningTopic=document.getElementById('lrn-topic')?.value||''; log.learningCategory=document.getElementById('lrn-cat')?.value||''; log.learningTakeaway=document.getElementById('lrn-takeaway')?.value||''; DB.saveEntryLog(log); }
 
 // ─── READING ──────────────────────────────────────────
 function viewReading() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const books = DB.books();
   const current = books.filter(b=>b.status==='reading');
   const completed = books.filter(b=>b.status==='completed');
   const allLogs = DB.recentLogs(30);
   const weekPages = allLogs.slice(-7).reduce((s,l)=>s+(l.readingPages||0),0);
   const streak = Utils.streak(allLogs, l=>l.readingPages>0);
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="section-header"><div><div class="page-title">📖 Reading Tracker</div></div><button class="btn btn-primary" onclick="showAddBook()">+ Add Book</button></div>
-    <div class="grid-4" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Pages Today</div><div class="stat-value">${log.readingPages||0}</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.readingPages||0,'Reading','pg','var(--warn)')}
+    <div class="grid-3" style="margin-bottom:20px">
+      <div class="stat-card"><div class="stat-label">${isToday?'Pages Today':'Selected Day'}</div><div class="stat-value">${log.readingPages||0}</div></div>
       <div class="stat-card"><div class="stat-label">Pages This Week</div><div class="stat-value">${weekPages}</div></div>
-      <div class="stat-card"><div class="stat-label">Books Completed</div><div class="stat-value">${completed.length}</div></div>
       <div class="stat-card"><div class="stat-label">🔥 Streak</div><div class="stat-value" style="color:var(--warn)">${streak} <span style="font-size:14px">days</span></div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Log Today's Reading</div>
+      <div class="card-title">Log ${isToday?"Today's":"Selected Day's"} Reading · ${Utils.fmtDate(selDate)}</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Pages Read</label><input type="number" class="form-control" id="rd-pages" value="${log.readingPages||''}" placeholder="${DB.settings().readingGoal}" oninput="saveReading()"></div>
         <div class="form-group"><label class="form-label">Current Book</label><input type="text" class="form-control" id="rd-book" value="${Utils.escape(log.currentBook||current[0]?.title||'')}" placeholder="Book title..." oninput="saveReading()"></div>
@@ -2297,24 +2376,28 @@ function viewReading() {
   </div>`;
 }
 function bookCard(b){ const colors=['var(--primary)','var(--success)','var(--warn)','var(--danger)','var(--info)']; const c=colors[b.title.charCodeAt(0)%colors.length]; const pct=b.pages&&b.pagesRead?Utils.pct(b.pagesRead,b.pages):0; return `<div class="book-card" style="margin-bottom:10px"><div class="book-spine" style="background:${c}"></div><div class="book-info"><div class="book-title">${Utils.escape(b.title)}</div><div class="book-author">${Utils.escape(b.author||'')}</div><div style="margin-top:6px"><div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${c}"></div></div><div style="font-size:11px;color:var(--muted);margin-top:3px">${b.pagesRead||0}/${b.pages||'?'} pages · <span class="tag tag-${b.status==='completed'?'success':b.status==='reading'?'primary':'muted'}">${b.status}</span></div></div></div></div>`; }
-function saveReading(){ const log=DB.todayLog(); log.readingPages=parseInt(document.getElementById('rd-pages')?.value)||null; log.currentBook=document.getElementById('rd-book')?.value||''; DB.saveTodayLog(log); }
+function saveReading(){ const log=DB.getEntryLog(); log.readingPages=parseInt(document.getElementById('rd-pages')?.value)||null; log.currentBook=document.getElementById('rd-book')?.value||''; DB.saveEntryLog(log); }
 function showAddBook(){ showModal('Add Book',`<div class="form-group"><label class="form-label">Title *</label><input type="text" class="form-control" id="bk-title" placeholder="Book title"></div><div class="form-row"><div class="form-group"><label class="form-label">Author</label><input type="text" class="form-control" id="bk-author"></div><div class="form-group"><label class="form-label">Total Pages</label><input type="number" class="form-control" id="bk-pages" placeholder="300"></div></div><div class="form-group"><label class="form-label">Status</label><select class="form-control" id="bk-status"><option value="want_to_read">Want to Read</option><option value="reading" selected>Currently Reading</option><option value="completed">Completed</option></select></div><div style="margin-top:16px;display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveBook()">Add Book</button></div>`); }
 function saveBook(){ const t=document.getElementById('bk-title')?.value?.trim(); if(!t){App.toast('Enter book title');return;} const books=DB.books(); books.push({id:Utils.uid(),title:t,author:document.getElementById('bk-author')?.value||'',pages:parseInt(document.getElementById('bk-pages')?.value)||null,pagesRead:0,status:document.getElementById('bk-status')?.value||'reading',startDate:Utils.today()}); DB.saveBooks(books); closeModal(); App.navigate('reading'); App.toast('Book added! 📖'); }
 
 // ─── RELATIONSHIPS ────────────────────────────────────
 function viewRelationships() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const allLogs = DB.recentLogs(30);
   const connectionDays = allLogs.filter(l=>l.connection).length;
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">❤️ Relationships</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.connection?1:0,'Connection','','var(--danger)')}
     <div class="grid-3" style="margin-bottom:20px">
-      <div class="stat-card"><div class="stat-label">Connection Today</div><div class="stat-value" style="color:${log.connection?'var(--success)':'var(--muted)'}">${log.connection?'✅ Yes':'⭕ No'}</div></div>
+      <div class="stat-card"><div class="stat-label">${isToday?'Connection Today':'Selected Day'}</div><div class="stat-value" style="color:${log.connection?'var(--success)':'var(--muted)'}">${log.connection?'✅ Yes':'⭕ No'}</div></div>
       <div class="stat-card"><div class="stat-label">Connected (30d)</div><div class="stat-value">${connectionDays}<span style="font-size:14px"> days</span></div></div>
       <div class="stat-card"><div class="stat-label">Connection Rate</div><div class="stat-value">${Utils.pct(connectionDays,Math.min(30,allLogs.length))}<span style="font-size:14px">%</span></div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div style="font-size:16px;font-weight:700;margin-bottom:8px">Did you meaningfully connect with someone important to you today?</div>
+      <div style="font-size:16px;font-weight:700;margin-bottom:8px">${isToday?'Did you meaningfully connect with someone important to you today?':'Did you connect on '+Utils.fmtDate(selDate)+'?'}</div>
       <div style="display:flex;gap:12px;margin-bottom:16px">
         <button class="btn ${log.connection?'btn-success':'btn-secondary'} btn-lg" style="flex:1" onclick="logConnection(true)">✅ Yes, I connected</button>
         <button class="btn ${!log.connection?'btn-secondary':'btn-secondary'} btn-lg" style="flex:1" onclick="logConnection(false)">⭕ Not today</button>
@@ -2322,7 +2405,7 @@ function viewRelationships() {
       <div class="form-group"><label class="form-label">Note (optional)</label><input type="text" class="form-control" id="rel-note" value="${Utils.escape(log.connectionNote||'')}" placeholder="Who did you connect with? How?" onchange="saveRelationship()"></div>
       <div class="toggle-wrap" style="margin-top:12px">
         <label class="toggle"><input type="checkbox" id="rel-family" ${log.familyTime?'checked':''} onchange="saveRelationship()"><span class="toggle-slider"></span></label>
-        <span>Had quality family time today</span>
+        <span>Had quality family time ${isToday?'today':'on this day'}</span>
       </div>
     </div>
     <div class="card">
@@ -2333,8 +2416,8 @@ function viewRelationships() {
     </div>
   </div>`;
 }
-function logConnection(v){ const log=DB.todayLog(); log.connection=v; DB.saveTodayLog(log); App.navigate('relationships'); App.toast(v?'Great! Connection logged ❤️':'Logged. Try to connect tomorrow!'); }
-function saveRelationship(){ const log=DB.todayLog(); log.connectionNote=document.getElementById('rel-note')?.value||''; log.familyTime=document.getElementById('rel-family')?.checked||false; DB.saveTodayLog(log); }
+function logConnection(v){ const log=DB.getEntryLog(); log.connection=v; DB.saveEntryLog(log); App.navigate('relationships'); App.toast(v?'Great! Connection logged ❤️':'Logged. Try to connect tomorrow!'); }
+function saveRelationship(){ const log=DB.getEntryLog(); log.connectionNote=document.getElementById('rel-note')?.value||''; log.familyTime=document.getElementById('rel-family')?.checked||false; DB.saveEntryLog(log); }
 
 // ─── GOALS ───────────────────────────────────────────
 function viewGoals() {
@@ -2475,12 +2558,16 @@ function apExport() {
 
 // ─── HEALTH OVERVIEW ──────────────────────────────────
 function viewHealth() {
-  const log = DB.todayLog();
+  const log = DB.getEntryLog();
   const allLogs = DB.recentLogs(30);
   const weights = allLogs.filter(l=>l.weight).map(l=>l.weight);
   const avgWeight = weights.length ? Utils.round1(Utils.avg(weights)) : null;
+  const selDate = App.state.entryDate || Utils.today();
+  const isToday = selDate === Utils.today();
   return `<div class="anim-fade">
     <div class="page-header"><div class="page-title">❤️ Health Overview</div></div>
+    ${renderDatePicker()}
+    ${renderWeekPerf(l=>l.sleep||0,'Sleep','h','var(--primary)')}
     <div class="grid-4" style="margin-bottom:20px">
       <div class="stat-card"><div class="stat-label">Weight</div><div class="stat-value">${log.weight||'—'}<span style="font-size:14px">${log.weight?' kg':''}</span></div><div class="stat-sub">30d avg: ${avgWeight||'—'}${avgWeight?' kg':''}</div></div>
       <div class="stat-card"><div class="stat-label">Sleep</div><div class="stat-value">${log.sleep||'—'}<span style="font-size:14px">${log.sleep?' h':''}</span></div><div class="stat-sub">Quality: ${log.sleepQuality?'★'.repeat(log.sleepQuality):'—'}</div></div>
@@ -2488,7 +2575,7 @@ function viewHealth() {
       <div class="stat-card"><div class="stat-label">Mood</div><div class="stat-value" style="color:${log.mood?Score.color(log.mood*20):'var(--muted)'}">${log.mood||'—'}<span style="font-size:14px">${log.mood?' /5':''}</span></div></div>
     </div>
     <div class="card" style="margin-bottom:16px">
-      <div class="card-title">Log Today's Health Metrics</div>
+      <div class="card-title">Log ${isToday?"Today's":"Selected Day's"} Health Metrics · ${Utils.fmtDate(selDate)}</div>
       <div class="form-row">
         <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" step="0.1" class="form-control" id="hl-weight" value="${log.weight||''}" placeholder="72.0" onchange="saveHealthLog()"></div>
         <div class="form-group"><label class="form-label">Sleep (hours)</label><input type="number" step="0.5" class="form-control" id="hl-sleep" value="${log.sleep||''}" placeholder="7.5" onchange="saveHealthLog()"></div>
@@ -2502,7 +2589,7 @@ function viewHealth() {
     </div>
   </div>`;
 }
-function saveHealthLog(){ const log=DB.todayLog(); log.weight=parseFloat(document.getElementById('hl-weight')?.value)||null; log.sleep=parseFloat(document.getElementById('hl-sleep')?.value)||null; log.notes=document.getElementById('hl-notes')?.value||''; DB.saveTodayLog(log); }
+function saveHealthLog(){ const log=DB.getEntryLog(); log.weight=parseFloat(document.getElementById('hl-weight')?.value)||null; log.sleep=parseFloat(document.getElementById('hl-sleep')?.value)||null; log.notes=document.getElementById('hl-notes')?.value||''; DB.saveEntryLog(log); }
 
 // ─── MORE VIEW ────────────────────────────────────────
 function viewMore() {
@@ -2934,7 +3021,7 @@ function saveNewPassword() {
 
 // ─── APP OBJECT ───────────────────────────────────────
 const App = {
-  state: { view:'dashboard', checkinStep:0, taskFilter:'today', analyticsPeriod:30 },
+  state: { view:'dashboard', checkinStep:0, taskFilter:'today', analyticsPeriod:30, entryDate: null },
 
   navigate(view) {
     destroyCharts();
