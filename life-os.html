@@ -944,12 +944,38 @@ function viewDashboard() {
   const stepPct = Utils.pct(log.steps||0, settings.stepGoal);
   const scoreColor = Score.color(score.total);
 
-  const scoreDash = Math.round(283 - (score.total / 100) * 283);
   const scoreGrad = score.total >= 75 ? '#10b981' : score.total >= 50 ? '#f59e0b' : '#ef4444';
+
+  // Week strip data
+  const weekDays = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0,10);
+    const wl = allLogs.find(l => l.date === ds);
+    weekDays.push({ ds, label: d.toLocaleDateString('en-GB',{weekday:'short'}), score: wl?.score||0, hasData: !!wl, isToday: i===0 });
+  }
+  const avgScore = weekDays.filter(d=>d.hasData).length ? Math.round(weekDays.filter(d=>d.hasData).reduce((s,d)=>s+d.score,0)/weekDays.filter(d=>d.hasData).length) : score.total;
+
+  // Smart insight
+  const insights = [];
+  if (!log.water || log.water < 2) insights.push({icon:'💧', msg:'Start hydrating — you\'ve had very little water today.', color:'var(--info)', nav:'water'});
+  if (!log.exercises || !log.exercises.length) insights.push({icon:'🏃', msg:'No exercise logged yet — even a 15-min walk counts!', color:'var(--success)', nav:'exercise'});
+  if (!log.sleep) insights.push({icon:'😴', msg:'Log last night\'s sleep to improve your score.', color:'#8b5cf6', nav:'mindset'});
+  if (!log.mood) insights.push({icon:'🎯', msg:'Quick check-in: how\'s your mood & energy today?', color:'var(--primary)', nav:'checkin'});
+  if (waterPct >= 100 && log.exercises?.length && log.sleep) insights.push({icon:'🌟', msg:'Amazing — water, sleep & exercise all done! Keep it up.', color:'var(--success)', nav:null});
+  const topInsight = insights[0] || {icon:'✨', msg:'Check-in to track your daily progress.', color:'var(--primary)', nav:'checkin'};
+
+  // Habit streaks
+  const streakData = [
+    { label:'Water', icon:'💧', streak: (() => { let s=0; for(let i=allLogs.length-1;i>=0;i--){ const l=allLogs[i]; if((l.water||0)>=(settings.waterGoal||8)){s++;}else break;} return s; })(), color:'var(--info)' },
+    { label:'Exercise', icon:'🏃', streak: (() => { let s=0; for(let i=allLogs.length-1;i>=0;i--){ const l=allLogs[i]; if(l.exercised||l.exercises?.length){s++;}else break;} return s; })(), color:'var(--success)' },
+    { label:'Meditation', icon:'🧘', streak: (() => { let s=0; for(let i=allLogs.length-1;i>=0;i--){ const l=allLogs[i]; if(l.meditated){s++;}else break;} return s; })(), color:'var(--primary)' },
+    { label:'Sleep', icon:'😴', streak: (() => { let s=0; for(let i=allLogs.length-1;i>=0;i--){ const l=allLogs[i]; if(l.sleep){s++;}else break;} return s; })(), color:'#8b5cf6' },
+  ];
 
   return `<div class="anim-fade">
   <!-- Header -->
-  <div style="margin-bottom:24px">
+  <div style="margin-bottom:16px">
     <div style="font-size:13px;color:var(--muted);font-weight:500;margin-bottom:3px">${Utils.dayName()}, ${Utils.fmtDate(Utils.today())}</div>
     <div style="font-size:26px;font-weight:800;letter-spacing:-.5px;margin-bottom:14px">${Utils.greeting()}, ${Utils.escape(settings.name||'there')} 👋</div>
     <div style="display:flex;gap:10px;flex-wrap:wrap">
@@ -971,6 +997,37 @@ function viewDashboard() {
       </div>
       ${overdueTasks.length ? `<div style="display:inline-flex;align-items:center;gap:6px;background:var(--danger-l);border:1px solid rgba(239,68,68,.2);border-radius:99px;padding:5px 14px 5px 10px;box-shadow:var(--sh)"><span style="font-size:14px">⚠️</span><span style="font-size:12px;font-weight:800;color:var(--danger)">${overdueTasks.length} overdue</span></div>` : ''}
     </div>
+  </div>
+
+  <!-- Week At A Glance Strip -->
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;gap:0;box-shadow:var(--sh)">
+    <div style="font-size:10.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;margin-right:14px">This Week</div>
+    <div style="display:flex;gap:8px;flex:1;align-items:flex-end;justify-content:center">
+      ${weekDays.map(d=>{
+        const h = d.hasData ? Math.max(18, Math.round(d.score * 0.48)) : 18;
+        const bg = !d.hasData ? 'var(--border)' : d.score>=75?'#10b981':d.score>=50?'#f59e0b':'#ef4444';
+        const alpha = d.isToday ? '1' : '0.55';
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:5px">
+          <div style="font-size:9px;font-weight:700;color:${d.isToday?scoreColor:'var(--muted)'}">${d.hasData&&!d.isToday?d.score:d.isToday?score.total:''}</div>
+          <div style="width:24px;height:${h}px;border-radius:5px;background:${bg};opacity:${alpha};transition:all .3s;${d.isToday?'box-shadow:0 0 0 2px '+scoreGrad+',0 0 12px rgba(99,102,241,.25)':''}"></div>
+          <div style="font-size:9px;font-weight:${d.isToday?800:600};color:${d.isToday?'var(--text)':'var(--muted)'}">${d.label}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="margin-left:14px;text-align:right">
+      <div style="font-size:9px;color:var(--muted);font-weight:600">7-DAY AVG</div>
+      <div style="font-size:20px;font-weight:900;color:${Score.color(avgScore)};letter-spacing:-1px">${avgScore}</div>
+    </div>
+  </div>
+
+  <!-- Smart Insight Banner -->
+  <div style="background:var(--card);border:1px solid var(--border);border-left:3px solid ${topInsight.color};border-radius:12px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;box-shadow:var(--sh);cursor:${topInsight.nav?'pointer':'default'}" ${topInsight.nav?`onclick="App.navigate('${topInsight.nav}')"`:''}">
+    <div style="font-size:22px;flex-shrink:0">${topInsight.icon}</div>
+    <div style="flex:1">
+      <div style="font-size:11px;font-weight:700;color:${topInsight.color};text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">Today's Focus</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text2)">${topInsight.msg}</div>
+    </div>
+    ${topInsight.nav ? `<div style="font-size:18px;color:var(--muted)">›</div>` : ''}
   </div>
 
   <!-- Score + Quick Add Row -->
@@ -1110,7 +1167,20 @@ function viewDashboard() {
             <div class="exercise-name">${Utils.escape(e.type)}</div>
             <div class="exercise-meta">${e.duration||0} min · ${Utils.escape(e.intensity||'')}</div>
           </div>
-        </div>`).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-icon">🏃</div><div class="empty-sub">No exercise logged today</div></div>`}
+        </div>`).join('') : `
+        <div style="padding:10px 0">
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:10px;margin-bottom:8px;cursor:pointer" onclick="App.navigate('exercise')">
+            <span style="font-size:20px">🏃</span>
+            <div>
+              <div style="font-size:12px;font-weight:600;color:var(--text)">No workout logged yet</div>
+              <div style="font-size:11px;color:var(--muted)">Tap to log cardio, strength, or yoga</div>
+            </div>
+            <div style="margin-left:auto;font-size:11px;font-weight:700;color:var(--primary)">Log →</div>
+          </div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            ${['🚶 Walk','🏋️ Gym','🧘 Yoga','🚴 Cycle','🏊 Swim'].map(a=>`<span style="padding:4px 10px;background:var(--primary-t);color:var(--primary);border-radius:20px;font-size:11px;font-weight:600;cursor:pointer" onclick="App.navigate('exercise')">${a}</span>`).join('')}
+          </div>
+        </div>`}
       ${log.breakExercises && log.breakExercises.length ? `<div style="margin-top:8px">${log.breakExercises.map(b=>`<span class="break-chip">⚡ ${Utils.escape(b.type)}</span>`).join('')}</div>` : ''}
     </div>
   </div>
@@ -1156,6 +1226,24 @@ function viewDashboard() {
     </div>
   </div>
 
+  <!-- Habit Streaks -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">🔥 Habit Streaks</div>
+      <div style="flex:1;height:1px;background:var(--border)"></div>
+      <div style="font-size:10px;color:var(--muted);font-weight:600">consecutive days</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+      ${streakData.map(s=>`
+        <div style="text-align:center;padding:14px 10px;background:var(--bg2);border-radius:12px;border:1px solid var(--border)">
+          <div style="font-size:22px;margin-bottom:6px">${s.icon}</div>
+          <div style="font-size:26px;font-weight:900;color:${s.streak>0?s.color:'var(--xs)'};letter-spacing:-1px;line-height:1">${s.streak}</div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:4px">${s.label}</div>
+          ${s.streak>0?`<div style="font-size:9px;color:${s.color};font-weight:600;margin-top:3px">${s.streak===1?'Started!':s.streak>=7?'On fire! 🔥':'Keep going!'}</div>`:`<div style="font-size:9px;color:var(--xs);margin-top:3px">Start today</div>`}
+        </div>`).join('')}
+    </div>
+  </div>
+
   <!-- Tasks -->
   <div class="card" style="margin-bottom:20px">
     <div class="section-header">
@@ -1163,17 +1251,49 @@ function viewDashboard() {
       <button class="btn btn-primary btn-sm" onclick="showAddTask()">+ Add Task</button>
     </div>
     ${overdueTasks.length ? `<div style="margin-bottom:10px;padding:8px 12px;background:var(--danger-l);border-radius:var(--r-sm);font-size:12px;font-weight:600;color:var(--danger)">⚠️ ${overdueTasks.length} overdue task${overdueTasks.length>1?'s':''}</div>` : ''}
-    ${todayTasks.length ? todayTasks.map(t => taskItem(t)).join('') : `<div class="empty-state" style="padding:20px 0"><div class="empty-sub">No tasks for today. Add one above!</div></div>`}
+    ${todayTasks.length ? todayTasks.map(t => taskItem(t)).join('') : `
+      <div style="padding:16px 0">
+        <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border:2px dashed var(--border);border-radius:12px;cursor:pointer" onclick="showAddTask()">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--primary-t);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">➕</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--text)">No tasks yet — add your first one</div>
+            <div style="font-size:11px;color:var(--muted);margin-top:2px">Break your goals into small daily actions</div>
+          </div>
+          <div style="margin-left:auto;font-size:12px;font-weight:700;color:var(--primary)">Add Task</div>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px">
+          ${['💪 Workout','📖 Read 20 pages','💧 Drink water','🧘 Meditate','📝 Journal'].map(s=>`<span style="padding:5px 12px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--text2);cursor:pointer" onclick="showAddTask()">${s}</span>`).join('')}
+        </div>
+      </div>`}
     ${tasks.length > 5 ? `<div style="text-align:center;margin-top:10px"><button class="btn btn-ghost" onclick="App.navigate('tasks')">View all ${tasks.length} tasks →</button></div>` : ''}
   </div>
 
-  <!-- Journal prompt -->
-  <div class="card" style="background:linear-gradient(135deg,var(--primary-l),var(--bg2))">
-    <div style="font-size:15px;font-weight:700;margin-bottom:4px">📝 Daily Reflection</div>
-    <div style="font-size:13px;color:var(--muted);margin-bottom:14px">${log.journal?.wentWell ? 'You\'ve reflected today. View or update below.' : 'Take 2 minutes to reflect on your day.'}</div>
-    <button class="btn btn-primary" onclick="App.navigate('journal')">
-      ${log.journal?.wentWell ? '📓 View Journal' : '✍️ Write Reflection'}
-    </button>
+  <!-- Journal + Daily Completion -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+    <div class="card" style="background:linear-gradient(135deg,var(--primary-l),var(--bg2))">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">📝 Daily Reflection</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:14px">${log.journal?.wentWell ? '✅ You\'ve reflected today!' : 'Take 2 minutes to reflect on your day — a powerful habit for growth.'}</div>
+      <button class="btn btn-primary" onclick="App.navigate('journal')">
+        ${log.journal?.wentWell ? '📓 View Journal' : '✍️ Write Reflection'}
+      </button>
+    </div>
+    <div class="card" style="background:linear-gradient(135deg,var(--bg2),var(--card))">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px">📊 Day Completion</div>
+      <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:14px">
+        ${[
+          ['💧 Hydration', waterPct, 'var(--info)'],
+          ['🏃 Exercise', log.exercises?.length?100:0, 'var(--success)'],
+          ['😴 Sleep', log.sleep?100:0, '#8b5cf6'],
+          ['🧘 Meditation', log.meditated?100:0, 'var(--primary)'],
+        ].map(([l,p,c])=>`
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="font-size:10px;color:var(--muted);width:84px;flex-shrink:0">${l}</div>
+            <div style="flex:1;height:6px;background:var(--border);border-radius:3px;overflow:hidden"><div style="height:100%;width:${p}%;background:${c};border-radius:3px;transition:width .6s ease"></div></div>
+            <div style="font-size:10px;font-weight:700;color:${p>=100?c:'var(--muted)'};width:28px;text-align:right">${p >= 100 ? '✓' : p+'%'}</div>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="App.navigate('checkin')" style="width:100%">Complete Daily Check-In →</button>
+    </div>
   </div>
 </div>`;
 }
