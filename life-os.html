@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<!-- v1.0.1 -->
 <html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
@@ -9,6 +8,7 @@
   <meta name="description" content="Personal Life Operating System — Track, Analyse, Understand, Improve">
   <title>Life OS — Personal Life Operating System</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -161,6 +161,7 @@ label.form-label{font-size:12px;font-weight:600;color:var(--muted);}
 .form-control:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-t);}
 select.form-control{cursor:pointer;}
 textarea.form-control{resize:vertical;min-height:80px;}
+[contenteditable][data-placeholder]:empty::before{content:attr(data-placeholder);color:var(--muted);pointer-events:none;font-style:italic;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 
@@ -2528,73 +2529,77 @@ function saveHabit(){ const name=document.getElementById('hb-name')?.value?.trim
 function deleteHabit(id){ if(!confirm('Delete this habit?'))return; DB.saveHabits(DB.habits().filter(h=>h.id!==id)); App.navigate('habits'); }
 
 // ─── ACTION PLAN ──────────────────────────────────────
-const ACTION_PLAN_POINTS = [
-  { id:1, area:'Consistent income through trading', workOn:'YES' },
-  { id:2, area:'अपने आपको शांत रखना', workOn:'YES' },
-  { id:3, area:'Office seniors की सोच / behaviour', workOn:'NO' },
-  { id:4, area:'बच्चे को positive mindset देना', workOn:'YES' },
-  { id:5, area:'Incomplete / pending काम', workOn:'YES' },
-  { id:6, area:'पुराने government-related pending काम', workOn:'YES' },
-  { id:7, area:'Family को समय देना', workOn:'YES' },
-  { id:8, area:'Work plans sustain नहीं होना', workOn:'YES' },
-  { id:9, area:'बढ़ते expenses', workOn:'YES' },
-  { id:10, area:'Home maintenance', workOn:'YES' },
-  { id:11, area:'Solar panel decision', workOn:'YES' },
-  { id:12, area:'Health / Fatty Liver improve/reverse करना', workOn:'YES' },
-  { id:13, area:'Children\'s Book — Amazon KDP पर publish करना', workOn:'YES' },
-];
+const ACTION_PLAN_ROWS = 13;
 
 function viewActionPlan() {
   const data = DB.actionPlan();
-  const rows = ACTION_PLAN_POINTS.map(p => {
-    const entry = data[p.id] || {};
-    const isNo = p.workOn === 'NO';
-    const rowBg = isNo ? 'background:var(--danger-l);opacity:.7;' : '';
-    const yesNo = isNo
-      ? `<span style="background:var(--danger-l);color:var(--danger);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">🔴 NO</span>`
-      : `<span style="background:var(--success-l);color:var(--success);padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700;">🟢 YES</span>`;
-    return `<tr data-id="${p.id}" style="${rowBg}">
-      <td style="text-align:center;font-weight:700;color:var(--muted);font-size:13px;padding:12px 8px;white-space:nowrap;">${p.id}</td>
-      <td style="padding:12px 10px;font-size:13px;font-weight:600;min-width:180px;line-height:1.4;">${Utils.escape(p.area)}</td>
-      <td style="text-align:center;padding:12px 8px;">${yesNo}</td>
-      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="specific" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'specific',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.specific||'')}</div></td>
-      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="month" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'month',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.month||'')}</div></td>
-      <td style="padding:8px;min-width:130px;"><input type="date" class="form-control" style="font-size:12px;" value="${entry.deadline||''}" onchange="apSave(${p.id},'deadline',this.value)"></td>
-      <td style="padding:8px;min-width:180px;"><div contenteditable="true" class="ap-cell" data-field="someday" data-id="${p.id}" style="min-height:44px;padding:8px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;" oninput="apSave(${p.id},'someday',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(entry.someday||'')}</div></td>
-    </tr>`;
-  }).join('');
 
-  const filledCount = ACTION_PLAN_POINTS.filter(p => {
-    const e = data[p.id] || {};
-    return e.specific || e.month || e.deadline || e.someday;
-  }).length;
+  // Count filled rows (area must be set)
+  let filledCount = 0;
+  for (let i = 1; i <= ACTION_PLAN_ROWS; i++) {
+    const e = data[i] || {};
+    if (e.area && e.area.trim()) filledCount++;
+  }
+
+  // Build rows
+  let rows = '';
+  for (let i = 1; i <= ACTION_PLAN_ROWS; i++) {
+    const e = data[i] || {};
+    const workOn = e.workOn || 'YES';
+    const isNo = workOn === 'NO';
+    const rowStyle = isNo ? 'background:var(--danger-l);' : '';
+    const badgeStyle = isNo
+      ? 'background:var(--danger-l);color:var(--danger);border:1.5px solid var(--danger);'
+      : 'background:var(--success-l);color:var(--success);border:1.5px solid var(--success);';
+    const dot = isNo ? '🔴' : '🟢';
+    const cellStyle = 'min-height:40px;padding:7px 9px;border-radius:8px;border:1.5px solid var(--border);background:var(--input);font-size:12.5px;line-height:1.5;outline:none;transition:border-color .2s;';
+    rows += `<tr data-id="${i}" style="${rowStyle}">
+      <td style="text-align:center;font-weight:700;color:var(--muted);font-size:13px;padding:12px 8px;">${i}</td>
+      <td style="padding:8px;min-width:190px;">
+        <div contenteditable="true" style="${cellStyle}min-height:40px;" oninput="apSave(${i},'area',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'" data-placeholder="Life goal area…">${Utils.escape(e.area||'')}</div>
+      </td>
+      <td style="text-align:center;padding:8px;">
+        <button onclick="apToggleWorkOn(${i},this)" style="${badgeStyle}padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;border-radius:20px;white-space:nowrap;">${dot} ${workOn}</button>
+      </td>
+      <td style="padding:8px;min-width:180px;">
+        <div contenteditable="true" style="${cellStyle}" oninput="apSave(${i},'specific',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(e.specific||'')}</div>
+      </td>
+      <td style="padding:8px;min-width:180px;">
+        <div contenteditable="true" style="${cellStyle}" oninput="apSave(${i},'month',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(e.month||'')}</div>
+      </td>
+      <td style="padding:8px;min-width:130px;">
+        <input type="date" class="form-control" style="font-size:12px;" value="${e.deadline||''}" onchange="apSave(${i},'deadline',this.value)">
+      </td>
+      <td style="padding:8px;min-width:180px;">
+        <div contenteditable="true" style="${cellStyle}" oninput="apSave(${i},'someday',this.innerText)" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='var(--border)'">${Utils.escape(e.someday||'')}</div>
+      </td>
+    </tr>`;
+  }
 
   return `<div class="anim-fade">
     <div class="section-header">
       <div>
         <div class="page-title">📋 Action Plan</div>
-        <div style="font-size:13px;color:var(--muted);margin-top:2px;">अपने जीवन के लक्ष्यों की योजना बनाएं · ${filledCount} of 13 areas planned</div>
+        <div style="font-size:13px;color:var(--muted);margin-top:2px;">अपने जीवन के लक्ष्यों की योजना बनाएं · <span id="ap-counter" style="color:var(--primary);font-weight:600;">${filledCount} of ${ACTION_PLAN_ROWS} areas planned</span></div>
       </div>
-      <button class="btn btn-secondary btn-sm" onclick="apExport()">⬇️ Export</button>
+      <button class="btn btn-secondary btn-sm" onclick="apExport()">⬇️ Export to Excel</button>
     </div>
 
     <div class="card" style="padding:0;overflow:hidden;">
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
-        <table style="width:100%;border-collapse:collapse;min-width:900px;">
+        <table style="width:100%;border-collapse:collapse;min-width:960px;">
           <thead>
             <tr style="background:linear-gradient(135deg,var(--primary),#818cf8);color:#fff;">
               <th style="padding:14px 8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">#</th>
-              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Life Goal Area</th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:190px;">Life Goal Area</th>
               <th style="padding:14px 8px;text-align:center;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Work On?</th>
-              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Specific &amp; Measurable<br><span style="font-weight:500;opacity:.85;">क्या करना है?</span></th>
-              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">This Month Plan<br><span style="font-weight:500;opacity:.85;">मैं इस Month क्या कर सकता हूँ</span></th>
-              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Deadline<br><span style="font-weight:500;opacity:.85;">कब करना है?</span></th>
-              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Someday<br><span style="font-weight:500;opacity:.85;">कर सकता हूँ</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Specific &amp; Measurable<br><span style="font-weight:400;opacity:.85;">क्या करना है?</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">This Month Plan<br><span style="font-weight:400;opacity:.85;">मैं इस Month क्या कर सकता हूँ</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;white-space:nowrap;">Deadline<br><span style="font-weight:400;opacity:.85;">कब करना है?</span></th>
+              <th style="padding:14px 10px;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;min-width:180px;">Someday<br><span style="font-weight:400;opacity:.85;">कर सकता हूँ</span></th>
             </tr>
           </thead>
-          <tbody>
-            ${rows}
-          </tbody>
+          <tbody id="ap-tbody">${rows}</tbody>
         </table>
       </div>
     </div>
@@ -2612,22 +2617,55 @@ function apSave(id, field, value) {
   if (!data[id]) data[id] = {};
   data[id][field] = value.trim();
   DB.saveActionPlan(data);
+  // Update counter
+  let filled = 0;
+  for (let i = 1; i <= ACTION_PLAN_ROWS; i++) {
+    const e = data[i] || {};
+    if (e.area && e.area.trim()) filled++;
+  }
+  const counter = document.getElementById('ap-counter');
+  if (counter) counter.textContent = `${filled} of ${ACTION_PLAN_ROWS} areas planned`;
+}
+
+function apToggleWorkOn(id, btn) {
+  const data = DB.actionPlan();
+  if (!data[id]) data[id] = {};
+  const current = data[id].workOn || 'YES';
+  const next = current === 'YES' ? 'NO' : 'YES';
+  data[id].workOn = next;
+  DB.saveActionPlan(data);
+  // Update button and row
+  const isNo = next === 'NO';
+  btn.textContent = (isNo ? '🔴 ' : '🟢 ') + next;
+  btn.style.background = isNo ? 'var(--danger-l)' : 'var(--success-l)';
+  btn.style.color = isNo ? 'var(--danger)' : 'var(--success)';
+  btn.style.borderColor = isNo ? 'var(--danger)' : 'var(--success)';
+  const tr = document.querySelector(`#ap-tbody tr[data-id="${id}"]`);
+  if (tr) tr.style.background = isNo ? 'var(--danger-l)' : '';
 }
 
 function apExport() {
   const data = DB.actionPlan();
-  let csv = '#,Life Goal Area,Work On?,Specific & Measurable,This Month Plan,Deadline,Someday\n';
-  ACTION_PLAN_POINTS.forEach(p => {
-    const e = data[p.id] || {};
-    const esc = v => '"' + (v||'').replace(/"/g,'""') + '"';
-    csv += [p.id, esc(p.area), p.workOn, esc(e.specific), esc(e.month), esc(e.deadline), esc(e.someday)].join(',') + '\n';
-  });
-  const blob = new Blob([csv], {type:'text/csv'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'life-action-plan.csv';
-  a.click();
-  App.toast('Action Plan exported! 📊');
+  const rows = [['#', 'Life Goal Area', 'Work On?', 'Specific & Measurable', 'This Month Plan', 'Deadline', 'Someday']];
+  for (let i = 1; i <= ACTION_PLAN_ROWS; i++) {
+    const e = data[i] || {};
+    rows.push([i, e.area||'', e.workOn||'YES', e.specific||'', e.month||'', e.deadline||'', e.someday||'']);
+  }
+  if (typeof XLSX !== 'undefined') {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    ws['!cols'] = [{wch:4},{wch:30},{wch:10},{wch:32},{wch:32},{wch:14},{wch:28}];
+    XLSX.utils.book_append_sheet(wb, ws, 'Action Plan');
+    XLSX.writeFile(wb, `Life_Action_Plan_${Utils.today()}.xlsx`);
+    App.toast('Exported to Excel! 📊');
+  } else {
+    // Fallback to CSV if XLSX not loaded
+    let csv = rows.map(r => r.map(v => '"'+(v||'').toString().replace(/"/g,'""')+'"').join(',')).join('\n');
+    const blob = new Blob([csv], {type:'text/csv'});
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+    a.download = `Life_Action_Plan_${Utils.today()}.csv`; a.click();
+    App.toast('Exported as CSV! 📊');
+  }
 }
 
 // ─── HEALTH OVERVIEW ──────────────────────────────────
