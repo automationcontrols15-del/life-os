@@ -2653,6 +2653,20 @@ function viewHealth() {
         <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" step="0.1" class="form-control" id="hl-weight" value="${log.weight||''}" placeholder="72.0" onchange="saveHealthLog()"></div>
         <div class="form-group"><label class="form-label">Sleep (hours)</label><input type="number" step="0.5" class="form-control" id="hl-sleep" value="${log.sleep||''}" placeholder="7.5" onchange="saveHealthLog()"></div>
       </div>
+      <div class="form-group">
+        <label class="form-label">Energy Level (1–5) <span id="hl-energy-v" style="font-weight:700;color:var(--warn)">${log.energy||'—'}</span></label>
+        <div class="range-wrap">
+          <input type="range" min="1" max="5" step="1" id="hl-energy" value="${log.energy||3}" oninput="document.getElementById('hl-energy-v').textContent=this.value;saveHealthLog()">
+          <div class="range-labels"><span>Exhausted</span><span>Energized</span></div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mood (1–5) <span id="hl-mood-v" style="font-weight:700;color:var(--primary)">${log.mood||'—'}</span></label>
+        <div class="range-wrap">
+          <input type="range" min="1" max="5" step="1" id="hl-mood" value="${log.mood||3}" oninput="document.getElementById('hl-mood-v').textContent=this.value;saveHealthLog()">
+          <div class="range-labels"><span>Very Low</span><span>Amazing</span></div>
+        </div>
+      </div>
       <div class="form-group"><label class="form-label">General Notes</label><textarea class="form-control" id="hl-notes" placeholder="Any health observations..." onchange="saveHealthLog()">${Utils.escape(log.notes||'')}</textarea></div>
       <button class="btn btn-primary" onclick="saveHealthLog();App.toast('Health logged ❤️')">Save</button>
     </div>
@@ -2662,7 +2676,7 @@ function viewHealth() {
     </div>
   </div>`;
 }
-function saveHealthLog(){ const log=DB.getEntryLog(); log.weight=parseFloat(document.getElementById('hl-weight')?.value)||null; log.sleep=parseFloat(document.getElementById('hl-sleep')?.value)||null; log.notes=document.getElementById('hl-notes')?.value||''; DB.saveEntryLog(log); }
+function saveHealthLog(){ const log=DB.getEntryLog(); log.weight=parseFloat(document.getElementById('hl-weight')?.value)||null; log.sleep=parseFloat(document.getElementById('hl-sleep')?.value)||null; const ev=parseInt(document.getElementById('hl-energy')?.value); if(!isNaN(ev))log.energy=ev; const mv=parseInt(document.getElementById('hl-mood')?.value); if(!isNaN(mv))log.mood=mv; log.notes=document.getElementById('hl-notes')?.value||''; DB.saveEntryLog(log); }
 
 // ─── MORE VIEW ────────────────────────────────────────
 function viewMore() {
