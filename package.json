@@ -1,13 +1,15 @@
 {
   "name": "life-os",
   "version": "1.0.0",
-  "description": "Personal Life Operating System - Track health, habits, goals and more",
+  "description": "Personal Life Operating System",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "dev": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
+    "express": "^4.18.2",
+    "googleapis": "^140.0.0"
   },
   "engines": {
     "node": ">=18.0.0"
