@@ -32,6 +32,11 @@ if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
 // ── GOOGLE AUTH ──────────────────────────────────────────────────────────────
 function getAuth() {
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  // Fix for Railway/OpenSSL 3.x: env vars can double-escape newlines in the
+  // private key, leaving literal \n sequences after JSON.parse. Force real newlines.
+  if (credentials.private_key) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+  }
   return new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
