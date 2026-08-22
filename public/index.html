@@ -665,6 +665,46 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 #sp-lightbox-nav{display:flex;gap:18px;margin-top:14px}
 .sp-lb-nav-btn{background:rgba(255,255,255,.12);border:none;color:#fff;width:42px;height:42px;border-radius:50%;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
 .sp-lb-nav-btn:hover{background:rgba(255,255,255,.25)}
+
+/* ── AUTH OVERLAY ── */
+.auth-overlay{position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:linear-gradient(135deg,#1e2d6b 0%,#2a3f8f 60%,#3b55b8 100%)}
+.auth-card{background:#fff;border-radius:20px;padding:40px 36px;width:100%;max-width:420px;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
+.auth-logo{font-size:32px;font-weight:900;letter-spacing:2px;color:var(--accent);text-align:center;margin-bottom:4px}
+.auth-logo span{display:block;font-size:11px;font-weight:400;color:var(--muted);letter-spacing:.5px;margin-top:2px}
+.auth-title{font-size:20px;font-weight:800;color:var(--text);text-align:center;margin:20px 0 6px}
+.auth-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:24px}
+.auth-field{margin-bottom:16px}
+.auth-field label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px;letter-spacing:.3px}
+.auth-field input{width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;color:var(--text);background:var(--bg);transition:border-color .2s}
+.auth-field input:focus{outline:none;border-color:var(--accent)}
+.auth-error{color:var(--red);font-size:13px;margin-bottom:14px;padding:10px 14px;background:rgba(220,38,38,.08);border-radius:8px;display:none}
+.auth-btn{width:100%;padding:12px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;transition:background .2s;margin-top:4px}
+.auth-btn:hover{background:#3651d4}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed}
+
+/* ── SIDEBAR USER FOOTER ── */
+.sidebar-user{margin-top:auto;padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.sidebar-user-avatar{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0}
+.sidebar-user-name{font-size:12px;font-weight:600;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1}
+.sidebar-user-role{font-size:10px;color:rgba(255,255,255,.45)}
+.sidebar-logout-btn{background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.6);padding:5px 8px;border-radius:6px;font-size:11px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.sidebar-logout-btn:hover{background:rgba(220,38,38,.4);color:#fff}
+
+/* ── USER MANAGEMENT PAGE ── */
+.um-table-wrap{overflow-x:auto}
+.um-table{width:100%;border-collapse:collapse}
+.um-table th{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);padding:10px 14px;background:var(--surface2);border-bottom:1.5px solid var(--border);text-align:left}
+.um-table td{padding:11px 14px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.um-table tr:hover td{background:rgba(67,97,238,.04)}
+.um-badge-admin{background:rgba(124,58,237,.15);color:#7c3aed;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.um-badge-user{background:rgba(67,97,238,.12);color:var(--accent);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.um-badge-active{background:rgba(5,150,105,.12);color:var(--green);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+.um-badge-inactive{background:rgba(220,38,38,.1);color:var(--red);padding:2px 10px;border-radius:20px;font-size:11px;font-weight:700}
+
+/* ── USER WELCOME BAR ── */
+.user-welcome{font-size:13px;font-weight:600;color:var(--muted);display:flex;align-items:center;gap:8px;margin-right:auto;padding-left:4px}
+.user-welcome strong{color:var(--text)}
 </style>
 </head>
 <body>
@@ -720,16 +760,27 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
   <div class="nav-item" onclick="nav('monthly')"><span class="nav-icon">📆</span> Monthly Review</div>
   <div class="nav-group-label">System</div>
   <div class="nav-item" onclick="nav('settings')"><span class="nav-icon">⚙</span> Settings</div>
+  <div class="nav-item" id="nav-usermgmt" onclick="nav('usermgmt')" style="display:none"><span class="nav-icon">👥</span> User Management</div>
+  <!-- Sidebar user footer -->
+  <div class="sidebar-user" id="sidebar-user-footer">
+    <div class="sidebar-user-avatar" id="sidebar-avatar">?</div>
+    <div style="flex:1;min-width:0">
+      <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+      <div class="sidebar-user-role" id="sidebar-user-role">—</div>
+    </div>
+    <button class="sidebar-logout-btn" onclick="doLogout()">Logout</button>
+  </div>
 </nav>
 
 <!-- ═══ MAIN ═══ -->
 <main class="main">
 
-<!-- ═══ TOPBAR (theme toggle) ═══ -->
+<!-- ═══ TOPBAR (theme toggle + user) ═══ -->
 <div class="topbar">
   <button class="hamburger" id="hamburger-btn" onclick="toggleSidebar()" aria-label="Open menu">
     <span></span><span></span><span></span>
   </button>
+  <div class="user-welcome" id="topbar-welcome" style="display:none">Welcome, <strong id="topbar-name"></strong></div>
   <div class="theme-toggle" onclick="toggleTheme()" title="Toggle dark / light mode">
     <span class="theme-icon" id="theme-icon">☀️</span>
     <span class="theme-label" id="theme-label">Light</span>
@@ -2612,11 +2663,15 @@ async function _flushSync() {
   const updates = {};
   keys.forEach(k => { updates[k] = _cache[k]; });
   try {
-    await fetch('/api/data', {
+    const res = await fetch('/api/data', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(updates),
     });
+    if (res.status === 401) {
+      _currentUser = null;
+      showLoginOverlay();
+    }
   } catch (e) { console.warn('Sheets sync failed:', e); }
 }
 
@@ -2713,6 +2768,7 @@ function nav(page) {
     vitals:loadVitals, affirmations:loadAffirmations, manifestation:loadManifestation,
     'strategy-playbook':loadStrategyPlaybook };
   if(refreshers[page]) refreshers[page]();
+  if(page === 'usermgmt') loadUserManagement();
 }
 
 function switchTab(el, tabId) {
@@ -4944,21 +5000,7 @@ async function fetchGfitData() {
 }
 
 // Check on page load and handle ?gfit= callback param
-(function initGfit() {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('gfit') === 'connected') {
-    toast('✅ Google Fit connected!');
-    history.replaceState({}, '', window.location.pathname);
-    setGfitUI(true);
-    // Navigate to vitals page
-    setTimeout(() => showPage('vitals'), 300);
-  } else if (params.get('gfit') === 'error') {
-    toast('❌ Google Fit connection failed. Check credentials.');
-    history.replaceState({}, '', window.location.pathname);
-  } else {
-    checkGfitStatus();
-  }
-})();
+// Google Fit init is handled inside _initAppAfterAuth (after authentication)
 
 // ══════════════════════════════════════════════
 //  AFFIRMATIONS
@@ -5278,11 +5320,15 @@ function clearAllData() {
 // ══════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════
-async function _initApp() {
+async function _initAppAfterAuth() {
+  // Called after successful authentication
+  if (_currentUser) _applyUserUI(_currentUser);
+
   // ── Load all data from Google Sheets via server ──
   try {
     const res = await fetch('/api/data');
     if (res.ok) { _cache = await res.json(); }
+    else if (res.status === 401) { showLoginOverlay(); return; }
     else { console.warn('Server returned', res.status, '— starting with empty data'); }
   } catch (e) { console.warn('Could not reach server, starting with empty cache:', e); }
 
@@ -5310,34 +5356,488 @@ async function _initApp() {
   loadDashboard();
   renderTasks();
 
-  // ── MOBILE SETUP ──
+  // Check Google Fit state from URL params (OAuth callback)
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('gfit') === 'connected') {
+    toast('✅ Google Fit connected!');
+    history.replaceState({}, '', window.location.pathname);
+    setGfitUI(true);
+    setTimeout(() => showPage('vitals'), 300);
+  } else if (params.get('gfit') === 'error') {
+    toast('❌ Google Fit connection failed.');
+    history.replaceState({}, '', window.location.pathname);
+  } else {
+    checkGfitStatus();
+  }
+}
+
+async function _initApp() {
+  // ── Step 1: Check if first-run setup is needed ──
+  try {
+    const sr = await fetch('/api/auth/setup-status');
+    if (sr.ok) {
+      const { needsSetup } = await sr.json();
+      if (needsSetup) { showSetupOverlay(); return; }
+    }
+  } catch (e) { /* continue */ }
+
+  // ── Step 2: Check if already authenticated ──
+  try {
+    const mr = await fetch('/api/auth/me');
+    if (mr.ok) {
+      const { user } = await mr.json();
+      _currentUser = user;
+      await _initAppAfterAuth();
+      return;
+    }
+    if (mr.status === 401) { showLoginOverlay(); return; }
+  } catch (e) { showLoginOverlay(); return; }
+
+  // Fallback: if neither setup nor me check worked, show login
+  showLoginOverlay();
+}
+
+// ── MOBILE SETUP (runs always, regardless of auth) ──
+document.addEventListener('DOMContentLoaded', () => {
+  _initApp();
   // Swipe right on edge to open sidebar, swipe left to close
   let touchStartX=0,touchStartY=0;
   document.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;touchStartY=e.touches[0].clientY;},{passive:true});
   document.addEventListener('touchend',e=>{
     const dx=e.changedTouches[0].clientX-touchStartX;
     const dy=Math.abs(e.changedTouches[0].clientY-touchStartY);
-    if(dy>40) return; // vertical scroll, ignore
+    if(dy>40) return;
     const sidebar=document.getElementById('sidebar');
-    if(dx>60&&touchStartX<30&&!sidebar.classList.contains('open')) toggleSidebar(); // swipe right from edge
-    if(dx<-60&&sidebar.classList.contains('open')) closeSidebar(); // swipe left to close
+    if(dx>60&&touchStartX<30&&!sidebar.classList.contains('open')) toggleSidebar();
+    if(dx<-60&&sidebar.classList.contains('open')) closeSidebar();
   },{passive:true});
-
-  // Close modal on back button (Android)
   window.addEventListener('popstate',()=>{
     document.querySelectorAll('.modal-overlay').forEach(m=>{if(m.style.display==='flex') m.style.display='none';});
     document.body.style.overflow='';
   });
-
-  // Add smooth scroll to sidebar on iOS
   const sidebar=document.getElementById('sidebar');
   if(sidebar) sidebar.style.webkitOverflowScrolling='touch';
-
-  // Close sidebar on resize to desktop
   window.addEventListener('resize',()=>{if(window.innerWidth>768) closeSidebar();},{passive:true});
+});
+</script>
+
+<!-- ═══ LOGIN OVERLAY ═══ -->
+<div id="login-overlay" class="auth-overlay" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">⚡ MY LIFE OS<span>Observe · Reflect · Improve</span></div>
+    <div class="auth-title">Welcome Back</div>
+    <div class="auth-sub">Sign in to access your personal dashboard</div>
+    <div class="auth-error" id="login-error"></div>
+    <div class="auth-field">
+      <label>Email Address</label>
+      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="auth-field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Only registered users can access this app.<br>Contact your administrator if you need access.</div>
+  </div>
+</div>
+
+<!-- ═══ SETUP OVERLAY (first-run admin creation) ═══ -->
+<div id="setup-overlay" class="auth-overlay" style="display:none">
+  <div class="auth-card">
+    <div class="auth-logo">⚡ MY LIFE OS<span>First-Time Setup</span></div>
+    <div class="auth-title">Create Admin Account</div>
+    <div class="auth-sub">No users exist yet. Set up your administrator account to get started.</div>
+    <div class="auth-error" id="setup-error"></div>
+    <div class="auth-field">
+      <label>Full Name</label>
+      <input type="text" id="setup-name" placeholder="Your full name" autocomplete="name">
+    </div>
+    <div class="auth-field">
+      <label>Email Address</label>
+      <input type="email" id="setup-email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="auth-field">
+      <label>Contact Number</label>
+      <input type="text" id="setup-contact" placeholder="+91 99999 99999 (optional)">
+    </div>
+    <div class="auth-field">
+      <label>Password <span style="color:var(--muted);font-weight:400">(min. 8 characters)</span></label>
+      <input type="password" id="setup-password" placeholder="Choose a strong password" onkeydown="if(event.key==='Enter')doSetup()">
+    </div>
+    <button class="auth-btn" id="setup-btn" onclick="doSetup()">Create Admin Account</button>
+    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">This account will have full administrator privileges.</div>
+  </div>
+</div>
+
+<!-- ═══ USER MANAGEMENT PAGE ═══ -->
+<div id="page-usermgmt" class="page" style="display:none">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="page-title">👥 User Management</div>
+      <div class="page-subtitle">Add and manage users who can access Life OS</div>
+    </div>
+    <button class="btn btn-primary" onclick="showModal('modal-add-user')">+ Add User</button>
+  </div>
+
+  <!-- Search -->
+  <div class="card" style="margin-bottom:16px;padding:14px 20px">
+    <input class="form-input" id="um-search" placeholder="🔍 Search by name, email or role…" oninput="renderUsersTable()" style="margin:0;max-width:400px">
+  </div>
+
+  <!-- Users table -->
+  <div class="card" style="padding:0">
+    <div class="um-table-wrap">
+      <table class="um-table">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Contact</th><th>Role</th><th>Status</th><th>Date Added</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="um-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add User -->
+<div class="modal-overlay" id="modal-add-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:800">➕ Add New User</div>
+      <button onclick="hideModal('modal-add-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div class="auth-error" id="add-user-error" style="margin-bottom:14px"></div>
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="um-add-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address *</label>
+      <input class="form-input" type="email" id="um-add-email" placeholder="user@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact Number</label>
+      <input class="form-input" id="um-add-contact" placeholder="+91 99999 99999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select" id="um-add-role">
+        <option value="user">User (personal data only)</option>
+        <option value="admin">Admin (full access)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password * <span style="color:var(--muted);font-weight:400">(min. 8 characters)</span></label>
+      <input class="form-input" type="password" id="um-add-password" placeholder="Temporary password">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="addUser()">Add User</button>
+      <button class="btn btn-secondary" onclick="hideModal('modal-add-user')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit User -->
+<div class="modal-overlay" id="modal-edit-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:800">✏️ Edit User</div>
+      <button onclick="hideModal('modal-edit-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div class="auth-error" id="edit-user-error" style="margin-bottom:14px"></div>
+    <input type="hidden" id="edit-user-id">
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="um-edit-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" id="um-edit-email" disabled style="opacity:.6">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Email cannot be changed after registration.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact Number</label>
+      <input class="form-input" id="um-edit-contact" placeholder="+91 99999 99999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select" id="um-edit-role">
+        <option value="user">User (personal data only)</option>
+        <option value="admin">Admin (full access)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">New Password <span style="color:var(--muted);font-weight:400">(leave blank to keep current)</span></label>
+      <input class="form-input" type="password" id="um-edit-password" placeholder="Leave blank to keep unchanged">
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveEditUser()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="hideModal('modal-edit-user')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════
+//  AUTH SYSTEM
+// ══════════════════════════════════════════════
+
+let _currentUser = null; // { user_id, name, email, role }
+
+// ── Auth API helpers ──
+async function authFetch(url, opts = {}) {
+  const res = await fetch(url, opts);
+  if (res.status === 401) {
+    // Session expired or not authenticated
+    _currentUser = null;
+    showLoginOverlay();
+    throw new Error('Not authenticated');
+  }
+  return res;
 }
 
-document.addEventListener('DOMContentLoaded', () => { _initApp(); });
+function showLoginOverlay() {
+  document.getElementById('login-overlay').style.display = 'flex';
+  document.getElementById('setup-overlay').style.display = 'none';
+  document.getElementById('app-loading') && document.getElementById('app-loading').remove();
+  setTimeout(() => document.getElementById('login-email') && document.getElementById('login-email').focus(), 100);
+}
+
+function showSetupOverlay() {
+  document.getElementById('setup-overlay').style.display = 'flex';
+  document.getElementById('login-overlay').style.display = 'none';
+  document.getElementById('app-loading') && document.getElementById('app-loading').remove();
+  setTimeout(() => document.getElementById('setup-name') && document.getElementById('setup-name').focus(), 100);
+}
+
+function showAuthError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideAuthError(id) {
+  const el = document.getElementById(id);
+  if (el) el.style.display = 'none';
+}
+
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  hideAuthError('login-error');
+  if (!email || !password) return showAuthError('login-error', 'Please enter your email and password.');
+
+  const btn = document.getElementById('login-btn');
+  btn.disabled = true; btn.textContent = 'Signing in…';
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showAuthError('login-error', data.error || 'Login failed.');
+      return;
+    }
+    document.getElementById('login-overlay').style.display = 'none';
+    _currentUser = data.user;
+    await _initAppAfterAuth();
+  } catch (e) {
+    showAuthError('login-error', 'Connection error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+
+async function doSetup() {
+  const name    = document.getElementById('setup-name').value.trim();
+  const email   = document.getElementById('setup-email').value.trim();
+  const contact = document.getElementById('setup-contact').value.trim();
+  const password = document.getElementById('setup-password').value;
+  hideAuthError('setup-error');
+  if (!name || !email || !password) return showAuthError('setup-error', 'Name, email, and password are required.');
+  if (password.length < 8) return showAuthError('setup-error', 'Password must be at least 8 characters.');
+
+  const btn = document.getElementById('setup-btn');
+  btn.disabled = true; btn.textContent = 'Creating account…';
+  try {
+    const res = await fetch('/api/auth/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, contact, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showAuthError('setup-error', data.error || 'Setup failed.');
+      return;
+    }
+    document.getElementById('setup-overlay').style.display = 'none';
+    _currentUser = data.user;
+    await _initAppAfterAuth();
+  } catch (e) {
+    showAuthError('setup-error', 'Connection error. Please try again.');
+  } finally {
+    btn.disabled = false; btn.textContent = 'Create Admin Account';
+  }
+}
+
+async function doLogout() {
+  try {
+    await fetch('/api/auth/logout', { method: 'POST' });
+  } catch(_) {}
+  _currentUser = null;
+  _cache = {};
+  document.getElementById('login-password') && (document.getElementById('login-password').value = '');
+  showLoginOverlay();
+}
+
+function _applyUserUI(user) {
+  // Sidebar user footer
+  const initial = user.name ? user.name[0].toUpperCase() : '?';
+  document.getElementById('sidebar-avatar').textContent = initial;
+  document.getElementById('sidebar-user-name').textContent = user.name;
+  document.getElementById('sidebar-user-role').textContent = user.role === 'admin' ? 'Administrator' : 'User';
+  // Topbar welcome
+  document.getElementById('topbar-welcome').style.display = 'flex';
+  document.getElementById('topbar-name').textContent = user.name.split(' ')[0];
+  // Show User Management nav if admin
+  document.getElementById('nav-usermgmt').style.display = user.role === 'admin' ? 'flex' : 'none';
+}
+
+// ── User Management ──
+let _allUsers = [];
+
+async function loadUserManagement() {
+  try {
+    const res = await authFetch('/api/users');
+    _allUsers = await res.json();
+    renderUsersTable();
+  } catch (e) {
+    if (e.message !== 'Not authenticated') toast('Failed to load users: ' + e.message);
+  }
+}
+
+function renderUsersTable() {
+  const q = (document.getElementById('um-search')?.value || '').toLowerCase();
+  const filtered = _allUsers.filter(u =>
+    !q || u.name.toLowerCase().includes(q) || u.email.toLowerCase().includes(q) || u.role.includes(q)
+  );
+  const tbody = document.getElementById('um-tbody');
+  if (!tbody) return;
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:32px">No users found.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map(u => {
+    const dt = u.created_at ? new Date(u.created_at).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}) : '—';
+    const roleTag = u.role === 'admin' ? `<span class="um-badge-admin">Admin</span>` : `<span class="um-badge-user">User</span>`;
+    const statusTag = u.status === 'active' ? `<span class="um-badge-active">Active</span>` : `<span class="um-badge-inactive">Inactive</span>`;
+    const isMe = u.user_id === _currentUser?.user_id;
+    const toggleLabel = u.status === 'active' ? 'Deactivate' : 'Activate';
+    const toggleStyle = u.status === 'active' ? 'btn-danger' : 'btn-primary';
+    return `<tr>
+      <td><strong>${u.name}</strong>${isMe ? ' <span style="font-size:10px;color:var(--muted)">(you)</span>' : ''}</td>
+      <td>${u.email}</td>
+      <td>${u.contact || '—'}</td>
+      <td>${roleTag}</td>
+      <td>${statusTag}</td>
+      <td style="color:var(--muted)">${dt}</td>
+      <td>
+        <div style="display:flex;gap:6px">
+          <button class="btn btn-sm btn-secondary" onclick="openEditUser('${u.user_id}')">Edit</button>
+          ${!isMe ? `<button class="btn btn-sm ${toggleStyle}" onclick="toggleUserStatus('${u.user_id}','${u.status === 'active' ? 'inactive' : 'active'}')">${toggleLabel}</button>` : ''}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function addUser() {
+  const name     = document.getElementById('um-add-name').value.trim();
+  const email    = document.getElementById('um-add-email').value.trim();
+  const contact  = document.getElementById('um-add-contact').value.trim();
+  const role     = document.getElementById('um-add-role').value;
+  const password = document.getElementById('um-add-password').value;
+  hideAuthError('add-user-error');
+  if (!name || !email || !password) return showAuthError('add-user-error', 'Name, email, and password are required.');
+
+  try {
+    const res = await authFetch('/api/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, contact, role, password }),
+    });
+    const data = await res.json();
+    if (!res.ok) return showAuthError('add-user-error', data.error || 'Failed to add user.');
+    hideModal('modal-add-user');
+    ['um-add-name','um-add-email','um-add-contact','um-add-password'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('um-add-role').value = 'user';
+    toast('User added ✅');
+    await loadUserManagement();
+  } catch (e) {
+    if (e.message !== 'Not authenticated') showAuthError('add-user-error', e.message);
+  }
+}
+
+function openEditUser(userId) {
+  const u = _allUsers.find(x => x.user_id === userId);
+  if (!u) return;
+  document.getElementById('edit-user-id').value  = u.user_id;
+  document.getElementById('um-edit-name').value   = u.name;
+  document.getElementById('um-edit-email').value  = u.email;
+  document.getElementById('um-edit-contact').value = u.contact || '';
+  document.getElementById('um-edit-role').value   = u.role;
+  document.getElementById('um-edit-password').value = '';
+  hideAuthError('edit-user-error');
+  showModal('modal-edit-user');
+}
+
+async function saveEditUser() {
+  const userId   = document.getElementById('edit-user-id').value;
+  const name     = document.getElementById('um-edit-name').value.trim();
+  const contact  = document.getElementById('um-edit-contact').value.trim();
+  const role     = document.getElementById('um-edit-role').value;
+  const password = document.getElementById('um-edit-password').value;
+  hideAuthError('edit-user-error');
+  if (!name) return showAuthError('edit-user-error', 'Name is required.');
+
+  const body = { name, contact, role };
+  if (password) body.password = password;
+
+  try {
+    const res = await authFetch(`/api/users/${userId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) return showAuthError('edit-user-error', data.error || 'Failed to update user.');
+    hideModal('modal-edit-user');
+    toast('User updated ✅');
+    await loadUserManagement();
+  } catch (e) {
+    if (e.message !== 'Not authenticated') showAuthError('edit-user-error', e.message);
+  }
+}
+
+async function toggleUserStatus(userId, newStatus) {
+  const u = _allUsers.find(x => x.user_id === userId);
+  const label = newStatus === 'active' ? 'activate' : 'deactivate';
+  if (!confirm(`Are you sure you want to ${label} ${u?.name || 'this user'}?`)) return;
+  try {
+    const res = await authFetch(`/api/users/${userId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus }),
+    });
+    const data = await res.json();
+    if (!res.ok) return toast('Error: ' + (data.error || 'Failed'));
+    toast(newStatus === 'active' ? 'User activated ✅' : 'User deactivated');
+    await loadUserManagement();
+  } catch (e) {
+    if (e.message !== 'Not authenticated') toast('Error: ' + e.message);
+  }
+}
 </script>
 </body>
 </html>
