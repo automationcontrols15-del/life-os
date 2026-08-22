@@ -2146,7 +2146,8 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
     <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="gfit-status-sub">Connect your Google Fit account to auto-sync steps, heart rate, sleep & more. Available once your app is deployed online.</div>
     <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
       <button class="btn btn-secondary" onclick="showModal('modal-gfit-setup')" style="font-size:12px">📖 Setup Guide</button>
-      <button class="btn btn-primary" id="gfit-connect-btn" onclick="connectGoogleFit()" style="font-size:12px;opacity:.5;cursor:not-allowed" disabled title="Deploy your app first — OAuth requires a live URL">🔗 Connect Google Fit</button>
+      <button class="btn btn-primary" id="gfit-connect-btn" onclick="connectGoogleFit()" style="font-size:12px">🔗 Connect Google Fit</button>
+      <button class="btn btn-danger" id="gfit-disconnect-btn" onclick="disconnectGoogleFit()" style="font-size:12px;display:none">✕ Disconnect</button>
     </div>
     <div style="font-size:11px;color:var(--muted);margin-top:10px" id="gfit-last-sync"></div>
   </div>
@@ -4883,9 +4884,81 @@ function deleteVital(id) {
 }
 
 function connectGoogleFit() {
-  // Placeholder — will be implemented when deployed on Railway
-  alert('Google Fit connection requires your app to be deployed on Railway first.\n\nClick "Setup Guide" for step-by-step instructions.');
+  // Redirect to server-side OAuth flow
+  window.location.href = '/api/auth/google';
 }
+
+async function disconnectGoogleFit() {
+  if (!confirm('Disconnect Google Fit? This will remove the stored token.')) return;
+  try {
+    await fetch('/api/auth/google/disconnect', { method: 'POST' });
+    setGfitUI(false);
+    toast('Google Fit disconnected');
+  } catch(e) {
+    toast('Error disconnecting: ' + e.message);
+  }
+}
+
+function setGfitUI(connected, lastSync) {
+  const dot  = document.getElementById('gfit-dot');
+  const text = document.getElementById('gfit-status-text');
+  const sub  = document.getElementById('gfit-status-sub');
+  const connectBtn    = document.getElementById('gfit-connect-btn');
+  const disconnectBtn = document.getElementById('gfit-disconnect-btn');
+  const lastSyncEl    = document.getElementById('gfit-last-sync');
+  if (!dot) return;
+  if (connected) {
+    dot.className = 'gfit-status-dot connected';
+    text.textContent = 'Google Fit — Connected ✓';
+    sub.textContent  = 'Steps, heart rate, calories & active minutes sync automatically.';
+    if (connectBtn)    { connectBtn.style.display    = 'none'; }
+    if (disconnectBtn) { disconnectBtn.style.display = ''; }
+    if (lastSyncEl && lastSync) lastSyncEl.textContent = 'Last synced: ' + lastSync;
+    fetchGfitData();
+  } else {
+    dot.className = 'gfit-status-dot disconnected';
+    text.textContent = 'Google Fit — Not Connected';
+    sub.textContent  = 'Connect your Google Fit account to auto-sync steps, heart rate, sleep & more.';
+    if (connectBtn)    { connectBtn.style.display    = ''; }
+    if (disconnectBtn) { disconnectBtn.style.display = 'none'; }
+    if (lastSyncEl)    lastSyncEl.textContent = '';
+  }
+}
+
+async function checkGfitStatus() {
+  try {
+    const r = await fetch('/api/fit/status');
+    const d = await r.json();
+    setGfitUI(d.connected);
+  } catch(e) { /* offline or no backend */ }
+}
+
+async function fetchGfitData() {
+  try {
+    const r = await fetch('/api/fit/data');
+    if (!r.ok) return;
+    const d = await r.json();
+    const el = document.getElementById('gfit-last-sync');
+    if (el) el.textContent = `Steps: ${d.steps.toLocaleString()} · HR: ${d.heartRate || '—'} bpm · Calories: ${Math.round(d.calories)} · Active: ${d.activeMinutes} min · synced ${new Date().toLocaleTimeString()}`;
+  } catch(e) { /* ignore */ }
+}
+
+// Check on page load and handle ?gfit= callback param
+(function initGfit() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('gfit') === 'connected') {
+    toast('✅ Google Fit connected!');
+    history.replaceState({}, '', window.location.pathname);
+    setGfitUI(true);
+    // Navigate to vitals page
+    setTimeout(() => showPage('vitals'), 300);
+  } else if (params.get('gfit') === 'error') {
+    toast('❌ Google Fit connection failed. Check credentials.');
+    history.replaceState({}, '', window.location.pathname);
+  } else {
+    checkGfitStatus();
+  }
+})();
 
 // ══════════════════════════════════════════════
 //  AFFIRMATIONS
