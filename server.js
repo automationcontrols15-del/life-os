@@ -32,6 +32,10 @@ if (!process.env.GOOGLE_SERVICE_ACCOUNT_JSON)
 // ── GOOGLE AUTH ───────────────────────────────────────────────────────────────
 function getAuth() {
   const credentials = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_JSON);
+  // Fix for Railway/OpenSSL 3.x: env vars double-escape newlines in private key
+  if (credentials.private_key) {
+    credentials.private_key = credentials.private_key.replace(/\\n/g, '\n');
+  }
   return new google.auth.GoogleAuth({
     credentials,
     scopes: ['https://www.googleapis.com/auth/spreadsheets'],
@@ -43,11 +47,11 @@ async function getSheetsClient() {
 }
 
 // ── USERS SHEET ───────────────────────────────────────────────────────────────
-// Columns: A=user_id  B=name  C=email  D=contact  E=password_hash  F=role  G=status  H=created_at
+// Columns: A=user_id  B=email  C=password_hash  D=name  E=role  F=status  G=created_at  H=contact
+// (Column order matches the existing sheet — do NOT reorder)
 
 async function ensureUsersSheet() {
   const sheets = await getSheetsClient();
-  // Check if the Users sheet exists
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
   const exists = meta.data.sheets.some(s => s.properties.title === USERS_SHEET);
   if (!exists) {
@@ -55,12 +59,11 @@ async function ensureUsersSheet() {
       spreadsheetId: SPREADSHEET_ID,
       requestBody: { requests: [{ addSheet: { properties: { title: USERS_SHEET } } }] },
     });
-    // Write header row
     await sheets.spreadsheets.values.update({
       spreadsheetId: SPREADSHEET_ID,
       range: `${USERS_SHEET}!A1:H1`,
       valueInputOption: 'RAW',
-      requestBody: { values: [['user_id','name','email','contact','password_hash','role','status','created_at']] },
+      requestBody: { values: [['user_id','email','password_hash','name','role','status','created_at','contact']] },
     });
   }
 }
@@ -76,13 +79,13 @@ async function getUsers() {
   if (rows.length < 2) return [];
   return rows.slice(1).map(r => ({
     user_id:       r[0] || '',
-    name:          r[1] || '',
-    email:         r[2] || '',
-    contact:       r[3] || '',
-    password_hash: r[4] || '',
-    role:          r[5] || 'user',
-    status:        r[6] || 'active',
-    created_at:    r[7] || '',
+    email:         r[1] || '',
+    password_hash: r[2] || '',
+    name:          r[3] || '',
+    role:          r[4] || 'user',
+    status:        r[5] || 'active',
+    created_at:    r[6] || '',
+    contact:       r[7] || '',
   })).filter(u => u.user_id);
 }
 
@@ -106,13 +109,13 @@ async function createUser(userData) {
   const sheets = await getSheetsClient();
   const row = [
     userData.user_id,
-    userData.name,
     userData.email,
-    userData.contact || '',
-    userData.password_hash,
+    userData.password_hash || '',
+    userData.name,
     userData.role || 'user',
     userData.status || 'active',
     userData.created_at || new Date().toISOString(),
+    userData.contact || '',
   ];
   await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
@@ -136,14 +139,14 @@ async function updateUserRow(user_id, patch) {
 
   const existing = rows[rowIdx];
   const updated = [
-    existing[0],                              // user_id
-    patch.name      ?? existing[1] ?? '',
-    existing[2],                              // email (immutable)
-    patch.contact   ?? existing[3] ?? '',
-    patch.password_hash ?? existing[4] ?? '',
-    patch.role      ?? existing[5] ?? 'user',
-    patch.status    ?? existing[6] ?? 'active',
-    existing[7],                              // created_at (immutable)
+    existing[0],                                  // user_id (immutable)
+    existing[1],                                  // email (immutable)
+    patch.password_hash ?? existing[2] ?? '',
+    patch.name          ?? existing[3] ?? '',
+    patch.role          ?? existing[4] ?? 'user',
+    patch.status        ?? existing[5] ?? 'active',
+    existing[6],                                  // created_at (immutable)
+    patch.contact       ?? existing[7] ?? '',
   ];
   const sheetRow = rowIdx + 1; // 1-indexed
   await sheets.spreadsheets.values.update({
@@ -179,41 +182,72 @@ function requireAdmin(req, res, next) {
   next();
 }
 
-// ── DATA HELPERS (user-scoped) ─────────────────────────────────────────────────
-// User data keys are stored as "{userId}:{key}" in the LifeOS sheet.
-// Admin users also see legacy keys (no prefix) for backward compatibility.
+// ── PER-USER SHEET HELPERS ────────────────────────────────────────────────────
+// Each user's data lives in their own named sheet (e.g. "Ravi", "Priya").
+// Rows are plain: A=key  B=JSON-value  (no userId prefix needed).
+// Legacy fallback: if user's named sheet doesn't exist, read from LifeOS with prefix.
 
-async function getUserData(userId, isAdmin) {
-  const sheets = await getSheetsClient();
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:B`,
-  });
-  const rows = res.data.values || [];
-  const data = {};
-  const prefix = userId + ':';
-
-  for (const [key, val] of rows) {
-    if (!key) continue;
-    if (key.startsWith(prefix)) {
-      // This user's data — strip the prefix
-      const shortKey = key.slice(prefix.length);
-      // Skip internal system keys
-      if (shortKey === 'googleFitTokens') { data[shortKey] = tryParse(val); continue; }
-      data[shortKey] = tryParse(val);
-    } else if (isAdmin && !key.includes(':')) {
-      // Legacy data (no prefix) visible only to admin, for backward compat
-      // Only if this key doesn't already have a prefixed version
-      if (!(prefix + key in rows.map(r => r[0]))) {
-        data[key] = tryParse(val);
-      }
-    }
-  }
-  return data;
+function sanitizeSheetName(name) {
+  // Google Sheets tab names: max 100 chars, no: / \ ? * [ ] :
+  return (name || '').replace(/[\/\\?*\[\]:]/g, '').trim().slice(0, 50);
 }
 
-// More efficient version: build a set of prefixed keys to check legacy overlap
-async function getUserDataSafe(userId, isAdmin) {
+async function getUserSheetName(userId) {
+  const user = await getUserById(userId);
+  const name = user ? sanitizeSheetName(user.name) : '';
+  return name || userId;
+}
+
+async function ensureUserDataSheet(userId) {
+  const sheetName = await getUserSheetName(userId);
+  const sheets = await getSheetsClient();
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const exists = meta.data.sheets.some(s => s.properties.title === sheetName);
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: SPREADSHEET_ID,
+      requestBody: { requests: [{ addSheet: { properties: { title: sheetName } } }] },
+    });
+    await sheets.spreadsheets.values.update({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${sheetName}!A1:B1`,
+      valueInputOption: 'RAW',
+      requestBody: { values: [['key', 'value']] },
+    });
+  }
+  return sheetName;
+}
+
+// Read from user's named sheet; fall back to legacy LifeOS prefix for migration
+async function getUserDataFromSheet(userId) {
+  const sheets = await getSheetsClient();
+  const sheetName = await getUserSheetName(userId);
+
+  // Check whether the sheet exists
+  const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
+  const sheetExists = meta.data.sheets.some(s => s.properties.title === sheetName);
+
+  if (sheetExists) {
+    const res = await sheets.spreadsheets.values.get({
+      spreadsheetId: SPREADSHEET_ID,
+      range: `${sheetName}!A:B`,
+    });
+    const rows = res.data.values || [];
+    const data = {};
+    for (const [key, val] of rows) {
+      if (!key || key === 'key') continue; // skip header
+      data[key] = tryParse(val);
+    }
+    return data;
+  }
+
+  // Legacy fallback: read from LifeOS sheet with userId: prefix
+  console.log(`[data] No sheet "${sheetName}" — falling back to legacy LifeOS prefix for user ${userId}`);
+  return await getUserDataSafe_legacy(userId);
+}
+
+// Legacy read (kept for backward-compat migration path)
+async function getUserDataSafe_legacy(userId) {
   const sheets = await getSheetsClient();
   const res = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
@@ -222,53 +256,39 @@ async function getUserDataSafe(userId, isAdmin) {
   const rows = res.data.values || [];
   const prefix = userId + ':';
   const data = {};
-  const prefixedKeysFound = new Set();
-
-  // First pass: collect all prefixed keys for this user
-  for (const [key] of rows) {
-    if (key && key.startsWith(prefix)) {
-      prefixedKeysFound.add(key.slice(prefix.length));
-    }
-  }
-
-  // Second pass: build data object
   for (const [key, val] of rows) {
     if (!key) continue;
     if (key.startsWith(prefix)) {
       data[key.slice(prefix.length)] = tryParse(val);
-    } else if (isAdmin && !key.includes(':')) {
-      // Legacy key: only include if no prefixed version exists yet
-      if (!prefixedKeysFound.has(key)) {
-        data[key] = tryParse(val);
-      }
     }
   }
   return data;
 }
 
-function tryParse(val) {
-  try { return JSON.parse(val); }
-  catch (_) { return val ?? null; }
-}
-
-// ── BATCH UPSERT (user-scoped) ────────────────────────────────────────────────
-async function batchUpsert(updates) {
-  // Raw upsert — keys used as-is. Used internally only.
+// Write to user's named sheet (creates it if absent)
+async function batchUpsertToUserSheet(userId, updates) {
+  const sheetName = await ensureUserDataSheet(userId);
   const sheets = await getSheetsClient();
+
   const readRes = await sheets.spreadsheets.values.get({
     spreadsheetId: SPREADSHEET_ID,
-    range: `${SHEET_NAME}!A:A`,
+    range: `${sheetName}!A:A`,
   });
   const existingRows = readRes.data.values || [];
   const rowMap = {};
-  existingRows.forEach((r, i) => { if (r[0]) rowMap[r[0]] = i + 1; });
+  existingRows.forEach((r, i) => {
+    if (r[0] && r[0] !== 'key') rowMap[r[0]] = i + 1; // 1-indexed
+  });
 
   const toUpdate = [];
   const toAppend = [];
   for (const [key, value] of Object.entries(updates)) {
     const jsonVal = JSON.stringify(value);
     if (rowMap[key]) {
-      toUpdate.push({ range: `${SHEET_NAME}!A${rowMap[key]}:B${rowMap[key]}`, values: [[key, jsonVal]] });
+      toUpdate.push({
+        range: `${sheetName}!A${rowMap[key]}:B${rowMap[key]}`,
+        values: [[key, jsonVal]],
+      });
     } else {
       toAppend.push([key, jsonVal]);
     }
@@ -282,20 +302,16 @@ async function batchUpsert(updates) {
   if (toAppend.length) {
     await sheets.spreadsheets.values.append({
       spreadsheetId: SPREADSHEET_ID,
-      range: `${SHEET_NAME}!A:B`,
+      range: `${sheetName}!A:B`,
       valueInputOption: 'RAW',
       requestBody: { values: toAppend },
     });
   }
 }
 
-async function batchUpsertUser(userId, updates) {
-  // Prefix all keys with userId: before saving
-  const prefixed = {};
-  for (const [key, value] of Object.entries(updates)) {
-    prefixed[`${userId}:${key}`] = value;
-  }
-  await batchUpsert(prefixed);
+function tryParse(val) {
+  try { return JSON.parse(val); }
+  catch (_) { return val ?? null; }
 }
 
 // ── GOOGLE FIT OAUTH ──────────────────────────────────────────────────────────
@@ -319,27 +335,25 @@ function getOAuth2Client() {
 
 // ── ROUTES ─────────────────────────────────────────────────────────────────────
 
-// ── SETUP (first-run admin creation) ─────────────────────────────────────────
-// Only works when ZERO users exist. Creates the first admin account.
+// ── SETUP (first-run admin registration) ──────────────────────────────────────
+// Only works when ZERO users exist. Registers admin email — no password needed.
+// Login is via Google Sign-In.
 app.post('/api/auth/setup', async (req, res) => {
   try {
     const count = await countUsers();
     if (count > 0) return res.status(403).json({ error: 'Setup already complete. Admin account exists.' });
 
-    const { name, email, password, contact } = req.body;
-    if (!name || !email || !password)
-      return res.status(400).json({ error: 'Name, email, and password are required.' });
-    if (password.length < 8)
-      return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    const { name, email, contact } = req.body;
+    if (!name || !email)
+      return res.status(400).json({ error: 'Name and email are required.' });
 
-    const password_hash = await bcrypt.hash(password, 12);
     const user_id = 'u' + Date.now().toString(36).toUpperCase();
-    const newUser = { user_id, name, email: email.toLowerCase(), contact: contact || '', password_hash, role: 'admin', status: 'active', created_at: new Date().toISOString() };
+    const newUser = { user_id, name, email: email.toLowerCase(), contact: contact || '', password_hash: '', role: 'admin', status: 'active', created_at: new Date().toISOString() };
     await createUser(newUser);
+    await ensureUserDataSheet(user_id);
 
-    const token = signToken({ user_id, name, email: newUser.email, role: 'admin' });
-    res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
-    res.json({ ok: true, user: { user_id, name, email: newUser.email, role: 'admin' } });
+    // Do NOT issue JWT — user must confirm identity by signing in with Google
+    res.json({ ok: true, message: 'Admin registered. Please sign in with Google to continue.' });
   } catch (e) {
     console.error('Setup error:', e.message);
     res.status(500).json({ error: e.message });
@@ -389,6 +403,46 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   res.json({ user: req.user });
 });
 
+// ── FRONTEND CONFIG (public — no secrets) ────────────────────────────────────
+app.get('/api/auth/config', (req, res) => {
+  res.json({ googleClientId: process.env.GOOGLE_CLIENT_ID || null });
+});
+
+// ── GOOGLE SIGN-IN (verify ID token from GIS frontend library) ───────────────
+app.post('/api/auth/google/signin', async (req, res) => {
+  try {
+    const { credential } = req.body;
+    if (!credential) return res.status(400).json({ error: 'No credential provided' });
+
+    if (!GOOGLE_CLIENT_ID) return res.status(500).json({ error: 'Google Sign-In is not configured on this server.' });
+
+    const oauth2Client = getOAuth2Client();
+    const ticket = await oauth2Client.verifyIdToken({ idToken: credential, audience: GOOGLE_CLIENT_ID });
+    const payload = ticket.getPayload();
+
+    if (!payload.email_verified) {
+      return res.status(403).json({ error: 'Google account email is not verified.' });
+    }
+
+    const email = payload.email;
+    const user = await getUserByEmail(email);
+
+    if (!user) {
+      return res.status(403).json({ error: 'Your Google account (' + email + ') is not registered. Contact the administrator.' });
+    }
+    if (user.status !== 'active') {
+      return res.status(403).json({ error: 'Your account is inactive. Contact the administrator.' });
+    }
+
+    const token = signToken({ user_id: user.user_id, name: user.name, email: user.email, role: user.role });
+    res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
+    res.json({ ok: true, user: { user_id: user.user_id, name: user.name, email: user.email, role: user.role } });
+  } catch (e) {
+    console.error('Google signin error:', e.message);
+    res.status(500).json({ error: 'Google Sign-In failed: ' + e.message });
+  }
+});
+
 // ── USER MANAGEMENT (admin only) ──────────────────────────────────────────────
 
 // GET /api/users — list all users (admin)
@@ -402,20 +456,19 @@ app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
   }
 });
 
-// POST /api/users — add new user (admin)
+// POST /api/users — add new user (admin) — no password, login is via Google
 app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
   try {
-    const { name, email, password, contact, role } = req.body;
-    if (!name || !email || !password) return res.status(400).json({ error: 'Name, email, and password are required.' });
-    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
+    const { name, email, contact, role } = req.body;
+    if (!name || !email) return res.status(400).json({ error: 'Name and email are required.' });
 
     const existing = await getUserByEmail(email);
     if (existing) return res.status(409).json({ error: 'A user with this email already exists.' });
 
-    const password_hash = await bcrypt.hash(password, 12);
     const user_id = 'u' + Date.now().toString(36).toUpperCase();
-    const newUser = { user_id, name, email: email.toLowerCase(), contact: contact || '', password_hash, role: role === 'admin' ? 'admin' : 'user', status: 'active', created_at: new Date().toISOString() };
+    const newUser = { user_id, name, email: email.toLowerCase(), contact: contact || '', password_hash: '', role: role === 'admin' ? 'admin' : 'user', status: 'active', created_at: new Date().toISOString() };
     await createUser(newUser);
+    await ensureUserDataSheet(user_id);
     res.json({ ok: true, user: { user_id, name, email: newUser.email, role: newUser.role, status: 'active' } });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -426,7 +479,7 @@ app.post('/api/users', requireAuth, requireAdmin, async (req, res) => {
 app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, contact, role, status, password } = req.body;
+    const { name, contact, role, status } = req.body;
 
     // Prevent admin from removing their own admin role
     if (id === req.user.user_id && role === 'user') {
@@ -438,10 +491,6 @@ app.put('/api/users/:id', requireAuth, requireAdmin, async (req, res) => {
     if (contact !== undefined) patch.contact = contact;
     if (role)    patch.role    = role === 'admin' ? 'admin' : 'user';
     if (status)  patch.status  = status === 'active' ? 'active' : 'inactive';
-    if (password) {
-      if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters.' });
-      patch.password_hash = await bcrypt.hash(password, 12);
-    }
 
     await updateUserRow(id, patch);
     res.json({ ok: true });
@@ -489,7 +538,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
     const { tokens } = await oauth2Client.getToken(code);
     // Store tokens scoped to the user who initiated the flow
     if (userId) {
-      await batchUpsertUser(userId, { googleFitTokens: tokens });
+      await batchUpsertToUserSheet(userId, { googleFitTokens: tokens });
     }
     res.redirect('/?gfit=connected');
   } catch (e) {
@@ -500,7 +549,7 @@ app.get('/api/auth/google/callback', async (req, res) => {
 
 app.get('/api/fit/status', requireAuth, async (req, res) => {
   try {
-    const data = await getUserDataSafe(req.user.user_id, req.user.role === 'admin');
+    const data = await getUserDataFromSheet(req.user.user_id);
     const tokens = data.googleFitTokens;
     res.json({ connected: !!(tokens && tokens.access_token) });
   } catch (e) {
@@ -510,14 +559,14 @@ app.get('/api/fit/status', requireAuth, async (req, res) => {
 
 app.get('/api/fit/data', requireAuth, async (req, res) => {
   try {
-    const data = await getUserDataSafe(req.user.user_id, req.user.role === 'admin');
+    const data = await getUserDataFromSheet(req.user.user_id);
     const tokens = data.googleFitTokens;
     if (!tokens) return res.status(401).json({ error: 'Not connected to Google Fit' });
 
     const oauth2Client = getOAuth2Client();
     oauth2Client.setCredentials(tokens);
     oauth2Client.on('tokens', async (newTokens) => {
-      await batchUpsertUser(req.user.user_id, { googleFitTokens: { ...tokens, ...newTokens } });
+      await batchUpsertToUserSheet(req.user.user_id, { googleFitTokens: { ...tokens, ...newTokens } });
     });
 
     const fitness = google.fitness({ version: 'v1', auth: oauth2Client });
@@ -557,7 +606,7 @@ app.get('/api/fit/data', requireAuth, async (req, res) => {
   } catch (e) {
     console.error('Fit data error:', e.message);
     if (e.message && e.message.includes('invalid_grant')) {
-      await batchUpsertUser(req.user.user_id, { googleFitTokens: null });
+      await batchUpsertToUserSheet(req.user.user_id, { googleFitTokens: null });
     }
     res.status(500).json({ error: e.message });
   }
@@ -565,7 +614,7 @@ app.get('/api/fit/data', requireAuth, async (req, res) => {
 
 app.post('/api/auth/google/disconnect', requireAuth, async (req, res) => {
   try {
-    await batchUpsertUser(req.user.user_id, { googleFitTokens: null });
+    await batchUpsertToUserSheet(req.user.user_id, { googleFitTokens: null });
     res.json({ ok: true });
   } catch (e) {
     res.status(500).json({ error: e.message });
@@ -577,7 +626,7 @@ app.post('/api/auth/google/disconnect', requireAuth, async (req, res) => {
 // GET /api/data → returns ONLY the authenticated user's data
 app.get('/api/data', requireAuth, async (req, res) => {
   try {
-    const data = await getUserDataSafe(req.user.user_id, req.user.role === 'admin');
+    const data = await getUserDataFromSheet(req.user.user_id);
     res.json(data);
   } catch (e) {
     console.error('GET /api/data error:', e.message);
@@ -592,7 +641,7 @@ app.post('/api/data', requireAuth, async (req, res) => {
     if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
       return res.status(400).json({ error: 'Body must be a plain object of { key: value }' });
     }
-    await batchUpsertUser(req.user.user_id, updates);
+    await batchUpsertToUserSheet(req.user.user_id, updates);
     res.json({ ok: true });
   } catch (e) {
     console.error('POST /api/data error:', e.message);

@@ -807,6 +807,39 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="stat green"><div class="stat-label">Morning Completion</div><div class="stat-value" id="dash-morning-pct">—</div></div>
   </div>
 
+  <!-- Checklist Summary -->
+  <div class="card" style="margin-top:16px">
+    <div class="card-title" style="display:flex;align-items:center;justify-content:space-between">
+      ✅ Today's Checklist Scores
+      <span style="font-size:11px;color:var(--muted);font-weight:400">0 = unchecked · 1 = checked</span>
+    </div>
+    <div class="card-grid grid-2" style="gap:16px">
+      <!-- Morning -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700;color:var(--text)">🌅 Morning Checklist</span>
+          <span id="dash-m-score" style="font-size:13px;font-weight:700;color:var(--green)">—</span>
+        </div>
+        <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill green" id="dash-m-bar" style="width:0%"></div></div>
+        <div id="dash-m-items" style="display:grid;grid-template-columns:1fr 1fr;gap:4px"></div>
+      </div>
+      <!-- Evening -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:13px;font-weight:700;color:var(--text)">🌙 Evening Checklist</span>
+          <span id="dash-e-score" style="font-size:13px;font-weight:700;color:var(--accent2)">—</span>
+        </div>
+        <div class="progress-bar" style="margin-bottom:10px"><div class="progress-fill" id="dash-e-bar" style="width:0%;background:var(--accent2)"></div></div>
+        <div id="dash-e-items" style="display:grid;grid-template-columns:1fr 1fr;gap:4px"></div>
+      </div>
+    </div>
+    <!-- 7-day trend -->
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:12px">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin-bottom:8px">Last 7 Days — Morning Completion</div>
+      <div id="dash-checklist-trend" style="display:flex;align-items:flex-end;gap:6px;height:48px"></div>
+    </div>
+  </div>
+
   <div class="card" style="margin-top:16px">
     <div class="card-title">Life Scorecard — This Week</div>
     <div class="score-grid" id="dash-scorecard"></div>
@@ -2639,6 +2672,109 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
   </div>
 </nav>
 
+<!-- ═══ USER MANAGEMENT PAGE ═══ -->
+<div id="page-usermgmt" class="page">
+  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="page-title">👥 User Management</div>
+      <div class="page-subtitle">Add and manage users who can access Life OS</div>
+    </div>
+    <button class="btn btn-primary" onclick="showModal('modal-add-user')">+ Add User</button>
+  </div>
+
+  <!-- Search -->
+  <div class="card" style="margin-bottom:16px;padding:14px 20px">
+    <input class="form-input" id="um-search" placeholder="🔍 Search by name, email or role…" oninput="renderUsersTable()" style="margin:0;max-width:400px">
+  </div>
+
+  <!-- Users table -->
+  <div class="card" style="padding:0">
+    <div class="um-table-wrap">
+      <table class="um-table">
+        <thead><tr>
+          <th>Name</th><th>Email</th><th>Contact</th><th>Role</th><th>Status</th><th>Date Added</th><th>Actions</th>
+        </tr></thead>
+        <tbody id="um-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Add User -->
+<div class="modal-overlay" id="modal-add-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:800">➕ Add New User</div>
+      <button onclick="hideModal('modal-add-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div class="auth-error" id="add-user-error" style="margin-bottom:14px"></div>
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="um-add-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address *</label>
+      <input class="form-input" type="email" id="um-add-email" placeholder="user@example.com">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact Number</label>
+      <input class="form-input" id="um-add-contact" placeholder="+91 99999 99999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select" id="um-add-role">
+        <option value="user">User (personal data only)</option>
+        <option value="admin">Admin (full access)</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:4px">
+      🔐 Users sign in with their Google account. No password needed.
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="addUser()">Add User</button>
+      <button class="btn btn-secondary" onclick="hideModal('modal-add-user')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Edit User -->
+<div class="modal-overlay" id="modal-edit-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+      <div style="font-size:17px;font-weight:800">✏️ Edit User</div>
+      <button onclick="hideModal('modal-edit-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
+    </div>
+    <div class="auth-error" id="edit-user-error" style="margin-bottom:14px"></div>
+    <input type="hidden" id="edit-user-id">
+    <div class="form-group">
+      <label class="form-label">Full Name *</label>
+      <input class="form-input" id="um-edit-name" placeholder="Full name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Email Address</label>
+      <input class="form-input" id="um-edit-email" disabled style="opacity:.6">
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Email cannot be changed after registration.</div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Contact Number</label>
+      <input class="form-input" id="um-edit-contact" placeholder="+91 99999 99999">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Role</label>
+      <select class="form-select" id="um-edit-role">
+        <option value="user">User (personal data only)</option>
+        <option value="admin">Admin (full access)</option>
+      </select>
+    </div>
+    <div style="font-size:12px;color:var(--muted);background:var(--bg);border-radius:8px;padding:10px 14px;margin-bottom:4px">
+      🔐 Users sign in with their Google account. No password needed.
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary" onclick="saveEditUser()">Save Changes</button>
+      <button class="btn btn-secondary" onclick="hideModal('modal-edit-user')">Cancel</button>
+    </div>
+  </div>
+</div>
 </main>
 </div><!-- /app -->
 
@@ -2754,6 +2890,7 @@ function nav(page) {
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pg = document.getElementById('page-'+page);
   if(pg) pg.classList.add('active');
+  window.scrollTo(0,0);
   document.querySelectorAll('.nav-item').forEach(n=>{
     if(n.getAttribute('onclick')==="nav('"+page+"')") n.classList.add('active');
   });
@@ -2855,6 +2992,68 @@ function loadDashboard() {
   const eDot = document.getElementById('evening-dot');
   if(evening){ eDot.style.background='var(--green)'; document.getElementById('evening-status-text').textContent='Evening Done ✓'; }
 
+  // ── Checklist Scores (today) ──
+  const MORNING_ITEMS = [
+    {k:'wake',label:'Wake up early'},{k:'nophone',label:'No phone 30 min'},{k:'water',label:'Drink water'},
+    {k:'exercise',label:'Exercise'},{k:'meditation',label:'Meditation'},{k:'reading',label:'Reading'},
+    {k:'gratitude',label:'Gratitude'},{k:'top3',label:'Top 3 priorities'},{k:'intention',label:'Intention'}
+  ];
+  const EVENING_ITEMS = [
+    {k:'etask',label:'Tasks completed'},{k:'eexercise',label:'Exercise done'},
+    {k:'elearning',label:'Learning done'},{k:'efamily',label:'Family time'},
+    {k:'econtrib',label:'Contribution'},{k:'efinance',label:'Financial disc.'},
+    {k:'esleep',label:'Sleep prep'}
+  ];
+  function renderChecklistCard(entry, items, scoreId, barId, itemsId) {
+    const scoreEl = document.getElementById(scoreId);
+    const barEl   = document.getElementById(barId);
+    const listEl  = document.getElementById(itemsId);
+    if(!entry || !entry.checklistItems) {
+      scoreEl.textContent = '—';
+      barEl.style.width = '0%';
+      listEl.innerHTML = items.map(it=>`<div style="font-size:11px;color:var(--muted2);display:flex;align-items:center;gap:4px"><span style="font-size:13px">⬜</span>${it.label}</div>`).join('');
+      return;
+    }
+    const scored = items.map(it=>({...it, val: entry.checklistItems[it.k]??0}));
+    const done = scored.reduce((s,it)=>s+it.val, 0);
+    const total = scored.length;
+    const pct = Math.round(done/total*100);
+    scoreEl.textContent = `${done}/${total} (${pct}%)`;
+    barEl.style.width = pct+'%';
+    listEl.innerHTML = scored.map(it=>`
+      <div style="font-size:11px;display:flex;align-items:center;gap:5px;${it.val?'color:var(--green);font-weight:600':'color:var(--muted)'}">
+        <span style="font-size:14px">${it.val?'✅':'⬜'}</span>${it.label}
+      </div>`).join('');
+  }
+  renderChecklistCard(morning, MORNING_ITEMS, 'dash-m-score', 'dash-m-bar', 'dash-m-items');
+  renderChecklistCard(evening, EVENING_ITEMS, 'dash-e-score', 'dash-e-bar', 'dash-e-items');
+
+  // 7-day morning trend bar chart (simple CSS bars)
+  const trendEl = document.getElementById('dash-checklist-trend');
+  if(trendEl) {
+    const morningAll = store.get('morning');
+    const last7 = [];
+    for(let i=6; i>=0; i--) {
+      const d = new Date(); d.setDate(d.getDate()-i);
+      const ds = d.toISOString().slice(0,10);
+      const entry = morningAll.find(m=>m.date===ds);
+      last7.push({ label: d.toLocaleDateString('en-IN',{weekday:'short'}), pct: entry ? (entry.pct||0) : null });
+    }
+    const maxH = 44;
+    trendEl.innerHTML = last7.map(item=>{
+      const h = item.pct !== null ? Math.max(4, Math.round(item.pct/100*maxH)) : 0;
+      const color = item.pct===null ? 'var(--border)' : item.pct>=80 ? 'var(--green)' : item.pct>=50 ? 'var(--yellow)' : 'var(--red)';
+      const title = item.pct !== null ? `${item.label}: ${item.pct}%` : `${item.label}: no entry`;
+      return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px" title="${title}">
+        <div style="height:${maxH}px;display:flex;align-items:flex-end;width:100%">
+          <div style="width:100%;height:${h}px;background:${color};border-radius:3px 3px 0 0;transition:height .3s"></div>
+        </div>
+        <span style="font-size:10px;color:var(--muted2)">${item.label}</span>
+        <span style="font-size:9px;color:${item.pct!==null?color:'var(--muted2)'};font-weight:600">${item.pct!==null?item.pct+'%':'—'}</span>
+      </div>`;
+    }).join('');
+  }
+
   // Tasks
   const tasks = store.get('tasks').filter(t=>t.status!=='Completed'&&t.status!=='Cancelled');
   const todayStr = today();
@@ -2952,6 +3151,12 @@ function saveMorning() {
   const checked = document.querySelectorAll('#page-morning .check-item.checked').length;
   const pct = Math.round(checked/items.length*100);
   const selDate = document.getElementById('m-date').value || today();
+  // Capture individual checklist item scores (0=unchecked, 1=checked)
+  const checklistItems = {};
+  items.forEach(el => {
+    const m = el.getAttribute('onclick').match(/toggleCheck\(this,'([^']+)'\)/);
+    if(m) checklistItems[m[1]] = el.classList.contains('checked') ? 1 : 0;
+  });
   const entry = {
     id: 'MR-'+selDate.replace(/-/g,''), date: selDate,
     wakeTime: document.getElementById('m-wake-time').value,
@@ -2965,7 +3170,9 @@ function saveMorning() {
     identity: document.getElementById('m-identity').value,
     behaviour: document.getElementById('m-behaviour').value,
     peace: document.getElementById('m-peace').value,
-    pct, checkedCount: checked, createdAt: new Date().toISOString()
+    pct, checkedCount: checked, checklistTotal: items.length,
+    checklistItems,
+    createdAt: new Date().toISOString()
   };
   const existing = store.get('morning');
   const idx = existing.findIndex(m=>m.date===selDate);
@@ -2992,6 +3199,12 @@ function saveEvening() {
   const selDate = document.getElementById('e-date').value || today();
   const getVal = id => { const el=document.getElementById(id); return el?el.value:''; };
   const getSlider = id => { const el=document.querySelector(`#page-evening input[oninput*="${id}"]`); return el?parseInt(el.value):7; };
+  // Capture individual checklist item scores (0=unchecked, 1=checked)
+  const checklistItems = {};
+  items.forEach(el => {
+    const m = el.getAttribute('onclick').match(/toggleCheck\(this,'([^']+)'\)/);
+    if(m) checklistItems[m[1]] = el.classList.contains('checked') ? 1 : 0;
+  });
   const entry = {
     id:'ER-'+selDate.replace(/-/g,''), date:selDate,
     event:getVal('e-event'),thought:getVal('e-thought'),emotion:getVal('e-emotion'),
@@ -3004,7 +3217,9 @@ function saveEvening() {
     mindsetScore:document.getElementById('e-mindset-num').textContent,
     financeScore:document.getElementById('e-finance-num').textContent,
     discScore:document.getElementById('e-disc-num').textContent,
-    pct:Math.round(checked/items.length*100), createdAt:new Date().toISOString()
+    pct:Math.round(checked/items.length*100), checkedCount:checked, checklistTotal:items.length,
+    checklistItems,
+    createdAt:new Date().toISOString()
   };
   const existing=store.get('evening');
   const idx=existing.findIndex(e=>e.date===selDate);
@@ -5372,6 +5587,9 @@ async function _initAppAfterAuth() {
 }
 
 async function _initApp() {
+  // ── Step 0: Load Google Sign-In in background ──
+  _initGoogleSignIn();
+
   // ── Step 1: Check if first-run setup is needed ──
   try {
     const sr = await fetch('/api/auth/setup-status');
@@ -5426,154 +5644,51 @@ document.addEventListener('DOMContentLoaded', () => {
   <div class="auth-card">
     <div class="auth-logo">⚡ MY LIFE OS<span>Observe · Reflect · Improve</span></div>
     <div class="auth-title">Welcome Back</div>
-    <div class="auth-sub">Sign in to access your personal dashboard</div>
+    <div class="auth-sub">Sign in with your registered Google account</div>
     <div class="auth-error" id="login-error"></div>
-    <div class="auth-field">
-      <label>Email Address</label>
-      <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" onkeydown="if(event.key==='Enter')doLogin()">
+    <div style="display:flex;justify-content:center;align-items:center;min-height:48px;margin:20px 0" id="google-signin-btn">
+      <div style="color:var(--muted);font-size:13px">Loading sign-in…</div>
     </div>
-    <div class="auth-field">
-      <label>Password</label>
-      <input type="password" id="login-password" placeholder="Your password" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()">
-    </div>
-    <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign In</button>
     <div style="text-align:center;margin-top:18px;font-size:12px;color:var(--muted)">Only registered users can access this app.<br>Contact your administrator if you need access.</div>
   </div>
 </div>
 
-<!-- ═══ SETUP OVERLAY (first-run admin creation) ═══ -->
+<!-- ═══ SETUP OVERLAY (first-run admin registration) ═══ -->
 <div id="setup-overlay" class="auth-overlay" style="display:none">
   <div class="auth-card">
     <div class="auth-logo">⚡ MY LIFE OS<span>First-Time Setup</span></div>
-    <div class="auth-title">Create Admin Account</div>
-    <div class="auth-sub">No users exist yet. Set up your administrator account to get started.</div>
-    <div class="auth-error" id="setup-error"></div>
-    <div class="auth-field">
-      <label>Full Name</label>
-      <input type="text" id="setup-name" placeholder="Your full name" autocomplete="name">
+    <!-- Step 1: Register name + email -->
+    <div id="setup-step1">
+      <div class="auth-title">Create Admin Account</div>
+      <div class="auth-sub">Register your Google email as administrator. You'll sign in with Google after this.</div>
+      <div class="auth-error" id="setup-error"></div>
+      <div class="auth-field">
+        <label>Full Name</label>
+        <input type="text" id="setup-name" placeholder="Your full name" autocomplete="name">
+      </div>
+      <div class="auth-field">
+        <label>Google Email Address</label>
+        <input type="email" id="setup-email" placeholder="you@gmail.com" autocomplete="email">
+      </div>
+      <div class="auth-field">
+        <label>Contact Number (optional)</label>
+        <input type="text" id="setup-contact" placeholder="+91 99999 99999">
+      </div>
+      <button class="auth-btn" id="setup-btn" onclick="doSetup()">Register Admin Account</button>
+      <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">This account will have full administrator privileges.</div>
     </div>
-    <div class="auth-field">
-      <label>Email Address</label>
-      <input type="email" id="setup-email" placeholder="you@example.com" autocomplete="email">
-    </div>
-    <div class="auth-field">
-      <label>Contact Number</label>
-      <input type="text" id="setup-contact" placeholder="+91 99999 99999 (optional)">
-    </div>
-    <div class="auth-field">
-      <label>Password <span style="color:var(--muted);font-weight:400">(min. 8 characters)</span></label>
-      <input type="password" id="setup-password" placeholder="Choose a strong password" onkeydown="if(event.key==='Enter')doSetup()">
-    </div>
-    <button class="auth-btn" id="setup-btn" onclick="doSetup()">Create Admin Account</button>
-    <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">This account will have full administrator privileges.</div>
-  </div>
-</div>
-
-<!-- ═══ USER MANAGEMENT PAGE ═══ -->
-<div id="page-usermgmt" class="page" style="display:none">
-  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px">
-    <div>
-      <div class="page-title">👥 User Management</div>
-      <div class="page-subtitle">Add and manage users who can access Life OS</div>
-    </div>
-    <button class="btn btn-primary" onclick="showModal('modal-add-user')">+ Add User</button>
-  </div>
-
-  <!-- Search -->
-  <div class="card" style="margin-bottom:16px;padding:14px 20px">
-    <input class="form-input" id="um-search" placeholder="🔍 Search by name, email or role…" oninput="renderUsersTable()" style="margin:0;max-width:400px">
-  </div>
-
-  <!-- Users table -->
-  <div class="card" style="padding:0">
-    <div class="um-table-wrap">
-      <table class="um-table">
-        <thead><tr>
-          <th>Name</th><th>Email</th><th>Contact</th><th>Role</th><th>Status</th><th>Date Added</th><th>Actions</th>
-        </tr></thead>
-        <tbody id="um-tbody"></tbody>
-      </table>
+    <!-- Step 2: Sign in with Google to confirm identity -->
+    <div id="setup-step2" style="display:none">
+      <div class="auth-title">Almost There!</div>
+      <div class="auth-sub">Your admin account is registered. Now sign in with Google to enter the app.</div>
+      <div class="auth-error" id="setup-error2"></div>
+      <div style="display:flex;justify-content:center;align-items:center;min-height:48px;margin:20px 0" id="google-setup-btn">
+        <div style="color:var(--muted);font-size:13px">Loading sign-in…</div>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Modal: Add User -->
-<div class="modal-overlay" id="modal-add-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-size:17px;font-weight:800">➕ Add New User</div>
-      <button onclick="hideModal('modal-add-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div class="auth-error" id="add-user-error" style="margin-bottom:14px"></div>
-    <div class="form-group">
-      <label class="form-label">Full Name *</label>
-      <input class="form-input" id="um-add-name" placeholder="Full name">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Email Address *</label>
-      <input class="form-input" type="email" id="um-add-email" placeholder="user@example.com">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Contact Number</label>
-      <input class="form-input" id="um-add-contact" placeholder="+91 99999 99999">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Role</label>
-      <select class="form-select" id="um-add-role">
-        <option value="user">User (personal data only)</option>
-        <option value="admin">Admin (full access)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Password * <span style="color:var(--muted);font-weight:400">(min. 8 characters)</span></label>
-      <input class="form-input" type="password" id="um-add-password" placeholder="Temporary password">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" onclick="addUser()">Add User</button>
-      <button class="btn btn-secondary" onclick="hideModal('modal-add-user')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Edit User -->
-<div class="modal-overlay" id="modal-edit-user" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-size:17px;font-weight:800">✏️ Edit User</div>
-      <button onclick="hideModal('modal-edit-user')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div class="auth-error" id="edit-user-error" style="margin-bottom:14px"></div>
-    <input type="hidden" id="edit-user-id">
-    <div class="form-group">
-      <label class="form-label">Full Name *</label>
-      <input class="form-input" id="um-edit-name" placeholder="Full name">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Email Address</label>
-      <input class="form-input" id="um-edit-email" disabled style="opacity:.6">
-      <div style="font-size:11px;color:var(--muted);margin-top:4px">Email cannot be changed after registration.</div>
-    </div>
-    <div class="form-group">
-      <label class="form-label">Contact Number</label>
-      <input class="form-input" id="um-edit-contact" placeholder="+91 99999 99999">
-    </div>
-    <div class="form-group">
-      <label class="form-label">Role</label>
-      <select class="form-select" id="um-edit-role">
-        <option value="user">User (personal data only)</option>
-        <option value="admin">Admin (full access)</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label class="form-label">New Password <span style="color:var(--muted);font-weight:400">(leave blank to keep current)</span></label>
-      <input class="form-input" type="password" id="um-edit-password" placeholder="Leave blank to keep unchanged">
-    </div>
-    <div class="btn-group">
-      <button class="btn btn-primary" onclick="saveEditUser()">Save Changes</button>
-      <button class="btn btn-secondary" onclick="hideModal('modal-edit-user')">Cancel</button>
-    </div>
-  </div>
-</div>
 
 <script>
 // ══════════════════════════════════════════════
@@ -5598,13 +5713,15 @@ function showLoginOverlay() {
   document.getElementById('login-overlay').style.display = 'flex';
   document.getElementById('setup-overlay').style.display = 'none';
   document.getElementById('app-loading') && document.getElementById('app-loading').remove();
-  setTimeout(() => document.getElementById('login-email') && document.getElementById('login-email').focus(), 100);
+  setTimeout(() => _renderGoogleBtn('google-signin-btn'), 150);
 }
 
 function showSetupOverlay() {
   document.getElementById('setup-overlay').style.display = 'flex';
   document.getElementById('login-overlay').style.display = 'none';
   document.getElementById('app-loading') && document.getElementById('app-loading').remove();
+  document.getElementById('setup-step1').style.display = 'block';
+  document.getElementById('setup-step2').style.display = 'none';
   setTimeout(() => document.getElementById('setup-name') && document.getElementById('setup-name').focus(), 100);
 }
 
@@ -5620,32 +5737,76 @@ function hideAuthError(id) {
   if (el) el.style.display = 'none';
 }
 
-async function doLogin() {
-  const email = document.getElementById('login-email').value.trim();
-  const password = document.getElementById('login-password').value;
-  hideAuthError('login-error');
-  if (!email || !password) return showAuthError('login-error', 'Please enter your email and password.');
+// ── Google Sign-In ──────────────────────────────────────────────────────────
+let _googleClientId = null;
+let _googleReady = false;
+let _pendingGoogleButtons = [];
 
-  const btn = document.getElementById('login-btn');
-  btn.disabled = true; btn.textContent = 'Signing in…';
+async function _initGoogleSignIn() {
   try {
-    const res = await fetch('/api/auth/login', {
+    const cfg = await fetch('/api/auth/config').then(r => r.json());
+    _googleClientId = cfg.googleClientId;
+    if (!_googleClientId) {
+      console.warn('Google Client ID not configured on server.');
+      document.querySelectorAll('.google-btn-placeholder').forEach(el => {
+        el.textContent = 'Google Sign-In not configured.';
+      });
+      return;
+    }
+    // Load Google Identity Services script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.onload = () => {
+      google.accounts.id.initialize({
+        client_id: _googleClientId,
+        callback: handleGoogleCredential,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+      });
+      _googleReady = true;
+      _pendingGoogleButtons.forEach(id => _renderGoogleBtn(id));
+      _pendingGoogleButtons = [];
+    };
+    document.head.appendChild(script);
+  } catch(e) {
+    console.error('Google init error:', e.message);
+  }
+}
+
+function _renderGoogleBtn(containerId) {
+  if (!_googleReady) { _pendingGoogleButtons.push(containerId); return; }
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  el.innerHTML = '';
+  google.accounts.id.renderButton(el, {
+    type: 'standard', theme: 'outline', size: 'large',
+    text: 'continue_with', width: 300,
+  });
+}
+
+async function handleGoogleCredential(response) {
+  // Determine which overlay is visible and which error div to use
+  const isLogin = document.getElementById('login-overlay').style.display === 'flex';
+  const errId = isLogin ? 'login-error' : 'setup-error2';
+  hideAuthError(errId);
+  try {
+    const res = await fetch('/api/auth/google/signin', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ credential: response.credential }),
     });
     const data = await res.json();
     if (!res.ok) {
-      showAuthError('login-error', data.error || 'Login failed.');
+      showAuthError(errId, data.error || 'Sign-in failed. Your email may not be registered.');
       return;
     }
     document.getElementById('login-overlay').style.display = 'none';
+    document.getElementById('setup-overlay').style.display = 'none';
     _currentUser = data.user;
     await _initAppAfterAuth();
   } catch (e) {
-    showAuthError('login-error', 'Connection error. Please try again.');
-  } finally {
-    btn.disabled = false; btn.textContent = 'Sign In';
+    showAuthError(errId, 'Connection error. Please try again.');
   }
 }
 
@@ -5653,41 +5814,48 @@ async function doSetup() {
   const name    = document.getElementById('setup-name').value.trim();
   const email   = document.getElementById('setup-email').value.trim();
   const contact = document.getElementById('setup-contact').value.trim();
-  const password = document.getElementById('setup-password').value;
   hideAuthError('setup-error');
-  if (!name || !email || !password) return showAuthError('setup-error', 'Name, email, and password are required.');
-  if (password.length < 8) return showAuthError('setup-error', 'Password must be at least 8 characters.');
+  if (!name || !email) return showAuthError('setup-error', 'Name and email are required.');
 
   const btn = document.getElementById('setup-btn');
-  btn.disabled = true; btn.textContent = 'Creating account…';
+  btn.disabled = true; btn.textContent = 'Registering…';
   try {
     const res = await fetch('/api/auth/setup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, contact, password }),
+      body: JSON.stringify({ name, email, contact }),
     });
     const data = await res.json();
     if (!res.ok) {
       showAuthError('setup-error', data.error || 'Setup failed.');
       return;
     }
-    document.getElementById('setup-overlay').style.display = 'none';
-    _currentUser = data.user;
-    await _initAppAfterAuth();
+    // Show step 2 — sign in with Google
+    document.getElementById('setup-step1').style.display = 'none';
+    document.getElementById('setup-step2').style.display = 'block';
+    _renderGoogleBtn('google-setup-btn');
   } catch (e) {
     showAuthError('setup-error', 'Connection error. Please try again.');
   } finally {
-    btn.disabled = false; btn.textContent = 'Create Admin Account';
+    btn.disabled = false; btn.textContent = 'Register Admin Account';
   }
 }
 
 async function doLogout() {
+  // Cancel any pending sync immediately — prevent previous user's dirty data
+  // from being flushed after the session changes
+  clearTimeout(_syncTimer);
+  _syncTimer = null;
+  _dirty.clear();
+
   try {
     await fetch('/api/auth/logout', { method: 'POST' });
+    if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+      google.accounts.id.disableAutoSelect();
+    }
   } catch(_) {}
   _currentUser = null;
   _cache = {};
-  document.getElementById('login-password') && (document.getElementById('login-password').value = '');
   showLoginOverlay();
 }
 
@@ -5753,26 +5921,25 @@ function renderUsersTable() {
 }
 
 async function addUser() {
-  const name     = document.getElementById('um-add-name').value.trim();
-  const email    = document.getElementById('um-add-email').value.trim();
-  const contact  = document.getElementById('um-add-contact').value.trim();
-  const role     = document.getElementById('um-add-role').value;
-  const password = document.getElementById('um-add-password').value;
+  const name    = document.getElementById('um-add-name').value.trim();
+  const email   = document.getElementById('um-add-email').value.trim();
+  const contact = document.getElementById('um-add-contact').value.trim();
+  const role    = document.getElementById('um-add-role').value;
   hideAuthError('add-user-error');
-  if (!name || !email || !password) return showAuthError('add-user-error', 'Name, email, and password are required.');
+  if (!name || !email) return showAuthError('add-user-error', 'Name and email are required.');
 
   try {
     const res = await authFetch('/api/users', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, email, contact, role, password }),
+      body: JSON.stringify({ name, email, contact, role }),
     });
     const data = await res.json();
     if (!res.ok) return showAuthError('add-user-error', data.error || 'Failed to add user.');
     hideModal('modal-add-user');
-    ['um-add-name','um-add-email','um-add-contact','um-add-password'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
+    ['um-add-name','um-add-email','um-add-contact'].forEach(id => { const el=document.getElementById(id); if(el) el.value=''; });
     document.getElementById('um-add-role').value = 'user';
-    toast('User added ✅');
+    toast('User added ✅ — they can now sign in with their Google account.');
     await loadUserManagement();
   } catch (e) {
     if (e.message !== 'Not authenticated') showAuthError('add-user-error', e.message);
@@ -5793,22 +5960,18 @@ function openEditUser(userId) {
 }
 
 async function saveEditUser() {
-  const userId   = document.getElementById('edit-user-id').value;
-  const name     = document.getElementById('um-edit-name').value.trim();
-  const contact  = document.getElementById('um-edit-contact').value.trim();
-  const role     = document.getElementById('um-edit-role').value;
-  const password = document.getElementById('um-edit-password').value;
+  const userId  = document.getElementById('edit-user-id').value;
+  const name    = document.getElementById('um-edit-name').value.trim();
+  const contact = document.getElementById('um-edit-contact').value.trim();
+  const role    = document.getElementById('um-edit-role').value;
   hideAuthError('edit-user-error');
   if (!name) return showAuthError('edit-user-error', 'Name is required.');
-
-  const body = { name, contact, role };
-  if (password) body.password = password;
 
   try {
     const res = await authFetch(`/api/users/${userId}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+      body: JSON.stringify({ name, contact, role }),
     });
     const data = await res.json();
     if (!res.ok) return showAuthError('edit-user-error', data.error || 'Failed to update user.');
