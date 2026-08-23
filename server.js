@@ -399,8 +399,19 @@ app.post('/api/auth/logout', (req, res) => {
 });
 
 // ── CURRENT USER ──────────────────────────────────────────────────────────────
-app.get('/api/auth/me', requireAuth, (req, res) => {
-  res.json({ user: req.user });
+app.get('/api/auth/me', requireAuth, async (req, res) => {
+  try {
+    // Always fetch fresh name/role from DB — JWT may be stale after admin edits
+    const fresh = await getUserById(req.user.user_id);
+    if (!fresh) return res.status(401).json({ error: 'User not found' });
+    const user = { user_id: fresh.user_id, name: fresh.name, email: fresh.email, role: fresh.role };
+    // Reissue cookie with updated data so future requests stay fresh
+    const token = signToken(user);
+    res.cookie(COOKIE_NAME, token, COOKIE_OPTS);
+    res.json({ user });
+  } catch (e) {
+    res.json({ user: req.user });
+  }
 });
 
 // ── FRONTEND CONFIG (public — no secrets) ────────────────────────────────────

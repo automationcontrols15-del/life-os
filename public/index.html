@@ -3024,8 +3024,9 @@ function loadDashboard() {
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('dash-date').textContent = days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
-  // Always use the logged-in user's name — never a cached/settings name
-  const name = (_currentUser && _currentUser.name ? _currentUser.name.split(' ')[0] : '') || 'there';
+  // Read from topbar element — same source that already shows the correct name
+  const name = (document.getElementById('topbar-name')?.textContent || '').trim() ||
+               (_currentUser?.name?.split(' ')[0]) || 'there';
   const hr = d.getHours();
   const greet = hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
   document.getElementById('dash-greeting').textContent = greet+', '+name+' 🙏';
@@ -5966,8 +5967,14 @@ function _applyUserUI(user) {
   document.getElementById('sidebar-user-name').textContent = user.name;
   document.getElementById('sidebar-user-role').textContent = user.role === 'admin' ? 'Administrator' : 'User';
   // Topbar welcome
+  const firstName = user.name ? user.name.split(' ')[0] : 'there';
   document.getElementById('topbar-welcome').style.display = 'flex';
-  document.getElementById('topbar-name').textContent = user.name.split(' ')[0];
+  document.getElementById('topbar-name').textContent = firstName;
+  // Set greeting immediately with correct name
+  const _hr = new Date().getHours();
+  const _greet = _hr<12?'Good morning':_hr<17?'Good afternoon':'Good evening';
+  const _gEl = document.getElementById('dash-greeting');
+  if (_gEl) _gEl.textContent = _greet+', '+firstName+' 🙏';
   // Show User Management nav if admin
   document.getElementById('nav-usermgmt').style.display = user.role === 'admin' ? 'flex' : 'none';
 }
@@ -6054,7 +6061,6 @@ function openEditUser(userId) {
   document.getElementById('um-edit-email').value  = u.email;
   document.getElementById('um-edit-contact').value = u.contact || '';
   document.getElementById('um-edit-role').value   = u.role;
-  document.getElementById('um-edit-password').value = '';
   hideAuthError('edit-user-error');
   showModal('modal-edit-user');
 }
