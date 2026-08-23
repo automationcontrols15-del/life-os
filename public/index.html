@@ -2886,6 +2886,9 @@ function setMobileActive(page) {
 }
 
 function nav(page) {
+  // Guard: User Management is admin-only
+  if (page === 'usermgmt' && _currentUser?.role !== 'admin') return;
+
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   const pg = document.getElementById('page-'+page);
