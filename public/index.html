@@ -3024,11 +3024,11 @@ function loadDashboard() {
   const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   document.getElementById('dash-date').textContent = days[d.getDay()]+', '+d.getDate()+' '+months[d.getMonth()]+' '+d.getFullYear();
-  const settings = store.getObj('settings');
-  const name = settings.name||'Ravi';
+  // Always use the logged-in user's name — never a cached/settings name
+  const name = (_currentUser && _currentUser.name ? _currentUser.name.split(' ')[0] : '') || 'there';
   const hr = d.getHours();
   const greet = hr<12?'Good morning':hr<17?'Good afternoon':'Good evening';
-  document.getElementById('dash-greeting').textContent = (hr<12?'Good morning':hr<17?'Good afternoon':'Good evening')+', '+name+' 🙏';
+  document.getElementById('dash-greeting').textContent = greet+', '+name+' 🙏';
 
   // Morning status
   const morning = store.get('morning').find(m=>m.date===today());
