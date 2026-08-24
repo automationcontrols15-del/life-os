@@ -650,7 +650,7 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 /* ── SCREENER SECTION ── */
 .screener-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:box-shadow .2s,border-color .2s}
 .screener-card:hover{box-shadow:var(--hover-shadow);border-color:var(--accent)}
-.screener-icon{width:42px;height:42px;background:linear-gradient(135deg,#4361ee,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.screener-icon{width:56px;height:56px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;flex-direction:column;gap:2px;padding:6px}
 .screener-info{flex:1;min-width:0}
 .screener-name{font-size:14px;font-weight:700;color:var(--text)}
 .screener-desc{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -1819,6 +1819,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
       <div class="form-group"><label class="form-label">URL *</label><input type="url" id="screener-url" class="form-input" placeholder="https://chartink.com/screener/..."></div>
       <div class="form-group"><label class="form-label">Description</label><input type="text" id="screener-desc" class="form-input" placeholder="What does this scanner find?"></div>
       <div class="form-group"><label class="form-label">Platform</label><input type="text" id="screener-platform" class="form-input" placeholder="Chartink, TradingView, NSE..."></div>
+      <div class="form-group"><label class="form-label">Logo URL <span style="color:var(--muted);font-weight:400">(optional)</span></label><input type="url" id="screener-logo" class="form-input" placeholder="https://chartink.com/favicon.ico"></div>
     </div>
     <div class="btn-group"><button class="btn btn-primary" onclick="saveScreenerEntry()">Save</button><button class="btn btn-secondary" onclick="hideModal('modal-screener')">Cancel</button></div>
   </div>
@@ -4160,37 +4161,47 @@ function deleteStrategy(id) {
 function renderScreeners() {
   const list = document.getElementById('screener-list');
   if (!list) return;
-  // Seed default Chartink screener on first run
+  // Seed default Chartink screener on first run (v2 — full data)
   let screeners = store.get('screeners');
-  if (!screeners || (Array.isArray(screeners) && screeners.length === 0 && !localStorage.getItem('screeners_seeded'))) {
+  const seeded = localStorage.getItem('screeners_seeded');
+  if (Array.isArray(screeners) && screeners.length === 0 && seeded !== 'v2') {
     screeners = [{
-      name: 'Earnings Surprise + Acceleration',
+      name: 'Earnings Surprise + Acceleration, Technical Analysis Scanner',
       url: 'https://chartink.com/screener/earnings-surprise-acceleration-4',
-      desc: 'Technical & Fundamental scan — RSI, MACD, breakouts, divergence, growth, book',
-      platform: 'Chartink'
+      desc: 'Fundamental scan Technical & Fundamental stock screener, scan stocks based on rsi, pe, macd, breakouts, divergence, growth, book',
+      platform: 'Chartink',
+      logoUrl: 'https://chartink.com/favicon.ico',
+      domain: 'chartink.com'
     }];
     store.set('screeners', screeners);
-    localStorage.setItem('screeners_seeded', '1');
+    localStorage.setItem('screeners_seeded', 'v2');
   }
   if (!screeners || screeners.length === 0) {
     list.innerHTML = `<div class="screener-empty"><div style="font-size:32px;margin-bottom:8px">📡</div><div style="font-size:14px;font-weight:600">No screeners added yet</div><div style="font-size:12px;margin-top:4px">Click "+ Add Screener" to save your scanner links here</div></div>`;
     return;
   }
-  list.innerHTML = screeners.map((s, i) => `
+  list.innerHTML = screeners.map((s, i) => {
+    const logoHtml = s.logoUrl
+      ? `<img src="${s.logoUrl}" style="width:28px;height:28px;object-fit:contain;border-radius:6px" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"><span style="display:none;font-size:20px">📡</span>`
+      : `<span style="font-size:20px">📡</span>`;
+    return `
     <div class="screener-card">
-      <div class="screener-icon">📡</div>
+      <div class="screener-icon" style="background:linear-gradient(135deg,#3b4fd4,#6c47d5);flex-direction:column;gap:2px">
+        ${logoHtml}
+        ${s.platform ? `<span style="font-size:8px;font-weight:700;color:rgba(255,255,255,.85);text-align:center;line-height:1">${s.platform}</span>` : ''}
+      </div>
       <div class="screener-info">
         <div class="screener-name">${s.name}</div>
-        ${s.desc ? `<div class="screener-desc">${s.desc}</div>` : ''}
-        ${s.platform ? `<span class="screener-platform">${s.platform}</span>` : ''}
+        ${s.desc ? `<div class="screener-desc" title="${s.desc}">${s.desc}</div>` : ''}
+        ${s.domain ? `<span style="font-size:10px;color:var(--muted);margin-top:3px;display:block">${s.domain}</span>` : ''}
       </div>
       <div class="screener-actions">
         <a href="${s.url}" target="_blank" rel="noopener" class="screener-run-btn">Run Scanner →</a>
         <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="openScreenerModal(${i})" title="Edit">✎</button>
         <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;color:#ef4444" onclick="deleteScreenerEntry(${i})" title="Delete">✕</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 function openScreenerModal(idx) {
@@ -4203,9 +4214,10 @@ function openScreenerModal(idx) {
     document.getElementById('screener-url').value = s.url || '';
     document.getElementById('screener-desc').value = s.desc || '';
     document.getElementById('screener-platform').value = s.platform || '';
+    document.getElementById('screener-logo').value = s.logoUrl || '';
   } else {
     document.getElementById('screener-modal-title').textContent = 'Add Screener';
-    ['screener-name','screener-url','screener-desc','screener-platform'].forEach(id => document.getElementById(id).value = '');
+    ['screener-name','screener-url','screener-desc','screener-platform','screener-logo'].forEach(id => document.getElementById(id).value = '');
   }
   showModal('modal-screener');
 }
@@ -4215,10 +4227,14 @@ function saveScreenerEntry() {
   const url = document.getElementById('screener-url').value.trim();
   const desc = document.getElementById('screener-desc').value.trim();
   const platform = document.getElementById('screener-platform').value.trim();
+  const logoUrl = document.getElementById('screener-logo').value.trim();
   if (!name || !url) { toast('Name and URL are required', false); return; }
+  // Auto-derive domain from URL
+  let domain = '';
+  try { domain = new URL(url).hostname.replace('www.',''); } catch(_) {}
   const editIdx = document.getElementById('screener-edit-idx').value;
   const screeners = store.get('screeners') || [];
-  const entry = { name, url, desc, platform };
+  const entry = { name, url, desc, platform, logoUrl, domain };
   if (editIdx !== '') screeners[parseInt(editIdx)] = entry;
   else screeners.push(entry);
   store.set('screeners', screeners);
