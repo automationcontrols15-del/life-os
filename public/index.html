@@ -647,6 +647,21 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 .sp-empty-text{font-size:15px;font-weight:600}
 .sp-empty-sub{font-size:13px;margin-top:4px}
 @media(max-width:768px){.sp-2col{grid-template-columns:1fr}.sp-card-head{flex-wrap:wrap}.sp-hero-stats{gap:14px}}
+/* ── SCREENER SECTION ── */
+.screener-card{background:var(--surface);border:1.5px solid var(--border);border-radius:12px;padding:14px 16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;transition:box-shadow .2s,border-color .2s}
+.screener-card:hover{box-shadow:var(--hover-shadow);border-color:var(--accent)}
+.screener-icon{width:42px;height:42px;background:linear-gradient(135deg,#4361ee,#6366f1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.screener-info{flex:1;min-width:0}
+.screener-name{font-size:14px;font-weight:700;color:var(--text)}
+.screener-desc{font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.screener-platform{display:inline-block;font-size:10px;font-weight:700;background:rgba(67,97,238,.12);color:var(--accent);padding:2px 8px;border-radius:6px;margin-top:4px}
+.screener-actions{display:flex;gap:6px;flex-shrink:0}
+.screener-run-btn{font-size:12px;font-weight:700;text-decoration:none;background:var(--accent);color:#fff;padding:6px 14px;border-radius:8px;border:none;cursor:pointer;transition:opacity .2s}
+.screener-run-btn:hover{opacity:.85}
+.screener-section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;margin-top:28px}
+.screener-section-title{font-size:16px;font-weight:800;color:var(--text)}
+.screener-section-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.screener-empty{text-align:center;padding:28px;color:var(--muted);background:var(--surface);border-radius:12px;border:1.5px dashed var(--border)}
 /* ── STRATEGY IMAGES ── */
 .sp-img-upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--surface2);margin-bottom:10px}
 .sp-img-upload-zone:hover{border-color:var(--accent)}
@@ -1781,8 +1796,33 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 
   <!-- Cards list -->
   <div id="sp-cards-list"></div>
+
+  <!-- ── Screeners Section ── -->
+  <div class="screener-section-header">
+    <div>
+      <div class="screener-section-title">📡 Stock Screeners</div>
+      <div class="screener-section-sub">Quick access to your scanner links — click to run directly</div>
+    </div>
+    <button class="btn btn-primary" style="font-size:12px" onclick="openScreenerModal()">+ Add Screener</button>
+  </div>
+  <div id="screener-list"></div>
 </div>
 
+
+<!-- ═══ SCREENER MODAL ═══ -->
+<div id="modal-screener" class="modal-overlay" style="display:none">
+  <div class="modal" style="max-width:480px;width:94%">
+    <div class="modal-header"><h3 id="screener-modal-title">Add Screener</h3><button onclick="hideModal('modal-screener')" class="modal-close">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="screener-edit-idx">
+      <div class="form-group"><label class="form-label">Name *</label><input type="text" id="screener-name" class="form-input" placeholder="Earnings Surprise + Acceleration"></div>
+      <div class="form-group"><label class="form-label">URL *</label><input type="url" id="screener-url" class="form-input" placeholder="https://chartink.com/screener/..."></div>
+      <div class="form-group"><label class="form-label">Description</label><input type="text" id="screener-desc" class="form-input" placeholder="What does this scanner find?"></div>
+      <div class="form-group"><label class="form-label">Platform</label><input type="text" id="screener-platform" class="form-input" placeholder="Chartink, TradingView, NSE..."></div>
+    </div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveScreenerEntry()">Save</button><button class="btn btn-secondary" onclick="hideModal('modal-screener')">Cancel</button></div>
+  </div>
+</div>
 
 <!-- ═══ WEEKLY REVIEW ═══ -->
 <div id="page-weekly" class="page">
@@ -4116,6 +4156,86 @@ function deleteStrategy(id) {
   loadStrategyPlaybook();
   toast('Strategy deleted');
 }
+// ── SCREENER MANAGEMENT ──
+function renderScreeners() {
+  const list = document.getElementById('screener-list');
+  if (!list) return;
+  // Seed default Chartink screener on first run
+  let screeners = store.get('screeners');
+  if (!screeners || (Array.isArray(screeners) && screeners.length === 0 && !localStorage.getItem('screeners_seeded'))) {
+    screeners = [{
+      name: 'Earnings Surprise + Acceleration',
+      url: 'https://chartink.com/screener/earnings-surprise-acceleration-4',
+      desc: 'Technical & Fundamental scan — RSI, MACD, breakouts, divergence, growth, book',
+      platform: 'Chartink'
+    }];
+    store.set('screeners', screeners);
+    localStorage.setItem('screeners_seeded', '1');
+  }
+  if (!screeners || screeners.length === 0) {
+    list.innerHTML = `<div class="screener-empty"><div style="font-size:32px;margin-bottom:8px">📡</div><div style="font-size:14px;font-weight:600">No screeners added yet</div><div style="font-size:12px;margin-top:4px">Click "+ Add Screener" to save your scanner links here</div></div>`;
+    return;
+  }
+  list.innerHTML = screeners.map((s, i) => `
+    <div class="screener-card">
+      <div class="screener-icon">📡</div>
+      <div class="screener-info">
+        <div class="screener-name">${s.name}</div>
+        ${s.desc ? `<div class="screener-desc">${s.desc}</div>` : ''}
+        ${s.platform ? `<span class="screener-platform">${s.platform}</span>` : ''}
+      </div>
+      <div class="screener-actions">
+        <a href="${s.url}" target="_blank" rel="noopener" class="screener-run-btn">Run Scanner →</a>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px" onclick="openScreenerModal(${i})" title="Edit">✎</button>
+        <button class="btn btn-secondary" style="font-size:12px;padding:5px 10px;color:#ef4444" onclick="deleteScreenerEntry(${i})" title="Delete">✕</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openScreenerModal(idx) {
+  const screeners = store.get('screeners') || [];
+  document.getElementById('screener-edit-idx').value = idx !== undefined ? idx : '';
+  if (idx !== undefined && screeners[idx]) {
+    const s = screeners[idx];
+    document.getElementById('screener-modal-title').textContent = 'Edit Screener';
+    document.getElementById('screener-name').value = s.name || '';
+    document.getElementById('screener-url').value = s.url || '';
+    document.getElementById('screener-desc').value = s.desc || '';
+    document.getElementById('screener-platform').value = s.platform || '';
+  } else {
+    document.getElementById('screener-modal-title').textContent = 'Add Screener';
+    ['screener-name','screener-url','screener-desc','screener-platform'].forEach(id => document.getElementById(id).value = '');
+  }
+  showModal('modal-screener');
+}
+
+function saveScreenerEntry() {
+  const name = document.getElementById('screener-name').value.trim();
+  const url = document.getElementById('screener-url').value.trim();
+  const desc = document.getElementById('screener-desc').value.trim();
+  const platform = document.getElementById('screener-platform').value.trim();
+  if (!name || !url) { toast('Name and URL are required', false); return; }
+  const editIdx = document.getElementById('screener-edit-idx').value;
+  const screeners = store.get('screeners') || [];
+  const entry = { name, url, desc, platform };
+  if (editIdx !== '') screeners[parseInt(editIdx)] = entry;
+  else screeners.push(entry);
+  store.set('screeners', screeners);
+  hideModal('modal-screener');
+  renderScreeners();
+  toast('Screener saved ✓');
+}
+
+function deleteScreenerEntry(idx) {
+  if (!confirm('Delete this screener?')) return;
+  const screeners = store.get('screeners') || [];
+  screeners.splice(idx, 1);
+  store.set('screeners', screeners);
+  renderScreeners();
+  toast('Screener deleted');
+}
+
 // ── STRATEGY IMAGES ──
 let _pendingStratImgs=[]; // [{dataUrl, caption}] — held until save
 function getStratImages(stratId){
@@ -4226,6 +4346,7 @@ function loadStrategyPlaybook() {
   });
   document.getElementById('sp-best-wr').textContent=bestWR;
   renderSPCards();
+  renderScreeners();
 }
 function renderSPCards() {
   const strats=store.get('strategies');
