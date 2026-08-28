@@ -1366,7 +1366,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">😴 Log Sleep</h3><button onclick="hideModal('hs-sleep-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
-      <input type="date" class="form-input" id="hss-date" style="max-width:180px;margin:0">
+      <input type="date" class="form-input" id="hss-date" style="max-width:180px;margin:0" onchange="hsDateChanged('sleep',this.value)">
     </div>
     <div class="form-row">
       <div class="form-group"><label class="form-label">Sleep Duration (hrs)</label><input type="number" class="form-input" id="hss-sleep" step="0.5" value="7"></div>
@@ -1389,7 +1389,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">💧 Log Water Intake</h3><button onclick="hideModal('hs-water-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
-      <input type="date" class="form-input" id="hsw-date" style="max-width:180px;margin:0">
+      <input type="date" class="form-input" id="hsw-date" style="max-width:180px;margin:0" onchange="hsDateChanged('water',this.value)">
     </div>
     <div class="form-group"><label class="form-label">Water Intake (litres)</label><input type="number" class="form-input" id="hsw-water" step="0.25" value="2" min="0"></div>
     <div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:14px;flex-wrap:wrap">
@@ -1407,7 +1407,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">🏃 Log Exercise</h3><button onclick="hideModal('hs-exercise-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
-      <input type="date" class="form-input" id="hse-date" style="max-width:180px;margin:0">
+      <input type="date" class="form-input" id="hse-date" style="max-width:180px;margin:0" onchange="hsDateChanged('exercise',this.value)">
     </div>
     <div class="form-group"><label class="form-label">Exercise Type</label>
       <select class="form-select" id="hse-ex">
@@ -1431,7 +1431,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">🍽️ Log Food & Meals</h3><button onclick="hideModal('hs-food-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
-      <input type="date" class="form-input" id="hsf-date" style="max-width:180px;margin:0">
+      <input type="date" class="form-input" id="hsf-date" style="max-width:180px;margin:0" onchange="hsFoodDateChanged(this.value)">
     </div>
     <div class="meal-section">
       <div class="meal-add-row">
@@ -3789,6 +3789,42 @@ function hsRecalcScore(entry) {
 function hsWaterAdd(n) {
   const el = document.getElementById('hsw-water');
   el.value = (parseFloat(el.value||0)+n).toFixed(2);
+}
+
+// ── Reload any section modal when the user changes its date field ──
+function hsDateChanged(section, newDate) {
+  if (!newDate) return;
+  const data = store.get('health');
+  const e = data.find(x => x.date === newDate) || {};
+  if (section === 'sleep') {
+    document.getElementById('hss-sleep').value = e.sleep || 7;
+    const sq = e.sleepQ||3, en = e.energy||3, rc = e.recovery||3;
+    document.getElementById('hss-sleepq-r').value = sq; document.getElementById('hss-sleepq-n').textContent = sq;
+    document.getElementById('hss-energy-r').value = en; document.getElementById('hss-energy-n').textContent = en;
+    document.getElementById('hss-recovery-r').value = rc; document.getElementById('hss-recovery-n').textContent = rc;
+    document.getElementById('hss-weight').value = e.weight || '';
+    document.getElementById('hss-screen').value = e.screen || '';
+    document.getElementById('hss-notes').value = e.notes || '';
+  } else if (section === 'water') {
+    document.getElementById('hsw-water').value = e.water || 0;
+  } else if (section === 'exercise') {
+    document.getElementById('hse-ex').value = e.exercise || 'none';
+    document.getElementById('hse-dur').value = e.exDur || 0;
+    document.getElementById('hse-steps').value = e.steps || 0;
+    document.getElementById('hse-notes').value = e.exNotes || '';
+  }
+}
+
+// ── Reload meal list when date is changed inside the food modal ──
+function hsFoodDateChanged(newDate) {
+  if (!newDate) return;
+  const data = store.get('health');
+  const e = data.find(x => x.date === newDate) || {};
+  mealItems = e.meals ? [...e.meals] : [];
+  const fq = e.food || 3;
+  document.getElementById('hsf-food-slider').value = fq;
+  document.getElementById('hsf-food-num').textContent = fq;
+  renderMealList();
 }
 
 // ── Open a focused section modal ──
