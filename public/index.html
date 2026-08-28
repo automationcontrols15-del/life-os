@@ -3761,10 +3761,11 @@ function hsGetOrCreate(date) {
   const existing = store.get('health');
   let entry = existing.find(e=>e.date===date);
   if (!entry) {
+    // Create a fresh entry object but do NOT push to existing yet —
+    // saveHealthSection handles insertion so cancelled modals don't pollute the cache
     entry = { id:'HLT-'+date.replace(/-/g,''), date, sleep:0, sleepQ:3, energy:3,
       exercise:'none', exDur:0, steps:0, water:0, food:3, meals:[],
       weight:'', screen:'', recovery:3, notes:'', score:3, createdAt:new Date().toISOString() };
-    existing.push(entry);
   }
   return { existing, entry };
 }
@@ -4033,8 +4034,9 @@ function loadHealth() {
     </tr>`;
   }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet — start logging above!</td></tr>';
 
-  // Set default report range to last 7 days on first load
+  // Set default report range to last 7 days on first load; always re-render after that
   if (!document.getElementById('hr-from').value) hrSetRange(7);
+  else renderHealthReport();
 }
 
 // ── Health Report helpers ──
@@ -4051,7 +4053,7 @@ function hrFilterData() {
   const to   = document.getElementById('hr-to').value;
   if (!from || !to) return [];
   return store.get('health')
-    .filter(e => e.date >= from && e.date <= to)
+    .filter(e => e && e.date && e.date >= from && e.date <= to)
     .sort((a,b) => a.date.localeCompare(b.date));
 }
 
