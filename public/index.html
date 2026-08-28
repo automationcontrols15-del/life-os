@@ -3019,8 +3019,20 @@ async function _flushSync() {
 function _queueSync(key) {
   _dirty.add(key);
   clearTimeout(_syncTimer);
-  _syncTimer = setTimeout(_flushSync, 1500);
+  _syncTimer = setTimeout(_flushSync, 500);
 }
+
+// ── Guarantee data reaches the server when the user closes the tab/browser ──
+window.addEventListener('beforeunload', () => {
+  if (_dirty.size === 0) return;
+  const updates = {};
+  [..._dirty].forEach(k => { updates[k] = _cache[k]; });
+  // sendBeacon fires even as the page is unloading — regular fetch would be cancelled
+  try {
+    const blob = new Blob([JSON.stringify(updates)], { type: 'application/json' });
+    navigator.sendBeacon('/api/data', blob);
+  } catch(e) {}
+});
 
 const store = {
   get:    k => { try { const v=_cache[k]; return Array.isArray(v)?v:[] } catch(e){ return [] } },
