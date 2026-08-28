@@ -662,6 +662,21 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 .screener-section-title{font-size:16px;font-weight:800;color:var(--text)}
 .screener-section-sub{font-size:12px;color:var(--muted);margin-top:2px}
 .screener-empty{text-align:center;padding:28px;color:var(--muted);background:var(--surface);border-radius:12px;border:1.5px dashed var(--border)}
+/* ── HEALTH SECTIONS ── */
+.hs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px}
+@media(max-width:700px){.hs-grid{grid-template-columns:1fr}}
+.hs-card{padding:16px 18px}
+.hs-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.hs-card-title{font-size:13px;font-weight:700;color:var(--text)}
+.hs-empty{font-size:12px;color:var(--muted);padding:10px 0 4px}
+.hs-val{font-size:26px;font-weight:800;color:var(--accent);line-height:1.1}
+.hs-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.hs-row{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px}
+.hs-row:last-child{border-bottom:none}
+.hs-meal-item{display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12px;gap:8px}
+.hs-meal-item:last-child{border-bottom:none}
+.hs-del-btn{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1;transition:color .15s}
+.hs-del-btn:hover{color:var(--red)}
 /* ── STRATEGY IMAGES ── */
 .sp-img-upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--surface2);margin-bottom:10px}
 .sp-img-upload-zone:hover{border-color:var(--accent)}
@@ -1221,61 +1236,153 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 
 <!-- ═══ HEALTH ═══ -->
 <div id="page-health" class="page">
-  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
-    <div><div class="page-title">💪 Health Tracker</div><div class="page-subtitle">Track daily health metrics and trends</div></div>
-    <button class="btn btn-primary" onclick="showModal('health-modal')">+ Log Today</button>
+  <div class="page-header" style="margin-bottom:18px">
+    <div class="page-title">💪 Health Tracker</div>
+    <div class="page-subtitle">Log each section separately — anytime you have data</div>
   </div>
+
+  <!-- TODAY'S QUICK LOG SECTIONS -->
+  <div class="hs-grid">
+    <!-- SLEEP -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">😴 Sleep</div>
+        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('sleep')">+ Log</button>
+      </div>
+      <div id="hs-sleep-display"><div class="hs-empty">Not logged today</div></div>
+    </div>
+    <!-- WATER -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">💧 Water</div>
+        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('water')">+ Log</button>
+      </div>
+      <div id="hs-water-display"><div class="hs-empty">Not logged today</div></div>
+    </div>
+    <!-- EXERCISE -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">🏃 Exercise</div>
+        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('exercise')">+ Log</button>
+      </div>
+      <div id="hs-exercise-display"><div class="hs-empty">Not logged today</div></div>
+    </div>
+    <!-- FOOD -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">🍽️ Food & Meals</div>
+        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('food')">+ Add Meal</button>
+      </div>
+      <div id="hs-food-display"><div class="hs-empty">No meals logged today</div></div>
+    </div>
+  </div>
+
+  <!-- WEEKLY STATS -->
   <div class="card-grid grid-4" style="margin-bottom:16px">
     <div class="stat green"><div class="stat-label">Avg Sleep</div><div class="stat-value" id="h-avg-sleep">—</div><div class="stat-sub">hours this week</div></div>
     <div class="stat accent"><div class="stat-label">Avg Energy</div><div class="stat-value" id="h-avg-energy">—</div><div class="stat-sub">/5 this week</div></div>
     <div class="stat yellow"><div class="stat-label">Exercise Days</div><div class="stat-value" id="h-exercise-days">—</div><div class="stat-sub">this week</div></div>
     <div class="stat"><div class="stat-label">Health Score</div><div class="stat-value" id="h-score">—</div><div class="stat-sub">/5 today</div></div>
   </div>
+
+  <!-- CHARTS -->
   <div class="card-grid grid-2">
     <div class="card"><div class="card-title">Sleep Duration — Last 7 Days</div><div class="chart-container"><canvas id="health-sleep-chart"></canvas></div></div>
-    <div class="card"><div class="card-title">Energy & Mood — Last 7 Days</div><div class="chart-container"><canvas id="health-energy-chart"></canvas></div></div>
+    <div class="card"><div class="card-title">Energy — Last 7 Days</div><div class="chart-container"><canvas id="health-energy-chart"></canvas></div></div>
   </div>
-  <div class="card-grid grid-2" style="margin-bottom:16px">
-    <div class="card food-log-card"><div class="card-title">🍽️ Today's Food Log</div><div id="h-food-log-today"><div class="empty-state" style="padding:20px"><div class="empty-icon">🍽️</div><div class="empty-text">No meals logged today</div><div class="empty-sub">Click "Log Today" to add meals</div></div></div></div>
-    <div class="card"><div class="card-title">📅 Recent Meals (Last 7 Days)</div><div class="table-wrap" style="max-height:260px;overflow-y:auto"><table><thead><tr><th>Date</th><th>Meal</th><th>Food Items</th></tr></thead><tbody id="h-recent-meals-tbody"></tbody></table></div></div>
+
+  <!-- HEALTH LOG TABLE -->
+  <div class="card">
+    <div class="card-title">Health Log</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Date</th><th>Sleep</th><th>Quality</th><th>Exercise</th><th>Water (L)</th><th>Energy</th><th>Meals</th><th>Score</th><th>Actions</th></tr></thead>
+        <tbody id="health-tbody"></tbody>
+      </table>
+    </div>
   </div>
-  <div class="card"><div class="card-title">Health Log</div><div class="table-wrap"><table><thead><tr><th>Date</th><th>Sleep (hrs)</th><th>Quality</th><th>Exercise</th><th>Water (L)</th><th>Energy</th><th>Meals</th><th>Food Score</th><th>Steps</th><th>Health Score</th></tr></thead><tbody id="health-tbody"></tbody></table></div></div>
 </div>
 
-<div id="health-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:580px;max-width:95vw;max-height:90vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">Log Health Entry</h3><button onclick="hideModal('health-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
-    <div class="form-group" style="margin-bottom:18px;padding:12px 16px;background:#f0f4ff;border-radius:10px;border:1.5px solid var(--border);display:flex;align-items:center;gap:14px">
-      <label class="form-label" style="margin:0;white-space:nowrap">📅 Entry Date</label>
-      <input type="date" class="form-input" id="h-date" style="max-width:200px;margin:0">
-      <span style="font-size:12px;color:var(--muted)">Change to log a past date</span>
-    </div>
-    <div class="form-row-3">
-      <div class="form-group"><label class="form-label">Sleep Duration (hrs)</label><input type="number" class="form-input" id="h-sleep" step="0.5" value="7"></div>
-      <div class="form-group"><label class="form-label">Sleep Quality (1-5)</label><input type="number" class="form-input" id="h-sleep-q" min="1" max="5" value="3"></div>
-      <div class="form-group"><label class="form-label">Energy Level (1-5)</label><input type="number" class="form-input" id="h-energy" min="1" max="5" value="3"></div>
-    </div>
-    <div class="form-row-3">
-      <div class="form-group"><label class="form-label">Exercise</label><select class="form-select" id="h-ex"><option value="none">None</option><option>Walk</option><option>Run</option><option>Gym</option><option>Yoga</option><option>Cycling</option><option>Other</option></select></div>
-      <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-input" id="h-ex-dur" value="0"></div>
-      <div class="form-group"><label class="form-label">Steps</label><input type="number" class="form-input" id="h-steps" value="0"></div>
+<!-- ═══ HEALTH: SLEEP MODAL ═══ -->
+<div id="hs-sleep-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:420px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">😴 Log Sleep</h3><button onclick="hideModal('hs-sleep-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hss-date" style="max-width:180px;margin:0">
     </div>
     <div class="form-row">
-      <div class="form-group"><label class="form-label">Water (litres)</label><input type="number" class="form-input" id="h-water" step="0.5" value="2"></div>
-      <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" class="form-input" id="h-weight" step="0.1"></div>
+      <div class="form-group"><label class="form-label">Sleep Duration (hrs)</label><input type="number" class="form-input" id="hss-sleep" step="0.5" value="7"></div>
+      <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" class="form-input" id="hss-weight" step="0.1" placeholder="optional"></div>
     </div>
-    <!-- ── FOOD / MEAL ENTRY ── -->
+    <div class="form-group"><label class="form-label">Sleep Quality (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-sleepq-r" oninput="updateScore(this,'hss-sleepq-n')"><span class="score-num" id="hss-sleepq-n">3</span></div></div>
+    <div class="form-group"><label class="form-label">Energy Level (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-energy-r" oninput="updateScore(this,'hss-energy-n')"><span class="score-num" id="hss-energy-n">3</span></div></div>
+    <div class="form-group"><label class="form-label">Recovery (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-recovery-r" oninput="updateScore(this,'hss-recovery-n')"><span class="score-num" id="hss-recovery-n">3</span></div></div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Screen Time (hrs)</label><input type="number" class="form-input" id="hss-screen" step="0.5" placeholder="optional"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-input" id="hss-notes" placeholder="Anything notable..."></div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('sleep')">Save Sleep</button><button class="btn btn-secondary" onclick="hideModal('hs-sleep-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH: WATER MODAL ═══ -->
+<div id="hs-water-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:380px;max-width:95vw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">💧 Log Water Intake</h3><button onclick="hideModal('hs-water-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hsw-date" style="max-width:180px;margin:0">
+    </div>
+    <div class="form-group"><label class="form-label">Water Intake (litres)</label><input type="number" class="form-input" id="hsw-water" step="0.25" value="2" min="0"></div>
+    <div style="display:flex;gap:8px;margin-top:-8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="hsWaterAdd(0.25)">+¼L</button>
+      <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="hsWaterAdd(0.5)">+½L</button>
+      <button class="btn btn-secondary" style="font-size:12px;padding:4px 10px" onclick="hsWaterAdd(1)">+1L</button>
+    </div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('water')">Save Water</button><button class="btn btn-secondary" onclick="hideModal('hs-water-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH: EXERCISE MODAL ═══ -->
+<div id="hs-exercise-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:400px;max-width:95vw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">🏃 Log Exercise</h3><button onclick="hideModal('hs-exercise-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hse-date" style="max-width:180px;margin:0">
+    </div>
+    <div class="form-group"><label class="form-label">Exercise Type</label>
+      <select class="form-select" id="hse-ex">
+        <option value="none">None / Rest Day</option>
+        <option>Walk</option><option>Run</option><option>Gym</option>
+        <option>Yoga</option><option>Cycling</option><option>Swimming</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Duration (min)</label><input type="number" class="form-input" id="hse-dur" value="0" min="0"></div>
+      <div class="form-group"><label class="form-label">Steps</label><input type="number" class="form-input" id="hse-steps" value="0" min="0"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-input" id="hse-notes" placeholder="e.g. felt strong, felt tired..."></div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('exercise')">Save Exercise</button><button class="btn btn-secondary" onclick="hideModal('hs-exercise-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH: FOOD MODAL ═══ -->
+<div id="hs-food-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:520px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">🍽️ Log Food & Meals</h3><button onclick="hideModal('hs-food-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hsf-date" style="max-width:180px;margin:0">
+    </div>
     <div class="meal-section">
-      <div class="meal-section-title">🍽️ Food & Meals Log</div>
       <div class="meal-add-row">
         <div><label class="form-label" style="margin-bottom:5px">Meal</label>
           <select class="form-select" id="h-meal-type">
-            <option value="breakfast">Breakfast</option>
-            <option value="lunch">Lunch</option>
-            <option value="dinner">Dinner</option>
-            <option value="snack">Snack</option>
-            <option value="preworkout">Pre-Workout</option>
-            <option value="postworkout">Post-Workout</option>
+            <option value="breakfast">Breakfast</option><option value="lunch">Lunch</option>
+            <option value="dinner">Dinner</option><option value="snack">Snack</option>
+            <option value="preworkout">Pre-Workout</option><option value="postworkout">Post-Workout</option>
           </select>
         </div>
         <div><label class="form-label" style="margin-bottom:5px">Food / Item Name</label>
@@ -1286,32 +1393,25 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
         </div>
         <div><label class="form-label" style="margin-bottom:5px">Unit</label>
           <select class="form-select" id="h-meal-unit">
-            <option>bowl</option><option>plate</option><option>cup</option>
-            <option>glass</option><option>piece</option><option>slice</option>
-            <option>g</option><option>ml</option><option>tbsp</option>
-            <option>serving</option><option>handful</option>
+            <option>bowl</option><option>plate</option><option>cup</option><option>glass</option>
+            <option>piece</option><option>slice</option><option>g</option><option>ml</option>
+            <option>tbsp</option><option>serving</option><option>handful</option>
           </select>
         </div>
         <div style="padding-bottom:0"><label class="form-label" style="margin-bottom:5px">&nbsp;</label>
           <button class="btn btn-primary btn-sm" onclick="addMealItem()" style="width:100%">+ Add</button>
         </div>
       </div>
-      <div id="h-meal-list"><div class="meal-empty">No items added yet — log your meals above</div></div>
+      <div id="h-meal-list"><div class="meal-empty">No items added yet</div></div>
     </div>
-    <div class="form-group">
+    <div class="form-group" style="margin-top:8px">
       <label class="form-label">Food Quality Rating (1-5)</label>
       <div class="score-slider-wrap">
-        <input type="range" min="1" max="5" value="3" class="score-slider" oninput="updateScore(this,'h-food-num')">
-        <span class="score-num" id="h-food-num">3</span>
+        <input type="range" min="1" max="5" value="3" class="score-slider" id="hsf-food-slider" oninput="updateScore(this,'hsf-food-num')">
+        <span class="score-num" id="hsf-food-num">3</span>
       </div>
-      <div class="form-hint">Rate overall food quality / discipline for the day</div>
     </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Screen Time (hrs)</label><input type="number" class="form-input" id="h-screen" step="0.5"></div>
-      <div class="form-group"><label class="form-label">Recovery (1-5)</label><input type="number" class="form-input" id="h-recovery" min="1" max="5" value="3"></div>
-    </div>
-    <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-input" id="h-notes" placeholder="Anything notable about today's health..."></div>
-    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealth(this)">Save Health Entry</button><button class="btn btn-secondary" onclick="hideModal('health-modal')">Cancel</button></div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('food')">Save Meals</button><button class="btn btn-secondary" onclick="hideModal('hs-food-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -2979,11 +3079,9 @@ function showModal(id) {
   if(!m) return;
   m.style.display='flex';
   populateStrategySelect();
-  const dateMap={'health-modal':'h-date','mindset-modal':'ms-date','rel-modal':'rel-date','learn-modal':'l-date','contrib-modal':'c-date','log-progress-modal':'lp-date'};
+  const dateMap={'mindset-modal':'ms-date','rel-modal':'rel-date','learn-modal':'l-date','contrib-modal':'c-date','log-progress-modal':'lp-date'};
   const dfId=dateMap[id];
   if(dfId){const df=document.getElementById(dfId);if(df&&!df.value)df.value=today();}
-  // Reset meal items when health modal opens
-  if(id==='health-modal'){mealItems=[];renderMealList();}
   // Populate goal selects when goal-related modals open
   if(id==='add-goal-modal'||id==='add-milestone-modal'||id==='log-progress-modal'||id==='task-modal'){populateGoalSelects();}
   if(id==='add-goal-modal'||id==='vision-card-modal'){populateVisionLinkSelect();}
@@ -3600,79 +3698,229 @@ document.addEventListener('keydown', e=>{
 });
 
 let healthSleepChart, healthEnergyChart;
-function saveHealth(btn) {
-  const fb = btn ? btnFeedback(btn) : null;
-  try {
-    const sl=parseFloat(document.getElementById('h-sleep').value)||0;
-    const sq=parseInt(document.getElementById('h-sleep-q').value)||3;
-    const en=parseInt(document.getElementById('h-energy').value)||3;
-    const fo=parseInt(document.getElementById('h-food-num').textContent)||3;
-    const rc=parseInt(document.getElementById('h-recovery').value)||3;
-    const score = Math.round((sq+en+fo+rc)/4*10)/10;
-    const selDate = document.getElementById('h-date').value || today();
-    const entry = {
-      id:'HLT-'+selDate.replace(/-/g,''), date:selDate,
-      sleep:sl, sleepQ:sq, energy:en,
-      exercise:document.getElementById('h-ex').value,
-      exDur:document.getElementById('h-ex-dur').value,
-      steps:document.getElementById('h-steps').value,
-      water:document.getElementById('h-water').value,
-      food:fo, meals:[...mealItems],
-      weight:document.getElementById('h-weight').value,
-      screen:document.getElementById('h-screen').value,
-      recovery:rc, notes:document.getElementById('h-notes').value,
-      score, createdAt:new Date().toISOString()
-    };
-    const existing=store.get('health');
-    const idx=existing.findIndex(e=>e.date===selDate);
-    if(idx>=0){existing[idx]=entry;store.set('health',existing);}else{store.push('health',entry);}
-    mealItems=[];
-    renderMealList();
-    if(fb) fb.ok();
-    toast('💪 Health logged!');
-    setTimeout(()=>{ hideModal('health-modal'); loadHealth(); }, 600);
-  } catch(e) { if(fb) fb.fail(); toast('❌ Save failed', false); }
-}
 
-function loadTodayFoodLog(data) {
-  const todayEntry = data.find(e=>e.date===today());
-  const el = document.getElementById('h-food-log-today');
-  if(!el) return;
-  if(!todayEntry || !todayEntry.meals || !todayEntry.meals.length){
-    el.innerHTML='<div class="empty-state" style="padding:20px"><div class="empty-icon">🍽️</div><div class="empty-text">No meals logged today</div><div class="empty-sub">Click "+ Log Today" to add meals</div></div>';
-    return;
+// ── Helpers ──
+function hsGetOrCreate(date) {
+  const existing = store.get('health');
+  let entry = existing.find(e=>e.date===date);
+  if (!entry) {
+    entry = { id:'HLT-'+date.replace(/-/g,''), date, sleep:0, sleepQ:3, energy:3,
+      exercise:'none', exDur:0, steps:0, water:0, food:3, meals:[],
+      weight:'', screen:'', recovery:3, notes:'', score:3, createdAt:new Date().toISOString() };
+    existing.push(entry);
   }
-  const grouped = {};
-  todayEntry.meals.forEach(m=>{ if(!grouped[m.meal]) grouped[m.meal]=[]; grouped[m.meal].push(m); });
-  const order = ['breakfast','lunch','dinner','snack','preworkout','postworkout'];
-  const sorted = order.filter(k=>grouped[k]).concat(Object.keys(grouped).filter(k=>!order.includes(k)));
-  el.innerHTML = sorted.map(meal=>`
-    <div class="meal-group">
-      <div class="meal-group-title">${mealLabels[meal]||meal}</div>
-      ${grouped[meal].map(item=>`
-        <div class="meal-item" style="margin-bottom:5px">
-          <div class="meal-item-left">
-            <span class="meal-name">${item.name}</span>
-            <span class="meal-qty">${item.qty} ${item.unit}</span>
-          </div>
-        </div>`).join('')}
-    </div>`).join('');
+  return { existing, entry };
 }
 
-function loadRecentMeals(data) {
-  const tbody = document.getElementById('h-recent-meals-tbody');
-  if(!tbody) return;
-  const rows = [];
-  [...data].reverse().slice(0,14).forEach(e=>{
-    if(e.meals && e.meals.length){
-      const grouped={};
-      e.meals.forEach(m=>{ if(!grouped[m.meal]) grouped[m.meal]=[]; grouped[m.meal].push(m.name+' ('+m.qty+' '+m.unit+')'); });
-      Object.entries(grouped).forEach(([meal,items])=>{
-        rows.push(`<tr><td>${fmtDate(e.date)}</td><td><span class="meal-badge ${mealColors[meal]||'snack'}" style="display:inline-block">${mealLabels[meal]||meal}</span></td><td style="color:var(--text)">${items.join(', ')}</td></tr>`);
-      });
+function hsRecalcScore(entry) {
+  entry.score = Math.round(((entry.sleepQ||3)+(entry.energy||3)+(entry.food||3)+(entry.recovery||3))/4*10)/10;
+}
+
+function hsWaterAdd(n) {
+  const el = document.getElementById('hsw-water');
+  el.value = (parseFloat(el.value||0)+n).toFixed(2);
+}
+
+// ── Open a focused section modal ──
+function openHealthSection(section, editDate) {
+  const d = editDate || today();
+  const data = store.get('health');
+  const e = data.find(x=>x.date===d) || {};
+
+  if (section==='sleep') {
+    document.getElementById('hss-date').value = d;
+    document.getElementById('hss-sleep').value = e.sleep||7;
+    const sq = e.sleepQ||3, en = e.energy||3, rc = e.recovery||3;
+    document.getElementById('hss-sleepq-r').value = sq;
+    document.getElementById('hss-sleepq-n').textContent = sq;
+    document.getElementById('hss-energy-r').value = en;
+    document.getElementById('hss-energy-n').textContent = en;
+    document.getElementById('hss-recovery-r').value = rc;
+    document.getElementById('hss-recovery-n').textContent = rc;
+    document.getElementById('hss-weight').value = e.weight||'';
+    document.getElementById('hss-screen').value = e.screen||'';
+    document.getElementById('hss-notes').value = e.notes||'';
+    showModal('hs-sleep-modal');
+  } else if (section==='water') {
+    document.getElementById('hsw-date').value = d;
+    document.getElementById('hsw-water').value = e.water||0;
+    showModal('hs-water-modal');
+  } else if (section==='exercise') {
+    document.getElementById('hse-date').value = d;
+    document.getElementById('hse-ex').value = e.exercise||'none';
+    document.getElementById('hse-dur').value = e.exDur||0;
+    document.getElementById('hse-steps').value = e.steps||0;
+    document.getElementById('hse-notes').value = e.exNotes||'';
+    showModal('hs-exercise-modal');
+  } else if (section==='food') {
+    mealItems = e.meals ? [...e.meals] : [];
+    document.getElementById('hsf-date').value = d;
+    const fq = e.food||3;
+    document.getElementById('hsf-food-slider').value = fq;
+    document.getElementById('hsf-food-num').textContent = fq;
+    renderMealList();
+    showModal('hs-food-modal');
+  }
+}
+
+// ── Save a section ──
+function saveHealthSection(section) {
+  try {
+    const dateIds = {sleep:'hss-date',water:'hsw-date',exercise:'hse-date',food:'hsf-date'};
+    const date = document.getElementById(dateIds[section]).value || today();
+    let { existing, entry } = hsGetOrCreate(date);
+    const idx = existing.findIndex(e=>e.date===date);
+
+    if (section==='sleep') {
+      entry.sleep = parseFloat(document.getElementById('hss-sleep').value)||0;
+      entry.sleepQ = parseInt(document.getElementById('hss-sleepq-n').textContent)||3;
+      entry.energy = parseInt(document.getElementById('hss-energy-n').textContent)||3;
+      entry.recovery = parseInt(document.getElementById('hss-recovery-n').textContent)||3;
+      entry.weight = document.getElementById('hss-weight').value;
+      entry.screen = document.getElementById('hss-screen').value;
+      entry.notes = document.getElementById('hss-notes').value;
+    } else if (section==='water') {
+      entry.water = parseFloat(document.getElementById('hsw-water').value)||0;
+    } else if (section==='exercise') {
+      entry.exercise = document.getElementById('hse-ex').value;
+      entry.exDur = document.getElementById('hse-dur').value;
+      entry.steps = document.getElementById('hse-steps').value;
+      entry.exNotes = document.getElementById('hse-notes').value;
+    } else if (section==='food') {
+      entry.meals = [...mealItems];
+      entry.food = parseInt(document.getElementById('hsf-food-num').textContent)||3;
+      mealItems = [];
+      renderMealList();
     }
-  });
-  tbody.innerHTML = rows.length ? rows.join('') : '<tr><td colspan="3" style="text-align:center;padding:20px;color:var(--muted)">No meals logged yet</td></tr>';
+
+    hsRecalcScore(entry);
+    if (idx>=0) existing[idx]=entry; else existing.push(entry);
+    store.set('health', existing);
+
+    const modals = {sleep:'hs-sleep-modal',water:'hs-water-modal',exercise:'hs-exercise-modal',food:'hs-food-modal'};
+    hideModal(modals[section]);
+    const labels = {sleep:'😴 Sleep saved!',water:'💧 Water logged!',exercise:'🏃 Exercise logged!',food:'🍽️ Meals saved!'};
+    toast(labels[section]);
+    loadHealth();
+  } catch(err) { toast('❌ Save failed', false); }
+}
+
+// ── Delete entire day entry ──
+function deleteHealthEntry(date) {
+  if (!confirm('Delete health entry for ' + fmtDate(date) + '?')) return;
+  store.set('health', store.get('health').filter(e=>e.date!==date));
+  toast('Entry deleted');
+  loadHealth();
+}
+
+// ── Delete a single meal from an entry ──
+function deleteMealFromEntry(date, mealIdx) {
+  const existing = store.get('health');
+  const entry = existing.find(e=>e.date===date);
+  if (entry && entry.meals) {
+    entry.meals.splice(mealIdx, 1);
+    store.set('health', existing);
+    loadHealth();
+    toast('Meal removed');
+  }
+}
+
+// ── Render today's section displays ──
+function hsRenderSections(data) {
+  const todayE = data.find(e=>e.date===today()) || null;
+
+  // Sleep display
+  const sleepEl = document.getElementById('hs-sleep-display');
+  if (sleepEl) {
+    if (!todayE || !todayE.sleep) {
+      sleepEl.innerHTML='<div class="hs-empty">Not logged today</div>';
+    } else {
+      sleepEl.innerHTML=`
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+          <div class="hs-val">${todayE.sleep}</div>
+          <div class="hs-sub">hours &nbsp;|&nbsp; Quality: ${todayE.sleepQ||'—'}/5 &nbsp;|&nbsp; Energy: ${todayE.energy||'—'}/5</div>
+        </div>
+        ${todayE.weight?`<div class="hs-sub">⚖️ Weight: ${todayE.weight} kg</div>`:''}
+        ${todayE.notes?`<div class="hs-sub" style="margin-top:4px">📝 ${todayE.notes}</div>`:''}
+        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('sleep','${today()}')">✎ Edit</button></div>`;
+    }
+  }
+
+  // Water display
+  const waterEl = document.getElementById('hs-water-display');
+  if (waterEl) {
+    if (!todayE || !todayE.water) {
+      waterEl.innerHTML='<div class="hs-empty">Not logged today</div>';
+    } else {
+      const pct = Math.min(100, (todayE.water/3)*100);
+      waterEl.innerHTML=`
+        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
+          <div class="hs-val" style="color:#0ea5e9">${todayE.water}</div>
+          <div class="hs-sub">litres &nbsp;(goal: 3L)</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:6px;height:7px;overflow:hidden;margin-bottom:8px">
+          <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#38bdf8,#0ea5e9);border-radius:6px;transition:width .4s"></div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('water','${today()}')">✎ Edit</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="hsQuickWater(0.25)">+¼L</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="hsQuickWater(0.5)">+½L</button>
+        </div>`;
+    }
+  }
+
+  // Exercise display
+  const exEl = document.getElementById('hs-exercise-display');
+  if (exEl) {
+    if (!todayE || !todayE.exercise || todayE.exercise==='none') {
+      exEl.innerHTML='<div class="hs-empty">Not logged today</div>';
+    } else {
+      exEl.innerHTML=`
+        <div class="hs-val" style="color:var(--green);font-size:18px;margin-bottom:4px">✓ ${todayE.exercise}</div>
+        <div class="hs-sub">${todayE.exDur?todayE.exDur+' min':''} ${todayE.steps?'· '+Number(todayE.steps).toLocaleString()+' steps':''}</div>
+        ${todayE.exNotes?`<div class="hs-sub" style="margin-top:4px">📝 ${todayE.exNotes}</div>`:''}
+        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('exercise','${today()}')">✎ Edit</button></div>`;
+    }
+  }
+
+  // Food display
+  const foodEl = document.getElementById('hs-food-display');
+  if (foodEl) {
+    if (!todayE || !todayE.meals || !todayE.meals.length) {
+      foodEl.innerHTML='<div class="hs-empty">No meals logged today</div>';
+    } else {
+      const grouped={};
+      todayE.meals.forEach((m,i)=>{ if(!grouped[m.meal]) grouped[m.meal]=[]; grouped[m.meal].push({...m,_i:i}); });
+      const order=['breakfast','lunch','dinner','snack','preworkout','postworkout'];
+      const sorted=order.filter(k=>grouped[k]).concat(Object.keys(grouped).filter(k=>!order.includes(k)));
+      const todayDate = today();
+      let html = sorted.map(meal=>`
+        <div style="margin-bottom:6px">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${mealLabels[meal]||meal}</div>
+          ${grouped[meal].map(item=>`
+            <div class="hs-meal-item">
+              <span>${item.name} <span style="color:var(--muted)">${item.qty} ${item.unit}</span></span>
+              <button class="hs-del-btn" onclick="deleteMealFromEntry('${todayDate}',${item._i})" title="Remove">✕</button>
+            </div>`).join('')}
+        </div>`).join('');
+      html += `<div style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:space-between">
+        <span class="hs-sub">Food quality: ${todayE.food||'—'}/5</span>
+        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('food','${todayDate}')">✎ Edit</button>
+      </div>`;
+      foodEl.innerHTML = html;
+    }
+  }
+}
+
+function hsQuickWater(n) {
+  const existing = store.get('health');
+  let { entry } = hsGetOrCreate(today());
+  entry.water = Math.round(((parseFloat(entry.water)||0)+n)*100)/100;
+  const idx = existing.findIndex(e=>e.date===today());
+  if(idx>=0) existing[idx]=entry; else existing.push(entry);
+  store.set('health', existing);
+  loadHealth();
+  toast(`💧 +${n}L added`);
 }
 
 function loadHealth() {
@@ -3685,8 +3933,8 @@ function loadHealth() {
 
   // Stats
   const weekEntries = weekData.filter(Boolean);
-  const avgSleep = weekEntries.length ? (weekEntries.reduce((s,e)=>s+e.sleep,0)/weekEntries.length).toFixed(1) : '—';
-  const avgEnergy = weekEntries.length ? (weekEntries.reduce((s,e)=>s+e.energy,0)/weekEntries.length).toFixed(1) : '—';
+  const avgSleep = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.sleep||0),0)/weekEntries.length).toFixed(1) : '—';
+  const avgEnergy = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.energy||0),0)/weekEntries.length).toFixed(1) : '—';
   const exDays = weekEntries.filter(e=>e.exercise&&e.exercise!=='none').length;
   const todayH = data.find(e=>e.date===today());
   document.getElementById('h-avg-sleep').textContent = avgSleep;
@@ -3700,17 +3948,32 @@ function loadHealth() {
   if(healthEnergyChart) healthEnergyChart.destroy();
   healthEnergyChart = new Chart(document.getElementById('health-energy-chart'), { type:'line', data:{labels, datasets:[{label:'Energy',data:energyData,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',tension:.4,fill:true,pointRadius:4}]}, options:chartOpts });
 
-  // Food log cards
-  loadTodayFoodLog(data);
-  loadRecentMeals(data);
+  // Render section cards
+  hsRenderSections(data);
 
-  // Health log table
+  // Health log table with edit+delete
   const tbody = document.getElementById('health-tbody');
-  tbody.innerHTML = [...data].reverse().slice(0,14).map(e=>{
+  tbody.innerHTML = [...data].reverse().slice(0,30).map(e=>{
     const mealCount = (e.meals&&e.meals.length)||0;
     const mealSummary = mealCount ? `<span class="badge badge-blue">${mealCount} items</span>` : '—';
-    return `<tr><td>${fmtDate(e.date)}</td><td>${e.sleep}</td><td>${e.sleepQ}/5</td><td>${e.exercise!=='none'?'✓ '+e.exercise:'—'}</td><td>${e.water}</td><td>${e.energy}/5</td><td>${mealSummary}</td><td>${e.food}/5</td><td>${e.steps||'—'}</td><td><span class="badge ${e.score>=4?'badge-green':e.score>=3?'badge-yellow':'badge-red'}">${e.score}</span></td></tr>`;
-  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet</td></tr>';
+    return `<tr>
+      <td>${fmtDate(e.date)}</td>
+      <td>${e.sleep||'—'}</td>
+      <td>${e.sleepQ?e.sleepQ+'/5':'—'}</td>
+      <td>${e.exercise&&e.exercise!=='none'?'✓ '+e.exercise:'—'}</td>
+      <td>${e.water||'—'}</td>
+      <td>${e.energy?e.energy+'/5':'—'}</td>
+      <td>${mealSummary}</td>
+      <td><span class="badge ${(e.score||0)>=4?'badge-green':(e.score||0)>=3?'badge-yellow':'badge-red'}">${e.score||'—'}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('sleep','${e.date}')" title="Edit Sleep">😴</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('water','${e.date}')" title="Edit Water">💧</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('exercise','${e.date}')" title="Edit Exercise">🏃</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('food','${e.date}')" title="Edit Food">🍽️</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;color:var(--red)" onclick="deleteHealthEntry('${e.date}')" title="Delete entry">✕</button>
+      </td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet — start logging above!</td></tr>';
 }
 
 </script>
