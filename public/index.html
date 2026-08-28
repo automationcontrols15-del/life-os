@@ -1305,7 +1305,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="stat green"><div class="stat-label">Avg Sleep</div><div class="stat-value" id="h-avg-sleep">—</div><div class="stat-sub">hours this week</div></div>
     <div class="stat accent"><div class="stat-label">Avg Energy</div><div class="stat-value" id="h-avg-energy">—</div><div class="stat-sub">/5 this week</div></div>
     <div class="stat yellow"><div class="stat-label">Exercise Days</div><div class="stat-value" id="h-exercise-days">—</div><div class="stat-sub">this week</div></div>
-    <div class="stat"><div class="stat-label">Health Score</div><div class="stat-value" id="h-score">—</div><div class="stat-sub">/5 today</div></div>
+    <div class="stat"><div class="stat-label">Avg Water</div><div class="stat-value" id="h-avg-water">—</div><div class="stat-sub">litres this week</div></div>
   </div>
 
   <!-- CHARTS -->
@@ -1319,7 +1319,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="card-title">Health Log</div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Date</th><th>Sleep</th><th>Quality</th><th>Exercise</th><th>Water (L)</th><th>Energy</th><th>Meals</th><th>Score</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Date</th><th>Sleep (hrs)</th><th>Water (L)</th><th>Exercise</th><th>Duration</th><th>Steps</th><th>Energy</th><th>Meals</th><th>Weight (kg)</th><th>Actions</th></tr></thead>
         <tbody id="health-tbody"></tbody>
       </table>
     </div>
@@ -3893,12 +3893,12 @@ function hsRenderSections(data) {
       sleepEl.innerHTML='<div class="hs-empty">Not logged today</div>';
     } else {
       sleepEl.innerHTML=`
-        <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:6px">
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
           <div class="hs-val">${todayE.sleep}</div>
-          <div class="hs-sub">hours &nbsp;|&nbsp; Quality: ${todayE.sleepQ||'—'}/5 &nbsp;|&nbsp; Energy: ${todayE.energy||'—'}/5</div>
+          <div class="hs-sub">hours</div>
         </div>
-        ${todayE.weight?`<div class="hs-sub">⚖️ Weight: ${todayE.weight} kg</div>`:''}
-        ${todayE.notes?`<div class="hs-sub" style="margin-top:4px">📝 ${todayE.notes}</div>`:''}
+        ${todayE.weight?`<div class="hs-sub">⚖️ ${todayE.weight} kg</div>`:''}
+        ${todayE.notes?`<div class="hs-sub" style="margin-top:3px">📝 ${todayE.notes}</div>`:''}
         <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('sleep','${today()}')">✎ Edit</button></div>`;
     }
   }
@@ -3960,8 +3960,7 @@ function hsRenderSections(data) {
               <button class="hs-del-btn" onclick="deleteMealFromEntry('${todayDate}',${item._i})" title="Remove">✕</button>
             </div>`).join('')}
         </div>`).join('');
-      html += `<div style="margin-top:6px;display:flex;align-items:center;gap:8px;justify-content:space-between">
-        <span class="hs-sub">Food quality: ${todayE.food||'—'}/5</span>
+      html += `<div style="margin-top:6px;text-align:right">
         <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('food','${todayDate}')">✎ Edit</button>
       </div>`;
       foodEl.innerHTML = html;
@@ -3990,14 +3989,14 @@ function loadHealth() {
 
   // Stats
   const weekEntries = weekData.filter(Boolean);
-  const avgSleep = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.sleep||0),0)/weekEntries.length).toFixed(1) : '—';
-  const avgEnergy = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.energy||0),0)/weekEntries.length).toFixed(1) : '—';
-  const exDays = weekEntries.filter(e=>e.exercise&&e.exercise!=='none').length;
-  const todayH = data.find(e=>e.date===today());
-  document.getElementById('h-avg-sleep').textContent = avgSleep;
+  const avgSleep  = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.sleep||0),0)/weekEntries.length).toFixed(1) : '—';
+  const avgEnergy = weekEntries.filter(e=>e.energy).length ? (weekEntries.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/weekEntries.filter(e=>e.energy).length).toFixed(1) : '—';
+  const exDays    = weekEntries.filter(e=>e.exercise&&e.exercise!=='none').length;
+  const avgWater  = weekEntries.filter(e=>e.water>0).length ? (weekEntries.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/weekEntries.filter(e=>e.water>0).length).toFixed(1) : '—';
+  document.getElementById('h-avg-sleep').textContent  = avgSleep;
   document.getElementById('h-avg-energy').textContent = avgEnergy;
   document.getElementById('h-exercise-days').textContent = exDays;
-  document.getElementById('h-score').textContent = todayH?todayH.score:'—';
+  document.getElementById('h-avg-water').textContent  = avgWater;
 
   const chartOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#6b7280',font:{size:11}}}}, scales:{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(255,255,255,.05)'}}} };
   if(healthSleepChart) healthSleepChart.destroy();
@@ -4013,15 +4012,17 @@ function loadHealth() {
   tbody.innerHTML = [...data].reverse().slice(0,30).map(e=>{
     const mealCount = (e.meals&&e.meals.length)||0;
     const mealSummary = mealCount ? `<span class="badge badge-blue">${mealCount} items</span>` : '—';
+    const exText = e.exercise&&e.exercise!=='none' ? e.exercise : '—';
     return `<tr>
-      <td>${fmtDate(e.date)}</td>
+      <td style="font-weight:600">${fmtDate(e.date)}</td>
       <td>${e.sleep||'—'}</td>
-      <td>${e.sleepQ?e.sleepQ+'/5':'—'}</td>
-      <td>${e.exercise&&e.exercise!=='none'?'✓ '+e.exercise:'—'}</td>
       <td>${e.water||'—'}</td>
-      <td>${e.energy?e.energy+'/5':'—'}</td>
+      <td>${exText}</td>
+      <td>${e.exDur&&e.exDur!='0'?e.exDur+' min':'—'}</td>
+      <td>${e.steps&&e.steps!='0'?Number(e.steps).toLocaleString():'—'}</td>
+      <td>${e.energy||'—'}</td>
       <td>${mealSummary}</td>
-      <td><span class="badge ${(e.score||0)>=4?'badge-green':(e.score||0)>=3?'badge-yellow':'badge-red'}">${e.score||'—'}</span></td>
+      <td>${e.weight||'—'}</td>
       <td style="white-space:nowrap">
         <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('sleep','${e.date}')" title="Edit Sleep">😴</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;margin-right:4px" onclick="openHealthSection('water','${e.date}')" title="Edit Water">💧</button>
@@ -4030,7 +4031,7 @@ function loadHealth() {
         <button class="btn btn-secondary" style="font-size:11px;padding:3px 8px;color:var(--red)" onclick="deleteHealthEntry('${e.date}')" title="Delete entry">✕</button>
       </td>
     </tr>`;
-  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet — start logging above!</td></tr>';
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet — start logging above!</td></tr>';
 
   // Set default report range to last 7 days on first load
   if (!document.getElementById('hr-from').value) hrSetRange(7);
@@ -4069,49 +4070,42 @@ function renderHealthReport() {
     return;
   }
 
-  // KPI summaries
+  // KPI summaries — raw data only
   const withSleep = rows.filter(e=>e.sleep>0);
   const withEx    = rows.filter(e=>e.exercise&&e.exercise!=='none');
   const withWater = rows.filter(e=>e.water>0);
-  const withScore = rows.filter(e=>e.score>0);
+  const totalMeals= rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0);
+  const totalSteps= rows.reduce((s,e)=>s+(parseInt(e.steps)||0),0);
 
   const avgSleep  = withSleep.length  ? (withSleep.reduce((s,e)=>s+(e.sleep||0),0)/withSleep.length).toFixed(1) : '—';
-  const avgEnergy = rows.filter(e=>e.energy).length ? (rows.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/rows.filter(e=>e.energy).length).toFixed(1) : '—';
   const avgWater  = withWater.length  ? (withWater.reduce((s,e)=>s+(parseFloat(e.water)||0),0)/withWater.length).toFixed(1) : '—';
   const exDays    = withEx.length;
-  const avgScore  = withScore.length  ? (withScore.reduce((s,e)=>s+(e.score||0),0)/withScore.length).toFixed(1) : '—';
-  const totalMeals= rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0);
+  const totalExMins = withEx.reduce((s,e)=>s+(parseInt(e.exDur)||0),0);
 
   kpiRow.style.display = 'grid';
   kpiRow.innerHTML = `
-    <div class="hr-kpi"><div class="hr-kpi-val">${avgSleep}</div><div class="hr-kpi-lbl">Avg Sleep</div><div class="hr-kpi-sub">hrs/night</div></div>
-    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--green)">${avgEnergy}</div><div class="hr-kpi-lbl">Avg Energy</div><div class="hr-kpi-sub">out of 5</div></div>
-    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--yellow)">${exDays}</div><div class="hr-kpi-lbl">Exercise Days</div><div class="hr-kpi-sub">of ${rows.length} days</div></div>
-    <div class="hr-kpi"><div class="hr-kpi-val" style="color:#0ea5e9">${avgWater}</div><div class="hr-kpi-lbl">Avg Water</div><div class="hr-kpi-sub">litres/day</div></div>
-    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--accent)">${avgScore}</div><div class="hr-kpi-lbl">Avg Health Score</div><div class="hr-kpi-sub">${totalMeals} meals logged</div></div>`;
+    <div class="hr-kpi"><div class="hr-kpi-val">${avgSleep}</div><div class="hr-kpi-lbl">Avg Sleep</div><div class="hr-kpi-sub">hrs / night</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--yellow)">${exDays}</div><div class="hr-kpi-lbl">Exercise Days</div><div class="hr-kpi-sub">${totalExMins?totalExMins+' min total':'of '+rows.length+' days'}</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:#0ea5e9">${avgWater}</div><div class="hr-kpi-lbl">Avg Water</div><div class="hr-kpi-sub">litres / day</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--green)">${totalMeals}</div><div class="hr-kpi-lbl">Meals Logged</div><div class="hr-kpi-sub">across ${rows.length} days</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--accent)">${totalSteps?totalSteps.toLocaleString():'—'}</div><div class="hr-kpi-lbl">Total Steps</div><div class="hr-kpi-sub">in period</div></div>`;
 
-  // Date-wise table
+  // Date-wise table — raw data only
   const tableRows = rows.map(e => {
     const mealSummary = (e.meals&&e.meals.length)
       ? e.meals.map(m=>`${mealLabels[m.meal]||m.meal}: ${m.name} (${m.qty} ${m.unit})`).join(' | ')
       : '—';
-    const scoreClass = hrScoreClass(e.score);
-    const exText = e.exercise&&e.exercise!=='none'
-      ? `${e.exercise}${e.exDur?' '+e.exDur+'m':''}${e.steps?' · '+Number(e.steps).toLocaleString()+'steps':''}`
-      : '—';
     return `<tr>
       <td style="font-weight:600">${fmtDate(e.date)}</td>
       <td>${e.sleep?e.sleep+' hrs':'—'}</td>
-      <td>${e.sleepQ?e.sleepQ+'/5':'—'}</td>
-      <td>${e.energy?e.energy+'/5':'—'}</td>
-      <td>${e.recovery?e.recovery+'/5':'—'}</td>
       <td>${e.water?e.water+' L':'—'}</td>
-      <td>${exText}</td>
+      <td>${e.exercise&&e.exercise!=='none'?e.exercise:'—'}</td>
+      <td>${e.exDur&&e.exDur!='0'?e.exDur+' min':'—'}</td>
+      <td>${e.steps&&e.steps!='0'?Number(e.steps).toLocaleString():'—'}</td>
+      <td>${e.energy||'—'}</td>
       <td>${e.weight?e.weight+' kg':'—'}</td>
       <td class="hr-meal-cell" title="${mealSummary}">${mealSummary}</td>
-      <td>${e.food?e.food+'/5':'—'}</td>
       <td>${e.notes||'—'}</td>
-      <td>${e.score?`<span class="hr-pill ${scoreClass}">${e.score}</span>`:'—'}</td>
     </tr>`;
   }).join('');
 
@@ -4119,9 +4113,9 @@ function renderHealthReport() {
     <div class="hr-table-wrap">
       <table class="hr-table">
         <thead><tr>
-          <th>Date</th><th>Sleep (hrs)</th><th>Sleep Q.</th><th>Energy</th><th>Recovery</th>
-          <th>Water</th><th>Exercise</th><th>Weight</th>
-          <th>Meals</th><th>Food Q.</th><th>Notes</th><th>Score</th>
+          <th>Date</th><th>Sleep (hrs)</th><th>Water (L)</th>
+          <th>Exercise</th><th>Duration</th><th>Steps</th><th>Energy</th>
+          <th>Weight (kg)</th><th>Meals</th><th>Notes</th>
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
@@ -4136,37 +4130,34 @@ function exportHealthExcel() {
   const from = document.getElementById('hr-from').value;
   const to   = document.getElementById('hr-to').value;
 
-  // Build summary sheet data
+  // Build summary sheet data — raw data only
+  const _exR = rows.filter(e=>e.exercise&&e.exercise!=='none');
   const summaryData = [
     ['Health Report — ' + fmtDate(from) + ' to ' + fmtDate(to)],
     [],
     ['Metric', 'Value'],
     ['Total Days with Data', rows.length],
     ['Avg Sleep (hrs)', rows.filter(e=>e.sleep>0).length ? +(rows.filter(e=>e.sleep>0).reduce((s,e)=>s+(e.sleep||0),0)/rows.filter(e=>e.sleep>0).length).toFixed(2) : '—'],
-    ['Avg Energy (/5)',  rows.filter(e=>e.energy).length ? +(rows.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/rows.filter(e=>e.energy).length).toFixed(2) : '—'],
-    ['Avg Water (L)',    rows.filter(e=>e.water>0).length ? +(rows.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/rows.filter(e=>e.water>0).length).toFixed(2) : '—'],
-    ['Exercise Days',   rows.filter(e=>e.exercise&&e.exercise!=='none').length],
+    ['Avg Water (L)',   rows.filter(e=>e.water>0).length ? +(rows.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/rows.filter(e=>e.water>0).length).toFixed(2) : '—'],
+    ['Exercise Days',  _exR.length],
+    ['Total Exercise (min)', _exR.reduce((s,e)=>s+(parseInt(e.exDur)||0),0)],
+    ['Total Steps',    rows.reduce((s,e)=>s+(parseInt(e.steps)||0),0)],
     ['Total Meals Logged', rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0)],
-    ['Avg Health Score', rows.filter(e=>e.score>0).length ? +(rows.filter(e=>e.score>0).reduce((s,e)=>s+(e.score||0),0)/rows.filter(e=>e.score>0).length).toFixed(2) : '—'],
   ];
 
-  // Build daily log sheet data
-  const headers = ['Date','Sleep (hrs)','Sleep Quality (/5)','Energy (/5)','Recovery (/5)','Water (L)','Exercise','Duration (min)','Steps','Weight (kg)','Food Quality (/5)','Screen Time (hrs)','Notes','Health Score'];
+  // Build daily log sheet data — raw data only
+  const headers = ['Date','Sleep (hrs)','Water (L)','Exercise','Duration (min)','Steps','Energy (/5)','Weight (kg)','Screen Time (hrs)','Notes'];
   const dataRows = rows.map(e => [
     e.date,
     e.sleep||'',
-    e.sleepQ||'',
-    e.energy||'',
-    e.recovery||'',
     e.water||'',
     e.exercise!=='none'?(e.exercise||''):'',
     e.exDur||'',
     e.steps||'',
+    e.energy||'',
     e.weight||'',
-    e.food||'',
     e.screen||'',
-    e.notes||'',
-    e.score||''
+    e.notes||''
   ]);
 
   // Build meals sheet
@@ -4188,8 +4179,8 @@ function exportHealthExcel() {
   // Daily Log sheet
   const wsDaily = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
   wsDaily['!cols'] = [
-    {wch:12},{wch:12},{wch:16},{wch:12},{wch:14},{wch:10},
-    {wch:12},{wch:14},{wch:10},{wch:12},{wch:16},{wch:16},{wch:30},{wch:14}
+    {wch:12},{wch:12},{wch:10},{wch:12},{wch:14},{wch:12},
+    {wch:12},{wch:12},{wch:14},{wch:30}
   ];
   // Style header row bold
   headers.forEach((_,ci) => {
