@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#1e2d6b">
 <title>My Life OS</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -677,6 +678,28 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 .hs-meal-item:last-child{border-bottom:none}
 .hs-del-btn{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1;transition:color .15s}
 .hs-del-btn:hover{color:var(--red)}
+/* ── HEALTH REPORT ── */
+.hr-filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.hr-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
+@media(max-width:800px){.hr-summary-grid{grid-template-columns:repeat(2,1fr)}}
+.hr-kpi{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;text-align:center}
+.hr-kpi-val{font-size:22px;font-weight:800;color:var(--accent);line-height:1.1}
+.hr-kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-top:3px}
+.hr-kpi-sub{font-size:11px;color:var(--muted2);margin-top:2px}
+.hr-table-wrap{overflow-x:auto}
+.hr-table{width:100%;border-collapse:collapse;font-size:12px}
+.hr-table th{background:var(--surface2);color:var(--muted);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;padding:8px 10px;text-align:left;white-space:nowrap;border-bottom:2px solid var(--border)}
+.hr-table td{padding:7px 10px;border-bottom:1px solid var(--border);color:var(--text);white-space:nowrap}
+.hr-table tr:last-child td{border-bottom:none}
+.hr-table tr:hover td{background:var(--surface2)}
+.hr-pill{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:6px}
+.hr-pill-g{background:rgba(5,150,105,.12);color:var(--green)}
+.hr-pill-y{background:rgba(217,119,6,.12);color:var(--yellow)}
+.hr-pill-r{background:rgba(220,38,38,.12);color:var(--red)}
+.hr-pill-b{background:rgba(67,97,238,.12);color:var(--accent)}
+.hr-meal-cell{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hr-export-btn{display:flex;align-items:center;gap:6px;background:var(--green);color:#fff;border:none;border-radius:8px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .2s}
+.hr-export-btn:hover{opacity:.85}
 /* ── STRATEGY IMAGES ── */
 .sp-img-upload-zone{border:2px dashed var(--border);border-radius:12px;padding:20px;text-align:center;cursor:pointer;transition:border-color .2s;background:var(--surface2);margin-bottom:10px}
 .sp-img-upload-zone:hover{border-color:var(--accent)}
@@ -1300,6 +1323,40 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
         <tbody id="health-tbody"></tbody>
       </table>
     </div>
+  </div>
+
+  <!-- ── DATE RANGE REPORT ── -->
+  <div class="card" style="margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">📊 Health Report</div>
+        <div style="font-size:12px;color:var(--muted)">Select a date range to view summary and export</div>
+      </div>
+      <button class="hr-export-btn" onclick="exportHealthExcel()">
+        <span>📥</span> Export Excel
+      </button>
+    </div>
+    <!-- Filter bar -->
+    <div class="hr-filter-bar">
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">From</label>
+        <input type="date" class="form-input" id="hr-from" style="width:145px;font-size:12px">
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">To</label>
+        <input type="date" class="form-input" id="hr-to" style="width:145px;font-size:12px">
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(7)">Last 7 Days</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(14)">Last 14 Days</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(30)">Last 30 Days</button>
+        <button class="btn btn-primary" style="font-size:11px;padding:5px 12px" onclick="renderHealthReport()">View Report</button>
+      </div>
+    </div>
+    <!-- KPI summary row -->
+    <div class="hr-summary-grid" id="hr-kpi-row" style="display:none"></div>
+    <!-- Date-wise table -->
+    <div id="hr-report-body"></div>
   </div>
 </div>
 
@@ -3974,6 +4031,184 @@ function loadHealth() {
       </td>
     </tr>`;
   }).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--muted)">No health entries yet — start logging above!</td></tr>';
+
+  // Set default report range to last 7 days on first load
+  if (!document.getElementById('hr-from').value) hrSetRange(7);
+}
+
+// ── Health Report helpers ──
+function hrSetRange(days) {
+  const to = today();
+  const from = new Date(new Date(to+'T00:00:00') - (days-1)*86400000).toISOString().slice(0,10);
+  document.getElementById('hr-from').value = from;
+  document.getElementById('hr-to').value = to;
+  renderHealthReport();
+}
+
+function hrFilterData() {
+  const from = document.getElementById('hr-from').value;
+  const to   = document.getElementById('hr-to').value;
+  if (!from || !to) return [];
+  return store.get('health')
+    .filter(e => e.date >= from && e.date <= to)
+    .sort((a,b) => a.date.localeCompare(b.date));
+}
+
+function hrScoreClass(s) {
+  if (!s && s!==0) return '';
+  return s>=4?'hr-pill-g':s>=3?'hr-pill-y':'hr-pill-r';
+}
+
+function renderHealthReport() {
+  const rows = hrFilterData();
+  const kpiRow = document.getElementById('hr-kpi-row');
+  const body   = document.getElementById('hr-report-body');
+  if (!rows.length) {
+    kpiRow.style.display = 'none';
+    body.innerHTML = '<div style="text-align:center;padding:28px;color:var(--muted);font-size:13px">No data found for the selected date range</div>';
+    return;
+  }
+
+  // KPI summaries
+  const withSleep = rows.filter(e=>e.sleep>0);
+  const withEx    = rows.filter(e=>e.exercise&&e.exercise!=='none');
+  const withWater = rows.filter(e=>e.water>0);
+  const withScore = rows.filter(e=>e.score>0);
+
+  const avgSleep  = withSleep.length  ? (withSleep.reduce((s,e)=>s+(e.sleep||0),0)/withSleep.length).toFixed(1) : '—';
+  const avgEnergy = rows.filter(e=>e.energy).length ? (rows.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/rows.filter(e=>e.energy).length).toFixed(1) : '—';
+  const avgWater  = withWater.length  ? (withWater.reduce((s,e)=>s+(parseFloat(e.water)||0),0)/withWater.length).toFixed(1) : '—';
+  const exDays    = withEx.length;
+  const avgScore  = withScore.length  ? (withScore.reduce((s,e)=>s+(e.score||0),0)/withScore.length).toFixed(1) : '—';
+  const totalMeals= rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0);
+
+  kpiRow.style.display = 'grid';
+  kpiRow.innerHTML = `
+    <div class="hr-kpi"><div class="hr-kpi-val">${avgSleep}</div><div class="hr-kpi-lbl">Avg Sleep</div><div class="hr-kpi-sub">hrs/night</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--green)">${avgEnergy}</div><div class="hr-kpi-lbl">Avg Energy</div><div class="hr-kpi-sub">out of 5</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--yellow)">${exDays}</div><div class="hr-kpi-lbl">Exercise Days</div><div class="hr-kpi-sub">of ${rows.length} days</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:#0ea5e9">${avgWater}</div><div class="hr-kpi-lbl">Avg Water</div><div class="hr-kpi-sub">litres/day</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--accent)">${avgScore}</div><div class="hr-kpi-lbl">Avg Health Score</div><div class="hr-kpi-sub">${totalMeals} meals logged</div></div>`;
+
+  // Date-wise table
+  const tableRows = rows.map(e => {
+    const mealSummary = (e.meals&&e.meals.length)
+      ? e.meals.map(m=>`${mealLabels[m.meal]||m.meal}: ${m.name} (${m.qty} ${m.unit})`).join(' | ')
+      : '—';
+    const scoreClass = hrScoreClass(e.score);
+    const exText = e.exercise&&e.exercise!=='none'
+      ? `${e.exercise}${e.exDur?' '+e.exDur+'m':''}${e.steps?' · '+Number(e.steps).toLocaleString()+'steps':''}`
+      : '—';
+    return `<tr>
+      <td style="font-weight:600">${fmtDate(e.date)}</td>
+      <td>${e.sleep?e.sleep+' hrs':'—'}</td>
+      <td>${e.sleepQ?e.sleepQ+'/5':'—'}</td>
+      <td>${e.energy?e.energy+'/5':'—'}</td>
+      <td>${e.recovery?e.recovery+'/5':'—'}</td>
+      <td>${e.water?e.water+' L':'—'}</td>
+      <td>${exText}</td>
+      <td>${e.weight?e.weight+' kg':'—'}</td>
+      <td class="hr-meal-cell" title="${mealSummary}">${mealSummary}</td>
+      <td>${e.food?e.food+'/5':'—'}</td>
+      <td>${e.notes||'—'}</td>
+      <td>${e.score?`<span class="hr-pill ${scoreClass}">${e.score}</span>`:'—'}</td>
+    </tr>`;
+  }).join('');
+
+  body.innerHTML = `
+    <div class="hr-table-wrap">
+      <table class="hr-table">
+        <thead><tr>
+          <th>Date</th><th>Sleep (hrs)</th><th>Sleep Q.</th><th>Energy</th><th>Recovery</th>
+          <th>Water</th><th>Exercise</th><th>Weight</th>
+          <th>Meals</th><th>Food Q.</th><th>Notes</th><th>Score</th>
+        </tr></thead>
+        <tbody>${tableRows}</tbody>
+      </table>
+    </div>`;
+}
+
+// ── Export to Excel ──
+function exportHealthExcel() {
+  const rows = hrFilterData();
+  if (!rows.length) { toast('No data in selected range', false); return; }
+
+  const from = document.getElementById('hr-from').value;
+  const to   = document.getElementById('hr-to').value;
+
+  // Build summary sheet data
+  const summaryData = [
+    ['Health Report — ' + fmtDate(from) + ' to ' + fmtDate(to)],
+    [],
+    ['Metric', 'Value'],
+    ['Total Days with Data', rows.length],
+    ['Avg Sleep (hrs)', rows.filter(e=>e.sleep>0).length ? +(rows.filter(e=>e.sleep>0).reduce((s,e)=>s+(e.sleep||0),0)/rows.filter(e=>e.sleep>0).length).toFixed(2) : '—'],
+    ['Avg Energy (/5)',  rows.filter(e=>e.energy).length ? +(rows.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/rows.filter(e=>e.energy).length).toFixed(2) : '—'],
+    ['Avg Water (L)',    rows.filter(e=>e.water>0).length ? +(rows.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/rows.filter(e=>e.water>0).length).toFixed(2) : '—'],
+    ['Exercise Days',   rows.filter(e=>e.exercise&&e.exercise!=='none').length],
+    ['Total Meals Logged', rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0)],
+    ['Avg Health Score', rows.filter(e=>e.score>0).length ? +(rows.filter(e=>e.score>0).reduce((s,e)=>s+(e.score||0),0)/rows.filter(e=>e.score>0).length).toFixed(2) : '—'],
+  ];
+
+  // Build daily log sheet data
+  const headers = ['Date','Sleep (hrs)','Sleep Quality (/5)','Energy (/5)','Recovery (/5)','Water (L)','Exercise','Duration (min)','Steps','Weight (kg)','Food Quality (/5)','Screen Time (hrs)','Notes','Health Score'];
+  const dataRows = rows.map(e => [
+    e.date,
+    e.sleep||'',
+    e.sleepQ||'',
+    e.energy||'',
+    e.recovery||'',
+    e.water||'',
+    e.exercise!=='none'?(e.exercise||''):'',
+    e.exDur||'',
+    e.steps||'',
+    e.weight||'',
+    e.food||'',
+    e.screen||'',
+    e.notes||'',
+    e.score||''
+  ]);
+
+  // Build meals sheet
+  const mealHeaders = ['Date','Meal Type','Food Item','Qty','Unit'];
+  const mealRows = [];
+  rows.forEach(e => {
+    if (e.meals && e.meals.length) {
+      e.meals.forEach(m => mealRows.push([e.date, mealLabels[m.meal]||m.meal, m.name, m.qty, m.unit]));
+    }
+  });
+
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+  wsSummary['!cols'] = [{wch:30},{wch:20}];
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+
+  // Daily Log sheet
+  const wsDaily = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+  wsDaily['!cols'] = [
+    {wch:12},{wch:12},{wch:16},{wch:12},{wch:14},{wch:10},
+    {wch:12},{wch:14},{wch:10},{wch:12},{wch:16},{wch:16},{wch:30},{wch:14}
+  ];
+  // Style header row bold
+  headers.forEach((_,ci) => {
+    const cell = XLSX.utils.encode_cell({r:0,c:ci});
+    if (!wsDaily[cell]) wsDaily[cell]={};
+    wsDaily[cell].s = { font:{bold:true}, fill:{fgColor:{rgb:'4361EE'}}, alignment:{horizontal:'center'} };
+  });
+  XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Log');
+
+  // Meals sheet
+  if (mealRows.length) {
+    const wsMeals = XLSX.utils.aoa_to_sheet([mealHeaders, ...mealRows]);
+    wsMeals['!cols'] = [{wch:12},{wch:16},{wch:24},{wch:8},{wch:10}];
+    XLSX.utils.book_append_sheet(wb, wsMeals, 'Meals Log');
+  }
+
+  const filename = `Health_Report_${from}_to_${to}.xlsx`;
+  XLSX.writeFile(wb, filename);
+  toast('📥 Excel exported!');
 }
 
 </script>
