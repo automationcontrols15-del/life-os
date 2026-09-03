@@ -70,7 +70,7 @@ body.dark .toggle-track{background:#4361ee}
 body.dark .toggle-thumb{transform:translateX(20px)}
 .theme-icon{font-size:15px;line-height:1}
 
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;transition:background .25s,color .25s}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.6;transition:background .25s,color .25s;overflow-x:hidden}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;font-family:inherit}
 input,textarea,select{font-family:inherit;font-size:13px}
@@ -78,7 +78,7 @@ input,textarea,select{font-family:inherit;font-size:13px}
 /* ── LAYOUT ── */
 .app{display:flex;min-height:100vh}
 .sidebar{width:var(--sidebar-w);background:var(--sidebar-bg);border-right:none;position:fixed;top:0;left:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 20px rgba(30,45,107,.18)}
-.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;background:var(--bg)}
+.main{margin-left:var(--sidebar-w);flex:1;min-height:100vh;background:var(--bg);min-width:0;overflow-x:hidden}
 .page{display:none;padding:28px 32px 60px;max-width:1120px}
 .page.active{display:block}
 
@@ -94,7 +94,7 @@ input,textarea,select{font-family:inherit;font-size:13px}
 /* ── HEADER ── */
 .page-header{margin-bottom:24px}
 .page-title{font-size:24px;font-weight:800;color:var(--text)}
-.page-subtitle{color:var(--muted);font-size:13px;margin-top:3px}
+.page-subtitle{color:var(--muted);font-size:13px;margin-top:3px;word-break:break-word;overflow-wrap:break-word}
 
 /* ── CARDS ── */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--card-shadow)}
@@ -175,7 +175,7 @@ input,textarea,select{font-family:inherit;font-size:13px}
 .badge-gray{background:var(--surface2);color:var(--muted)}
 
 /* ── TABLES ── */
-.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);box-shadow:var(--card-shadow)}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);box-shadow:var(--card-shadow);width:100%;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;font-size:13px;background:#ffffff}
 th{padding:11px 14px;text-align:left;color:var(--muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;border-bottom:2px solid var(--border);background:#f8faff}
 td{padding:11px 14px;border-bottom:1px solid #eef1fb;color:var(--muted);vertical-align:middle}
@@ -228,6 +228,28 @@ body.dark .meal-badge.snack{background:rgba(167,139,250,.2);color:#a78bfa}
 .chart-container{position:relative;height:200px}
 .chart-container.tall{height:280px}
 
+/* ── SLIDESHOW ── */
+.ss-outer{width:100%;margin-bottom:20px}
+.ss-viewport{width:100%;overflow:hidden;border-radius:14px}
+.ss-track{display:flex;gap:10px;transition:transform .45s cubic-bezier(.4,0,.2,1);will-change:transform}
+.ss-item{flex:0 0 calc((100% - 20px)/3);position:relative;border-radius:12px;overflow:hidden;aspect-ratio:2/3;background:#0a0a14}
+@media(max-width:768px){.ss-item{flex:0 0 100%}}
+.ss-item img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none}
+.ss-item-del{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.55);border:none;color:#fff;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:12px;display:none;align-items:center;justify-content:center;z-index:10;transition:background .2s}
+.ss-item:hover .ss-item-del{display:flex}
+@media(max-width:768px){.ss-item-del{display:flex!important}}
+.ss-item-del:hover{background:rgba(220,38,38,.85)}
+.ss-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 0;gap:8px}
+.ss-arrows{display:flex;gap:6px;flex-shrink:0}
+.ss-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:background .2s,border-color .2s}
+.ss-btn:hover:not(:disabled){background:var(--accent);color:#fff;border-color:var(--accent)}
+.ss-btn:disabled{opacity:.3;cursor:default}
+.ss-dots{display:flex;gap:5px;align-items:center;flex-wrap:wrap;flex:1;justify-content:center}
+.ss-dot{width:7px;height:7px;border-radius:50%;background:var(--muted2);cursor:pointer;border:none;padding:0;transition:all .25s}
+.ss-dot.active{background:var(--accent);width:20px;border-radius:4px}
+.ss-upload-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.3px;transition:background .2s,border-color .2s;white-space:nowrap;flex-shrink:0}
+.ss-upload-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ss-empty-box{background:linear-gradient(135deg,rgba(67,97,238,.08),rgba(124,58,237,.08));border:2px dashed var(--border);border-radius:14px;padding:40px 24px;text-align:center;color:var(--muted);margin-bottom:20px}
 /* ── TODAY BANNER ── */
 .today-banner{background:linear-gradient(135deg,#4361ee,#7c3aed);border:none;border-radius:16px;padding:22px 26px;margin-bottom:22px;display:flex;align-items:center;justify-content:space-between;box-shadow:0 8px 30px rgba(67,97,238,.3)}
 .today-date{font-size:13px;color:rgba(255,255,255,.7)}
@@ -290,7 +312,8 @@ body.dark .meal-badge.snack{background:rgba(167,139,250,.2);color:#a78bfa}
   .grid-3{grid-template-columns:1fr 1fr}
   .grid-4{grid-template-columns:1fr 1fr}
   .score-grid{grid-template-columns:repeat(4,1fr)}
-  .page{padding:22px 22px 44px}
+  .page{padding:22px 22px 44px;width:100%;max-width:100%;box-sizing:border-box}
+  .main{overflow-x:hidden;min-width:0}
   .page-title{font-size:22px}
 }
 
@@ -310,12 +333,14 @@ body.dark .meal-badge.snack{background:rgba(167,139,250,.2);color:#a78bfa}
     padding-top:env(safe-area-inset-top,0)
   }
   .sidebar.open{transform:translateX(0)}
-  .main{margin-left:0;background:var(--bg)}
+  .main{margin-left:0;background:var(--bg);width:100%;max-width:100vw;overflow-x:hidden}
   .page{
     padding:16px 14px calc(76px + env(safe-area-inset-bottom,0));
-    max-width:100%
+    max-width:100%;width:100%;box-sizing:border-box
   }
   .page.active{display:block}
+  /* Ensure all cards and grids stay within viewport */
+  .card,.card-grid,.table-wrap{max-width:100%;box-sizing:border-box}
 
   /* ── Topbar ── */
   .topbar{padding:max(10px,env(safe-area-inset-top,10px)) 14px 0;justify-content:space-between}
@@ -372,22 +397,22 @@ body.dark .meal-badge.snack{background:rgba(167,139,250,.2);color:#a78bfa}
   .page-header > div:last-child{width:100%}
   .page-header input[type="date"]{width:100%!important}
 
-  /* ── MODALS → Bottom sheets ── */
-  .modal-overlay{align-items:flex-end!important;padding:0!important}
+  /* ── MODALS → Top-aligned sheets ── */
+  .modal-overlay{align-items:flex-start!important;padding:env(safe-area-inset-top,12px) 0 0 0!important;overflow-y:auto!important}
   .modal-overlay > div:not(.sidebar-overlay){
-    width:100%!important;
-    max-width:100%!important;
-    border-radius:22px 22px 0 0!important;
-    max-height:88vh!important;
-    padding:20px 18px calc(20px + env(safe-area-inset-bottom,0)) 18px!important;
-    margin:0!important;
-    box-shadow:0 -8px 40px rgba(0,0,0,.2)!important
+    width:94%!important;
+    max-width:94%!important;
+    border-radius:0 0 22px 22px!important;
+    max-height:90vh!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    padding:20px 18px 24px 18px!important;
+    margin:0 auto!important;
+    box-shadow:0 8px 40px rgba(0,0,0,.22)!important
   }
-  /* Pull-indicator on bottom sheets */
+  /* No pull-indicator needed for top sheets */
   .modal-overlay > div:not(.sidebar-overlay)::before{
-    content:'';display:block;width:40px;height:4px;
-    background:var(--border);border-radius:2px;
-    margin:0 auto 16px;flex-shrink:0
+    display:none!important
   }
 
   /* ── Dashboard banner ── */
@@ -426,6 +451,66 @@ body.dark .meal-badge.snack{background:rgba(167,139,250,.2);color:#a78bfa}
 
   /* ── Sidebar logo safe-area ── */
   .sidebar-logo{padding-top:max(22px,env(safe-area-inset-top,22px))}
+
+  /* ── Health & Vitals page ── */
+  .hs-grid{grid-template-columns:1fr!important}
+  .hs-card-head{gap:8px;flex-wrap:wrap}
+  .hs-val{font-size:22px}
+  /* Log buttons inside health cards — proper touch targets */
+  .hs-log-btn{min-height:40px!important;padding:8px 14px!important;font-size:13px!important;flex-shrink:0}
+
+  /* Vitals log history */
+  .vitals-log-row{flex-wrap:wrap;gap:6px;padding:8px 10px}
+  .vitals-log-chip{font-size:10px;padding:2px 6px;white-space:normal;word-break:break-word}
+
+  /* Vital tiles */
+  .vital-tile{padding:12px 10px}
+  .vital-value{font-size:20px}
+  .vital-icon{font-size:18px;margin-bottom:5px}
+
+  /* Health Report filter bar */
+  .hr-filter-bar{flex-direction:column;align-items:stretch;gap:10px}
+  .hr-date-row{width:100%}
+  /* Override inline width:145px on date inputs */
+  .hr-date-input{width:100%!important;max-width:100%!important;flex:1}
+  /* Range buttons — stack full-width for easy tapping */
+  .hr-range-btns{flex-direction:column!important;gap:8px!important}
+  .hr-range-btns .btn{width:100%!important;min-height:44px!important;font-size:13px!important;padding:10px 16px!important}
+  .hr-summary-grid{grid-template-columns:1fr 1fr}
+
+  /* Export button full-width */
+  .hr-export-btn{width:100%!important;justify-content:center;text-align:center}
+
+  /* ── Sleep stages grid — stacks to label + wrapped inputs on small screens ── */
+  .sleep-stages-grid{grid-template-columns:80px 1fr!important}
+  .sleep-stages-inputs{flex-wrap:wrap!important;gap:6px!important}
+  .sleep-stages-inputs input{width:56px!important}
+
+  /* ── Goal cards on mobile ── */
+  .goal-card-header{gap:6px}
+  .goal-card-title{font-size:14px}
+
+  /* ── Finance page ── */
+  .budget-bar-row{flex-direction:column;gap:4px}
+
+  /* ── Affirmation / Manifestation card actions always visible on mobile ── */
+  .aff-actions,.mani-actions,.sp-card-actions{opacity:1!important}
+
+  /* ── rec-dow buttons smaller on mobile ── */
+  .rec-dow-btn{padding:5px 8px;font-size:11px}
+
+  /* ── Weekly/Monthly review score grid ── */
+  .score-grid{grid-template-columns:repeat(2,1fr)}
+
+  /* ── Page-level card-grid overrides ── */
+  .card-grid.grid-3{grid-template-columns:1fr}
+
+  /* ── Food modal — stack fields vertically ── */
+  .hs-food-inner{width:94%!important;max-width:94%!important;border-radius:0 0 22px 22px!important;padding:20px 16px 24px 16px!important;margin:0 auto!important}
+  .meal-add-row{grid-template-columns:1fr!important;gap:10px!important}
+  .meal-add-row > div{width:100%!important}
+  .meal-add-row .form-input,.meal-add-row .form-select{width:100%!important;box-sizing:border-box!important}
+  .meal-add-row .btn{width:100%!important;min-height:44px!important;font-size:14px!important}
 }
 
 /* ── Very small (iPhone SE, Galaxy A series ≤380px) ── */
@@ -537,12 +622,6 @@ body.dark .goal-card{background:var(--surface)}
 .vital-status.normal{background:rgba(5,150,105,.12);color:var(--green)}
 .vital-status.warning{background:rgba(217,119,6,.12);color:var(--yellow)}
 .vital-status.alert{background:rgba(220,38,38,.12);color:var(--red)}
-.gfit-connect-card{background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border:2px dashed #81c784;border-radius:16px;padding:22px 24px;margin-bottom:20px;text-align:center}
-body.dark .gfit-connect-card{background:linear-gradient(135deg,#0a1a0a,#1a0a2e);border-color:#2d5a2d}
-.gfit-logo{font-size:40px;margin-bottom:8px}
-.gfit-status-dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:6px}
-.gfit-status-dot.connected{background:#059669}
-.gfit-status-dot.disconnected{background:#d97706}
 .vitals-log-row{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2);border-radius:10px;margin-bottom:6px;border:1px solid var(--border);font-size:12px}
 .vitals-log-date{font-weight:700;color:var(--text);min-width:80px}
 .vitals-log-chip{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:11px;color:var(--muted);white-space:nowrap}
@@ -666,7 +745,7 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 /* ── HEALTH SECTIONS ── */
 .hs-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:16px}
 @media(max-width:700px){.hs-grid{grid-template-columns:1fr}}
-.hs-card{padding:16px 18px}
+.hs-card{padding:16px 18px;position:relative;overflow:hidden}
 .hs-card-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .hs-card-title{font-size:13px;font-weight:700;color:var(--text)}
 .hs-empty{font-size:12px;color:var(--muted);padding:10px 0 4px}
@@ -678,6 +757,22 @@ body.dark .sp-hero{background:linear-gradient(135deg,#020817,#0f1f4a,#020817)}
 .hs-meal-item:last-child{border-bottom:none}
 .hs-del-btn{background:none;border:none;color:var(--muted);font-size:14px;cursor:pointer;padding:2px 5px;border-radius:4px;line-height:1;transition:color .15s}
 .hs-del-btn:hover{color:var(--red)}
+/* ── GRATITUDE LOG ── */
+.gr-entry-card{background:var(--surface);border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;transition:box-shadow .2s}
+.gr-entry-card:hover{box-shadow:0 4px 16px rgba(139,92,246,.12)}
+.gr-entry-date{font-size:13px;font-weight:700;color:var(--accent);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.gr-point{display:flex;align-items:flex-start;gap:10px;padding:8px 12px;border-radius:10px;background:var(--surface2);margin-bottom:7px;font-size:14px;color:var(--text);line-height:1.5}
+.gr-point-num{min-width:22px;height:22px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:1px;flex-shrink:0}
+.gr-point-del{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:15px;padding:0 2px;flex-shrink:0}
+.gr-point-del:hover{color:var(--red)}
+.gr-add-row{display:flex;gap:8px;align-items:center;margin-top:10px}
+.gr-add-row input{flex:1;padding:9px 12px;border-radius:9px;border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px}
+.gr-add-row input:focus{outline:none;border-color:#8b5cf6}
+.gr-add-btn{background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;border:none;border-radius:9px;padding:9px 16px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.gr-add-btn:hover{opacity:.88}
+.gr-empty{text-align:center;padding:48px 20px;color:var(--muted);font-style:italic}
+.gr-streak-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.gr-streak-dot{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;cursor:default}
 /* ── HEALTH REPORT ── */
 .hr-filter-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
 .hr-summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px}
@@ -794,10 +889,10 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
   <div class="nav-group-label">Daily</div>
   <div class="nav-item" onclick="nav('morning')"><span class="nav-icon">🌅</span> Morning Routine</div>
   <div class="nav-item" onclick="nav('evening')"><span class="nav-icon">🌙</span> Evening Routine</div>
+  <div class="nav-item" onclick="nav('gratitude')"><span class="nav-icon">🙏</span> Gratitude Log</div>
   <div class="nav-item" onclick="nav('tasks')"><span class="nav-icon">☑</span> Tasks</div>
   <div class="nav-group-label">Life Pillars</div>
-  <div class="nav-item" onclick="nav('health')"><span class="nav-icon">💪</span> Health</div>
-  <div class="nav-item" onclick="nav('vitals')"><span class="nav-icon">🫀</span> Vitals Monitor</div>
+  <div class="nav-item" onclick="nav('health')"><span class="nav-icon">💪</span> Health & Vitals</div>
   <div class="nav-item" onclick="nav('mindset')"><span class="nav-icon">🧠</span> Mindset</div>
   <div class="nav-item" onclick="nav('relationships')"><span class="nav-icon">❤️</span> Relationships</div>
   <div class="nav-item" onclick="nav('learning')"><span class="nav-icon">📚</span> Learning</div>
@@ -858,6 +953,35 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="today-status">
       <div class="status-pill"><div class="status-dot" id="morning-dot" style="background:var(--muted2)"></div><span id="morning-status-text">Morning Pending</span></div>
       <div class="status-pill"><div class="status-dot" id="evening-dot" style="background:var(--muted2)"></div><span id="evening-status-text">Evening Pending</span></div>
+    </div>
+  </div>
+
+  <!-- ── Photo Slideshow ── -->
+  <div id="ss-outer" class="ss-outer">
+    <!-- Scroll viewport (clips overflow) -->
+    <div id="ss-viewport" class="ss-viewport" style="display:none">
+      <div id="ss-track" class="ss-track"></div>
+    </div>
+    <!-- Controls bar -->
+    <div id="ss-bar" class="ss-bar" style="display:none">
+      <div class="ss-arrows">
+        <button class="ss-btn" id="ss-prev" onclick="ssMove(-1)">‹</button>
+        <button class="ss-btn" id="ss-next" onclick="ssMove(1)">›</button>
+      </div>
+      <div class="ss-dots" id="ss-dots"></div>
+      <label class="ss-upload-btn">
+        📷 Add Photos
+        <input type="file" accept="image/*" multiple style="display:none" onchange="ssUpload(this)">
+      </label>
+    </div>
+    <!-- Empty state -->
+    <div id="ss-empty-ui" class="ss-empty-box">
+      <div style="font-size:30px;margin-bottom:8px">🖼️</div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:12px">Add your inspiration photos</div>
+      <label class="btn btn-primary" style="cursor:pointer;font-size:12px;padding:8px 20px">
+        📷 Upload Photos
+        <input type="file" accept="image/*" multiple style="display:none" onchange="ssUpload(this)">
+      </label>
     </div>
   </div>
 
@@ -1091,6 +1215,52 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 </div>
 
 
+<!-- ═══ GRATITUDE LOG ═══ -->
+<div id="page-gratitude" class="page">
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="page-title">🙏 Gratitude Log</div>
+      <div class="page-subtitle">Count your blessings, one day at a time</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <input type="date" class="form-input" id="gr-date" style="width:160px">
+      <button class="btn btn-primary" onclick="grOpenToday()">Today</button>
+    </div>
+  </div>
+
+  <!-- KPI strip -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px" id="gr-kpi-strip">
+    <div class="hr-kpi"><div class="hr-kpi-val" id="gr-kpi-streak" style="color:#f59e0b">0</div><div class="hr-kpi-lbl">🔥 Day Streak</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" id="gr-kpi-total" style="color:#8b5cf6">0</div><div class="hr-kpi-lbl">Total Points</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" id="gr-kpi-days" style="color:#10b981">0</div><div class="hr-kpi-lbl">Days Logged</div></div>
+    <div class="hr-kpi"><div class="hr-kpi-val" id="gr-kpi-avg" style="color:#6366f1">0</div><div class="hr-kpi-lbl">Avg / Day</div></div>
+  </div>
+
+  <!-- Last 7 days streak dots -->
+  <div class="card" style="margin-bottom:16px;padding:14px 18px">
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Last 14 Days</div>
+    <div class="gr-streak-bar" id="gr-streak-bar"></div>
+  </div>
+
+  <!-- Today / selected date entry -->
+  <div class="card" style="margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div style="font-size:15px;font-weight:700;color:var(--text)" id="gr-active-label">Today's Gratitude</div>
+      <span style="font-size:12px;color:var(--muted)" id="gr-count-label">0 points</span>
+    </div>
+    <div id="gr-points-list"></div>
+    <div class="gr-add-row">
+      <input type="text" id="gr-new-point" placeholder="I am grateful for…" maxlength="300"
+        onkeydown="if(event.key==='Enter')grAddPoint()">
+      <button class="gr-add-btn" onclick="grAddPoint()">＋ Add</button>
+    </div>
+  </div>
+
+  <!-- History -->
+  <div style="font-size:13px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">All Entries</div>
+  <div id="gr-history"></div>
+</div>
+
 <!-- ═══ TASKS ═══ -->
 <div id="page-tasks" class="page">
   <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
@@ -1259,18 +1429,17 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 
 <!-- ═══ HEALTH ═══ -->
 <div id="page-health" class="page">
-  <div class="page-header" style="margin-bottom:18px">
+  <div class="page-header" style="margin-bottom:12px">
     <div class="page-title">💪 Health Tracker</div>
     <div class="page-subtitle">Log each section separately — anytime you have data</div>
   </div>
-
   <!-- TODAY'S QUICK LOG SECTIONS -->
   <div class="hs-grid">
     <!-- SLEEP -->
     <div class="card hs-card">
       <div class="hs-card-head">
         <div class="hs-card-title">😴 Sleep</div>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('sleep')">+ Log</button>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('sleep')">+ Log</button>
       </div>
       <div id="hs-sleep-display"><div class="hs-empty">Not logged today</div></div>
     </div>
@@ -1278,7 +1447,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="card hs-card">
       <div class="hs-card-head">
         <div class="hs-card-title">💧 Water</div>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('water')">+ Log</button>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('water')">+ Log</button>
       </div>
       <div id="hs-water-display"><div class="hs-empty">Not logged today</div></div>
     </div>
@@ -1286,7 +1455,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="card hs-card">
       <div class="hs-card-head">
         <div class="hs-card-title">🏃 Exercise</div>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('exercise')">+ Log</button>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('exercise')">+ Log</button>
       </div>
       <div id="hs-exercise-display"><div class="hs-empty">Not logged today</div></div>
     </div>
@@ -1294,24 +1463,49 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="card hs-card">
       <div class="hs-card-head">
         <div class="hs-card-title">🍽️ Food & Meals</div>
-        <button class="btn btn-primary" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('food')">+ Add Meal</button>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('food')">+ Add Meal</button>
       </div>
       <div id="hs-food-display"><div class="hs-empty">No meals logged today</div></div>
+    </div>
+    <!-- HEART RATE & HRV -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">❤️ Heart Rate & HRV</div>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('hrv')">+ Log</button>
+      </div>
+      <div id="hs-hrv-display"><div class="hs-empty">Not logged today</div></div>
+    </div>
+    <!-- WEIGHT -->
+    <div class="card hs-card">
+      <div class="hs-card-head">
+        <div class="hs-card-title">⚖️ Weight</div>
+        <button class="btn btn-primary hs-log-btn" style="font-size:12px;padding:5px 12px" onclick="openHealthSection('weight')">+ Log</button>
+      </div>
+      <div id="hs-weight-display"><div class="hs-empty">Not logged today</div></div>
     </div>
   </div>
 
   <!-- WEEKLY STATS -->
   <div class="card-grid grid-4" style="margin-bottom:16px">
     <div class="stat green"><div class="stat-label">Avg Sleep</div><div class="stat-value" id="h-avg-sleep">—</div><div class="stat-sub">hours this week</div></div>
-    <div class="stat accent"><div class="stat-label">Avg Energy</div><div class="stat-value" id="h-avg-energy">—</div><div class="stat-sub">/5 this week</div></div>
+    <div class="stat accent"><div class="stat-label">Avg Exercise</div><div class="stat-value" id="h-avg-energy" style="font-size:18px">—</div><div class="stat-sub">per session this week</div></div>
     <div class="stat yellow"><div class="stat-label">Exercise Days</div><div class="stat-value" id="h-exercise-days">—</div><div class="stat-sub">this week</div></div>
     <div class="stat"><div class="stat-label">Avg Water</div><div class="stat-value" id="h-avg-water">—</div><div class="stat-sub">litres this week</div></div>
   </div>
 
-  <!-- CHARTS -->
+  <!-- CHARTS ROW 1 -->
   <div class="card-grid grid-2">
-    <div class="card"><div class="card-title">Sleep Duration — Last 7 Days</div><div class="chart-container"><canvas id="health-sleep-chart"></canvas></div></div>
-    <div class="card"><div class="card-title">Energy — Last 7 Days</div><div class="chart-container"><canvas id="health-energy-chart"></canvas></div></div>
+    <div class="card"><div class="card-title">😴 Sleep Duration — Last 7 Days</div><div class="chart-container"><canvas id="health-sleep-chart"></canvas></div></div>
+    <div class="card"><div class="card-title">🏆 Sleep Score — Last 7 Days</div><div class="chart-container"><canvas id="health-sleep-score-chart"></canvas></div></div>
+  </div>
+  <!-- CHARTS ROW 2 -->
+  <div class="card-grid grid-2">
+    <div class="card"><div class="card-title">❤️ Heart Rate — Last 7 Days (Avg / Min / Max)</div><div class="chart-container"><canvas id="health-hr-chart"></canvas></div></div>
+    <div class="card"><div class="card-title">💜 HRV — Last 7 Days (Avg / Min / Max)</div><div class="chart-container"><canvas id="health-hrv-chart"></canvas></div></div>
+  </div>
+  <!-- CHARTS ROW 3 -->
+  <div class="card-grid grid-2">
+    <div class="card"><div class="card-title">🏃 Exercise Duration — Last 7 Days</div><div class="chart-container"><canvas id="health-energy-chart"></canvas></div></div>
   </div>
 
   <!-- HEALTH LOG TABLE -->
@@ -1319,7 +1513,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="card-title">Health Log</div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>Date</th><th>Sleep (hrs)</th><th>Water (L)</th><th>Exercise</th><th>Duration</th><th>Steps</th><th>Energy</th><th>Meals</th><th>Weight (kg)</th><th>Actions</th></tr></thead>
+        <thead><tr><th>Date</th><th>Sleep</th><th>Water (L)</th><th>Exercise</th><th>Duration</th><th>Steps</th><th>Recovery</th><th>Meals</th><th>Weight (kg)</th><th>Actions</th></tr></thead>
         <tbody id="health-tbody"></tbody>
       </table>
     </div>
@@ -1338,15 +1532,15 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     </div>
     <!-- Filter bar -->
     <div class="hr-filter-bar">
-      <div style="display:flex;align-items:center;gap:8px">
+      <div class="hr-date-row" style="display:flex;align-items:center;gap:8px">
         <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">From</label>
-        <input type="date" class="form-input" id="hr-from" style="width:145px;font-size:12px">
+        <input type="date" class="form-input hr-date-input" id="hr-from" style="width:145px;font-size:12px">
       </div>
-      <div style="display:flex;align-items:center;gap:8px">
+      <div class="hr-date-row" style="display:flex;align-items:center;gap:8px">
         <label style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap">To</label>
-        <input type="date" class="form-input" id="hr-to" style="width:145px;font-size:12px">
+        <input type="date" class="form-input hr-date-input" id="hr-to" style="width:145px;font-size:12px">
       </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <div class="hr-range-btns" style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(7)">Last 7 Days</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(14)">Last 14 Days</button>
         <button class="btn btn-secondary" style="font-size:11px;padding:5px 10px" onclick="hrSetRange(30)">Last 30 Days</button>
@@ -1358,28 +1552,204 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <!-- Date-wise table -->
     <div id="hr-report-body"></div>
   </div>
+
+  <!-- ══ VITALS & BODY MONITORING ══ -->
+  <div class="card" style="margin-top:8px">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div>
+        <div class="card-title" style="margin-bottom:2px">🫀 Vitals & Body Monitoring</div>
+        <div style="font-size:12px;color:var(--muted)">Log your vitals manually</div>
+      </div>
+      <button class="btn btn-primary" onclick="showModal('modal-log-vitals')" style="font-size:12px">+ Log Vitals</button>
+    </div>
+
+    <!-- Today's vitals tiles -->
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:10px">Today's Readings</div>
+    <div class="vital-grid" style="margin-bottom:18px">
+      <div class="vital-tile" id="vt-hr-detail-tile">
+        <div class="vital-icon">❤️</div><div class="vital-label" style="color:#ef4444">HR (Avg/Min/Max)</div>
+        <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Avg</div><div style="font-size:20px;font-weight:800;color:#ef4444;line-height:1.1" id="vt-hr-avg">—</div></div>
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Min</div><div style="font-size:20px;font-weight:800;color:#f87171;line-height:1.1" id="vt-hr-min">—</div></div>
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Max</div><div style="font-size:20px;font-weight:800;color:#dc2626;line-height:1.1" id="vt-hr-max">—</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">bpm</div>
+      </div>
+      <div class="vital-tile" id="vt-hrv-tile">
+        <div class="vital-icon">💜</div><div class="vital-label" style="color:#8b5cf6">HRV (Avg/Min/Max)</div>
+        <div style="display:flex;gap:10px;margin-top:4px;flex-wrap:wrap">
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Avg</div><div style="font-size:20px;font-weight:800;color:#8b5cf6;line-height:1.1" id="vt-hrv-avg">—</div></div>
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Min</div><div style="font-size:20px;font-weight:800;color:#a78bfa;line-height:1.1" id="vt-hrv-min">—</div></div>
+          <div style="text-align:center"><div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px">Max</div><div style="font-size:20px;font-weight:800;color:#7c3aed;line-height:1.1" id="vt-hrv-max">—</div></div>
+        </div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">ms</div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">🫁</div><div class="vital-label">Blood Oxygen</div>
+        <div><span class="vital-value" id="vt-spo2">—</span><span class="vital-unit">%</span></div>
+        <div class="vital-status normal" id="vt-spo2-status" style="display:none"></div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">🌡️</div><div class="vital-label">Body Temp</div>
+        <div><span class="vital-value" id="vt-temp">—</span><span class="vital-unit">°C</span></div>
+        <div class="vital-status normal" id="vt-temp-status" style="display:none"></div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">🔥</div><div class="vital-label">Calories Burned</div>
+        <div><span class="vital-value" id="vt-cal">—</span><span class="vital-unit">kcal</span></div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">⚡</div><div class="vital-label">Active Minutes</div>
+        <div><span class="vital-value" id="vt-active">—</span><span class="vital-unit">min</span></div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">⚖️</div><div class="vital-label">BMI</div>
+        <div><span class="vital-value" id="vt-bmi">—</span></div>
+        <div class="vital-status normal" id="vt-bmi-status" style="display:none"></div>
+      </div>
+      <div class="vital-tile">
+        <div class="vital-icon">😰</div><div class="vital-label">Stress Level</div>
+        <div><span class="vital-value" id="vt-stress">—</span><span class="vital-unit">/100</span></div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" style="margin-bottom:14px">
+      <div class="tab active" onclick="switchTab(this,'vt-tab-trends')">📈 Trends</div>
+      <div class="tab" onclick="switchTab(this,'vt-tab-log')">📋 History</div>
+      <div class="tab" onclick="switchTab(this,'vt-tab-ranges')">📊 Normal Ranges</div>
+    </div>
+
+    <!-- Trends tab -->
+    <div id="vt-tab-trends">
+      <div class="card-grid grid-2">
+        <div class="card"><div class="card-title">❤️ Heart Rate — Last 7 Days</div><div class="chart-container"><canvas id="vt-hr-chart"></canvas></div></div>
+        <div class="card"><div class="card-title">🫁 Blood Oxygen (SpO₂) — Last 7 Days</div><div class="chart-container"><canvas id="vt-spo2-chart"></canvas></div></div>
+      </div>
+      <div class="card-grid grid-2">
+        <div class="card"><div class="card-title">🔥 Calories Burned — Last 7 Days</div><div class="chart-container"><canvas id="vt-cal-chart"></canvas></div></div>
+      </div>
+    </div>
+
+    <!-- History tab -->
+    <div id="vt-tab-log" style="display:none">
+      <div id="vitals-history-list"></div>
+    </div>
+
+    <!-- Normal Ranges tab -->
+    <div id="vt-tab-ranges" style="display:none">
+      <div class="card">
+        <div class="card-title">Reference: Healthy Ranges for Adults</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Metric</th><th>Normal Range</th><th>Your Avg (30 days)</th><th>Status</th></tr></thead>
+          <tbody id="vt-ranges-tbody"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH: HEART RATE & HRV MODAL ═══ -->
+<div id="hs-hrv-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:440px;max-width:95vw;max-height:90vh;overflow-y:auto">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">❤️ Log Heart Rate & HRV</h3><button onclick="hideModal('hs-hrv-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hshrv-date" style="max-width:180px;margin:0" onchange="hsDateChanged('hrv',this.value)">
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">❤️ Heart Rate (bpm)</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Average</label><input type="number" class="form-input" id="hshrv-hr-avg" placeholder="e.g. 72" min="30" max="220"></div>
+      <div class="form-group"><label class="form-label">Min</label><input type="number" class="form-input" id="hshrv-hr-min" placeholder="e.g. 58" min="30" max="220"></div>
+      <div class="form-group"><label class="form-label">Max</label><input type="number" class="form-input" id="hshrv-hr-max" placeholder="e.g. 145" min="30" max="220"></div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;margin-top:4px">💜 HRV — Heart Rate Variability (ms)</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Average</label><input type="number" class="form-input" id="hshrv-hrv-avg" placeholder="e.g. 55" min="1" max="300"></div>
+      <div class="form-group"><label class="form-label">Min</label><input type="number" class="form-input" id="hshrv-hrv-min" placeholder="e.g. 42" min="1" max="300"></div>
+      <div class="form-group"><label class="form-label">Max</label><input type="number" class="form-input" id="hshrv-hrv-max" placeholder="e.g. 71" min="1" max="300"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:14px;background:var(--surface2);border-radius:8px;padding:8px 12px">💡 Find these in your fitness app — Garmin, Apple Watch, Samsung Health, Fitbit, or Whoop all show HR and HRV.</div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('hrv')">Save HR & HRV</button><button class="btn btn-secondary" onclick="hideModal('hs-hrv-modal')">Cancel</button></div>
+  </div>
 </div>
 
 <!-- ═══ HEALTH: SLEEP MODAL ═══ -->
 <div id="hs-sleep-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:420px;max-width:95vw;max-height:90vh;overflow-y:auto">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:440px;max-width:95vw;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">😴 Log Sleep</h3><button onclick="hideModal('hs-sleep-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
       <input type="date" class="form-input" id="hss-date" style="max-width:180px;margin:0" onchange="hsDateChanged('sleep',this.value)">
     </div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Sleep Duration (hrs)</label><input type="number" class="form-input" id="hss-sleep" step="0.5" value="7"></div>
-      <div class="form-group"><label class="form-label">Weight (kg)</label><input type="number" class="form-input" id="hss-weight" step="0.1" placeholder="optional"></div>
+    <!-- Sleep Duration: hrs + mins -->
+    <div class="form-group">
+      <label class="form-label">Sleep Duration</label>
+      <div style="display:flex;gap:10px;align-items:center">
+        <input type="number" class="form-input" id="hss-sleep-hrs" min="0" max="24" step="1" value="7" style="width:70px;text-align:center" placeholder="Hrs">
+        <span style="color:var(--muted);font-size:13px;font-weight:600">hrs</span>
+        <input type="number" class="form-input" id="hss-sleep-mins" min="0" max="59" step="5" value="0" style="width:70px;text-align:center" placeholder="Mins">
+        <span style="color:var(--muted);font-size:13px;font-weight:600">mins</span>
+      </div>
     </div>
-    <div class="form-group"><label class="form-label">Sleep Quality (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-sleepq-r" oninput="updateScore(this,'hss-sleepq-n')"><span class="score-num" id="hss-sleepq-n">3</span></div></div>
-    <div class="form-group"><label class="form-label">Energy Level (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-energy-r" oninput="updateScore(this,'hss-energy-n')"><span class="score-num" id="hss-energy-n">3</span></div></div>
-    <div class="form-group"><label class="form-label">Recovery (1-5)</label><div class="score-slider-wrap"><input type="range" min="1" max="5" value="3" class="score-slider" id="hss-recovery-r" oninput="updateScore(this,'hss-recovery-n')"><span class="score-num" id="hss-recovery-n">3</span></div></div>
-    <div class="form-row">
-      <div class="form-group"><label class="form-label">Screen Time (hrs)</label><input type="number" class="form-input" id="hss-screen" step="0.5" placeholder="optional"></div>
+    <!-- Sleep Efficiency -->
+    <div class="form-group">
+      <label class="form-label">Sleep Efficiency (%)</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" class="form-input" id="hss-sleep-eff" min="0" max="100" step="1" placeholder="e.g. 88" style="max-width:120px">
+        <span style="color:var(--muted);font-size:13px">% of time in bed actually sleeping</span>
+      </div>
+    </div>
+    <!-- Sleep Score -->
+    <div class="form-group">
+      <label class="form-label">Sleep Score (0–100)</label>
+      <input type="number" class="form-input" id="hss-sleep-score" min="0" max="100" step="1" placeholder="e.g. 82">
+    </div>
+    <!-- Sleep Stages -->
+    <div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:14px">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px">🌙 Sleep Stages (optional)</div>
+      <div class="sleep-stages-grid" style="display:grid;grid-template-columns:90px 1fr;gap:8px 12px;align-items:center">
+        <span style="font-size:13px;font-weight:600;color:var(--text)">REM</span>
+        <div class="sleep-stages-inputs" style="display:flex;gap:8px;align-items:center">
+          <input type="number" class="form-input" id="hss-rem-hrs" min="0" max="12" step="1" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">hrs</span>
+          <input type="number" class="form-input" id="hss-rem-mins" min="0" max="59" step="5" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">mins</span>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">Light Sleep</span>
+        <div class="sleep-stages-inputs" style="display:flex;gap:8px;align-items:center">
+          <input type="number" class="form-input" id="hss-light-hrs" min="0" max="12" step="1" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">hrs</span>
+          <input type="number" class="form-input" id="hss-light-mins" min="0" max="59" step="5" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">mins</span>
+        </div>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">Deep Sleep</span>
+        <div class="sleep-stages-inputs" style="display:flex;gap:8px;align-items:center">
+          <input type="number" class="form-input" id="hss-deep-hrs" min="0" max="12" step="1" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">hrs</span>
+          <input type="number" class="form-input" id="hss-deep-mins" min="0" max="59" step="5" placeholder="0" style="width:60px;text-align:center">
+          <span style="color:var(--muted);font-size:12px">mins</span>
+        </div>
+      </div>
     </div>
     <div class="form-group"><label class="form-label">Notes</label><input type="text" class="form-input" id="hss-notes" placeholder="Anything notable..."></div>
     <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('sleep')">Save Sleep</button><button class="btn btn-secondary" onclick="hideModal('hs-sleep-modal')">Cancel</button></div>
+  </div>
+</div>
+
+<!-- ═══ HEALTH: WEIGHT MODAL ═══ -->
+<div id="hs-weight-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:340px;max-width:95vw">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">⚖️ Log Weight</h3><button onclick="hideModal('hs-weight-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
+    <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
+      <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
+      <input type="date" class="form-input" id="hswt-date" style="max-width:180px;margin:0" onchange="hsDateChanged('weight',this.value)">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Weight (kg)</label>
+      <input type="number" class="form-input" id="hswt-weight" step="0.1" placeholder="e.g. 72.5">
+    </div>
+    <div class="btn-group"><button class="btn btn-primary" onclick="saveHealthSection('weight')">Save Weight</button><button class="btn btn-secondary" onclick="hideModal('hs-weight-modal')">Cancel</button></div>
   </div>
 </div>
 
@@ -1427,7 +1797,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 
 <!-- ═══ HEALTH: FOOD MODAL ═══ -->
 <div id="hs-food-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:520px;max-width:95vw;max-height:90vh;overflow-y:auto">
+  <div class="hs-food-inner" style="background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:0 20px 60px rgba(30,42,74,.25);width:520px;max-width:95vw;max-height:90vh;overflow-y:auto">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px"><h3 style="font-size:17px;font-weight:700;color:var(--text)">🍽️ Log Food & Meals</h3><button onclick="hideModal('hs-food-modal')" style="background:none;border:none;color:var(--muted);font-size:20px">✕</button></div>
     <div class="form-group" style="margin-bottom:14px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;gap:12px">
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
@@ -2202,7 +2572,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 <div id="page-goals" class="page">
   <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between">
     <div><div class="page-title">🏆 Goals</div><div class="page-subtitle">Observe your progress — without judgement, with curiosity</div></div>
-    <button class="btn btn-primary" onclick="showModal('add-goal-modal')">+ Add Goal</button>
+    <button class="btn btn-primary" onclick="openAddGoalModal()">+ Add Goal</button>
   </div>
 
   <div class="card-grid grid-4" style="margin-bottom:16px">
@@ -2242,8 +2612,9 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 <!-- Add Goal Modal -->
 <div id="add-goal-modal" class="modal-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;align-items:center;justify-content:center">
   <div style="background:var(--surface);border-radius:16px;padding:28px;width:620px;max-width:95vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(30,42,74,.25)">
+    <input type="hidden" id="ag-edit-id" value="">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
-      <h3 style="font-size:17px;font-weight:700;color:var(--text)">🏆 Add New Goal</h3>
+      <h3 id="ag-modal-title" style="font-size:17px;font-weight:700;color:var(--text)">🏆 Add New Goal</h3>
       <button onclick="hideModal('add-goal-modal')" style="background:none;border:none;color:var(--muted);font-size:22px">✕</button>
     </div>
     <div class="form-group"><label class="form-label">Goal Title *</label><input type="text" class="form-input" id="ag-title" placeholder="e.g. Run 5K under 25 minutes"></div>
@@ -2298,7 +2669,7 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="form-group"><label class="form-label">Key Strategy / Approach</label><textarea class="form-textarea" id="ag-strategy" placeholder="How will you achieve this?"></textarea></div>
     <div class="form-group"><label class="form-label">Linked Vision Pillar card (optional)</label><select class="form-select" id="ag-vision-link"><option value="">None</option></select></div>
     <div class="btn-group">
-      <button class="btn btn-primary" onclick="addGoal()">Add Goal</button>
+      <button id="ag-submit-btn" class="btn btn-primary" onclick="addGoal()">Add Goal</button>
       <button class="btn btn-secondary" onclick="hideModal('add-goal-modal')">Cancel</button>
     </div>
   </div>
@@ -2419,113 +2790,8 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
 
 
 <!-- ═══ VITALS MONITOR ═══ -->
-<div id="page-vitals" class="page">
-  <div class="page-header" style="display:flex;justify-content:space-between;align-items:flex-start">
-    <div><div class="page-title">🫀 Vitals Monitor</div><div class="page-subtitle">Track heart rate, blood pressure, SpO₂ and more — syncs with Google Fit when deployed</div></div>
-    <button class="btn btn-primary" onclick="showModal('modal-log-vitals')">+ Log Vitals</button>
-  </div>
-
-  <!-- Google Fit connection card -->
-  <div class="gfit-connect-card" id="gfit-status-card">
-    <div class="gfit-logo">❤️‍🔥</div>
-    <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px">
-      <span class="gfit-status-dot disconnected" id="gfit-dot"></span>
-      <span id="gfit-status-text">Google Fit — Not Connected</span>
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:16px" id="gfit-status-sub">Connect your Google Fit account to auto-sync steps, heart rate, sleep & more. Available once your app is deployed online.</div>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-      <button class="btn btn-secondary" onclick="showModal('modal-gfit-setup')" style="font-size:12px">📖 Setup Guide</button>
-      <button class="btn btn-primary" id="gfit-connect-btn" onclick="connectGoogleFit()" style="font-size:12px">🔗 Connect Google Fit</button>
-      <button class="btn btn-danger" id="gfit-disconnect-btn" onclick="disconnectGoogleFit()" style="font-size:12px;display:none">✕ Disconnect</button>
-    </div>
-    <div style="font-size:11px;color:var(--muted);margin-top:10px" id="gfit-last-sync"></div>
-  </div>
-
-  <!-- Today's vitals tiles -->
-  <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Today's Readings</div>
-  <div class="vital-grid">
-    <div class="vital-tile">
-      <div class="vital-icon">❤️</div>
-      <div class="vital-label">Heart Rate</div>
-      <div><span class="vital-value" id="vt-hr">—</span><span class="vital-unit">bpm</span></div>
-      <div class="vital-status normal" id="vt-hr-status" style="display:none"></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">🩺</div>
-      <div class="vital-label">Blood Pressure</div>
-      <div><span class="vital-value" id="vt-bp">—</span><span class="vital-unit">mmHg</span></div>
-      <div class="vital-status normal" id="vt-bp-status" style="display:none"></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">🫁</div>
-      <div class="vital-label">Blood Oxygen</div>
-      <div><span class="vital-value" id="vt-spo2">—</span><span class="vital-unit">%</span></div>
-      <div class="vital-status normal" id="vt-spo2-status" style="display:none"></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">🌡️</div>
-      <div class="vital-label">Body Temp</div>
-      <div><span class="vital-value" id="vt-temp">—</span><span class="vital-unit">°C</span></div>
-      <div class="vital-status normal" id="vt-temp-status" style="display:none"></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">🔥</div>
-      <div class="vital-label">Calories Burned</div>
-      <div><span class="vital-value" id="vt-cal">—</span><span class="vital-unit">kcal</span></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">⚡</div>
-      <div class="vital-label">Active Minutes</div>
-      <div><span class="vital-value" id="vt-active">—</span><span class="vital-unit">min</span></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">⚖️</div>
-      <div class="vital-label">BMI</div>
-      <div><span class="vital-value" id="vt-bmi">—</span></div>
-      <div class="vital-status normal" id="vt-bmi-status" style="display:none"></div>
-    </div>
-    <div class="vital-tile">
-      <div class="vital-icon">😰</div>
-      <div class="vital-label">Stress Level</div>
-      <div><span class="vital-value" id="vt-stress">—</span><span class="vital-unit">/5</span></div>
-    </div>
-  </div>
-
-  <!-- Tabs -->
-  <div class="tabs">
-    <div class="tab active" onclick="switchTab(this,'vt-tab-trends')">📈 Trends</div>
-    <div class="tab" onclick="switchTab(this,'vt-tab-log')">📋 History</div>
-    <div class="tab" onclick="switchTab(this,'vt-tab-ranges')">📊 Normal Ranges</div>
-  </div>
-
-  <!-- Trends tab -->
-  <div id="vt-tab-trends">
-    <div class="card-grid grid-2">
-      <div class="card"><div class="card-title">❤️ Heart Rate — Last 7 Days</div><div class="chart-container"><canvas id="vt-hr-chart"></canvas></div></div>
-      <div class="card"><div class="card-title">🫁 Blood Oxygen (SpO₂) — Last 7 Days</div><div class="chart-container"><canvas id="vt-spo2-chart"></canvas></div></div>
-    </div>
-    <div class="card-grid grid-2">
-      <div class="card"><div class="card-title">🩺 Blood Pressure — Last 7 Days</div><div class="chart-container"><canvas id="vt-bp-chart"></canvas></div></div>
-      <div class="card"><div class="card-title">🔥 Calories Burned — Last 7 Days</div><div class="chart-container"><canvas id="vt-cal-chart"></canvas></div></div>
-    </div>
-  </div>
-
-  <!-- History tab -->
-  <div id="vt-tab-log" style="display:none">
-    <div id="vitals-history-list"></div>
-  </div>
-
-  <!-- Normal Ranges tab -->
-  <div id="vt-tab-ranges" style="display:none">
-    <div class="card">
-      <div class="card-title">Reference: Healthy Ranges for Adults</div>
-      <div class="table-wrap"><table>
-        <thead><tr><th>Metric</th><th>Normal Range</th><th>Your Avg (30 days)</th><th>Status</th></tr></thead>
-        <tbody id="vt-ranges-tbody"></tbody>
-      </table></div>
-    </div>
-  </div>
-</div>
+<!-- page-vitals removed: Vitals is now part of the Health & Vitals page -->
+<div id="page-vitals" class="page" style="display:none"></div>
 
 <!-- Modal: Log Vitals -->
 <div class="modal-overlay" id="modal-log-vitals" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
@@ -2538,26 +2804,34 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
       <label class="form-label" style="margin:0;white-space:nowrap">📅 Date</label>
       <input type="date" class="form-input" id="vt-date" style="max-width:200px;margin:0">
     </div>
+    <div style="font-size:11px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px">❤️ Heart Rate (bpm)</div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">❤️ Heart Rate (bpm)</label>
-        <input type="number" class="form-input" id="vt-inp-hr" placeholder="e.g. 72" min="30" max="220">
-        <div class="form-hint">Resting heart rate</div>
+        <label class="form-label">Avg HR</label>
+        <input type="number" class="form-input" id="vt-inp-hr-avg" placeholder="e.g. 72" min="30" max="220">
       </div>
       <div class="form-group">
-        <label class="form-label">❤️ Max Heart Rate (bpm)</label>
-        <input type="number" class="form-input" id="vt-inp-hrmax" placeholder="e.g. 145" min="30" max="220">
-        <div class="form-hint">During exercise (optional)</div>
+        <label class="form-label">Min HR</label>
+        <input type="number" class="form-input" id="vt-inp-hr-min" placeholder="e.g. 58" min="30" max="220">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max HR</label>
+        <input type="number" class="form-input" id="vt-inp-hr-max" placeholder="e.g. 145" min="30" max="220">
       </div>
     </div>
+    <div style="font-size:11px;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;margin-top:4px">💜 HRV (ms)</div>
     <div class="form-row">
       <div class="form-group">
-        <label class="form-label">🩺 Systolic BP (mmHg)</label>
-        <input type="number" class="form-input" id="vt-inp-sys" placeholder="e.g. 120" min="60" max="250">
+        <label class="form-label">Avg HRV</label>
+        <input type="number" class="form-input" id="vt-inp-hrv-avg" placeholder="e.g. 55" min="1" max="300">
       </div>
       <div class="form-group">
-        <label class="form-label">🩺 Diastolic BP (mmHg)</label>
-        <input type="number" class="form-input" id="vt-inp-dia" placeholder="e.g. 80" min="40" max="160">
+        <label class="form-label">Min HRV</label>
+        <input type="number" class="form-input" id="vt-inp-hrv-min" placeholder="e.g. 42" min="1" max="300">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Max HRV</label>
+        <input type="number" class="form-input" id="vt-inp-hrv-max" placeholder="e.g. 71" min="1" max="300">
       </div>
     </div>
     <div class="form-row">
@@ -2592,11 +2866,8 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label">😰 Stress Level (1–5)</label>
-      <div class="score-slider-wrap">
-        <input type="range" min="1" max="5" value="3" class="score-slider" id="vt-inp-stress" oninput="document.getElementById('vt-stress-num').textContent=this.value">
-        <span class="score-num" id="vt-stress-num">3</span>
-      </div>
+      <label class="form-label">😰 Stress Level (avg, 0–100)</label>
+      <input type="number" class="form-input" id="vt-inp-stress" placeholder="e.g. 45" min="0" max="100" step="1">
     </div>
     <div class="form-group">
       <label class="form-label">Notes</label>
@@ -2605,49 +2876,6 @@ body.dark .auth-card{background:#161b27;box-shadow:0 24px 80px rgba(0,0,0,.7)}
     <div class="btn-group">
       <button class="btn btn-primary" onclick="saveVitals()">Save Vitals</button>
       <button class="btn btn-secondary" onclick="hideModal('modal-log-vitals')">Cancel</button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal: Google Fit Setup Guide -->
-<div class="modal-overlay" id="modal-gfit-setup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border-radius:18px;padding:28px;width:100%;max-width:580px;max-height:92vh;overflow-y:auto">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
-      <div style="font-size:17px;font-weight:800">📖 Google Fit Setup Guide</div>
-      <button onclick="hideModal('modal-gfit-setup')" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>
-    </div>
-    <div style="background:linear-gradient(135deg,#e8f5e9,#f3e5f5);border-radius:12px;padding:16px 18px;margin-bottom:18px">
-      <div style="font-size:13px;font-weight:700;color:#2e7d32;margin-bottom:6px">✅ What Google Fit will auto-sync:</div>
-      <div style="font-size:12px;color:#1b5e20;line-height:1.8">Daily steps · Heart rate · Sleep duration · Calories burned · Active minutes · Weight (if logged in Fit)</div>
-    </div>
-    <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px">Steps to enable (once you deploy on Railway):</div>
-    <div style="display:flex;flex-direction:column;gap:12px">
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">1</div>
-        <div><div style="font-size:13px;font-weight:600;color:var(--text)">Go to Google Cloud Console</div><div style="font-size:12px;color:var(--muted)">Visit console.cloud.google.com → Create a new project called "Life OS"</div></div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">2</div>
-        <div><div style="font-size:13px;font-weight:600;color:var(--text)">Enable the Fitness API</div><div style="font-size:12px;color:var(--muted)">APIs & Services → Library → Search "Fitness API" → Enable</div></div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">3</div>
-        <div><div style="font-size:13px;font-weight:600;color:var(--text)">Create OAuth 2.0 Credentials</div><div style="font-size:12px;color:var(--muted)">APIs & Services → Credentials → Create → OAuth Client ID → Web Application. Add your Railway URL as Authorized Origin.</div></div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">4</div>
-        <div><div style="font-size:13px;font-weight:600;color:var(--text)">Add Client ID to Railway Env Variables</div><div style="font-size:12px;color:var(--muted)">In Railway → Your project → Variables → Add GOOGLE_CLIENT_ID=your_client_id. The Client Secret stays server-side only.</div></div>
-      </div>
-      <div style="display:flex;gap:12px;align-items:flex-start">
-        <div style="width:26px;height:26px;border-radius:50%;background:var(--green);color:white;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">5</div>
-        <div><div style="font-size:13px;font-weight:600;color:var(--text)">Click "Connect Google Fit" in the app</div><div style="font-size:12px;color:var(--muted)">Once deployed, the Connect button activates and walks you through authorization for rvi2785@gmail.com</div></div>
-      </div>
-    </div>
-    <div style="background:var(--surface2);border-radius:10px;padding:12px 14px;margin-top:18px;font-size:12px;color:var(--muted)">
-      🔒 <strong>Security:</strong> Your Google credentials are never stored in the app or on GitHub. The OAuth Client Secret lives only in Railway's encrypted environment variables.
-    </div>
-    <div class="btn-group" style="margin-top:18px">
-      <button class="btn btn-secondary" onclick="hideModal('modal-gfit-setup')">Got it</button>
     </div>
   </div>
 </div>
@@ -3042,6 +3270,25 @@ const store = {
   update: (k,id,patch) => { if(!Array.isArray(_cache[k])) return; const i=_cache[k].findIndex(x=>x.id===id); if(i>=0){_cache[k][i]={..._cache[k][i],...patch}; _queueSync(k);} }
 };
 
+// ── CROSS-DEVICE SYNC: refresh cache from server ──────────────────────────────
+// Flushes any pending local writes first, then pulls fresh data from Google
+// Sheets. Server keys win except for any keys still dirty (being edited here).
+async function refreshFromServer() {
+  if (_dirty.size > 0) await _flushSync(); // push our pending writes first
+  try {
+    const res = await fetch('/api/data');
+    if (!res.ok) return;
+    const serverData = await res.json();
+    // Merge: server wins for all keys that aren't currently being edited
+    Object.entries(serverData).forEach(([k, v]) => {
+      if (!_dirty.has(k)) _cache[k] = v;
+    });
+  } catch(e) { /* silent — keep local cache on network error */ }
+}
+
+// Background refresh every 3 minutes — keeps cross-device data in sync
+setInterval(() => { if(_currentUser) refreshFromServer(); }, 3 * 60 * 1000);
+
 // ── ID + DATE HELPERS ──
 const uid = prefix => prefix + '-' + Date.now().toString(36).toUpperCase();
 const today = () => new Date().toISOString().split('T')[0];
@@ -3116,15 +3363,20 @@ function nav(page) {
   });
   // Close sidebar on mobile after navigation
   if(window.innerWidth <= 768) closeSidebar();
-  // Refresh page data
+  // Refresh page data — pull fresh server data first so cross-device changes appear
   const refreshers = {dashboard:loadDashboard, health:loadHealth, mindset:loadMindset,
     relationships:loadRelationships, learning:loadLearning, contribution:loadContribution,
     finance:loadFinance, investments:loadInvestments, trading:loadTrading,
     weekly:loadWeekly, monthly:loadMonthly, settings:loadSettings,
     vision:loadVision, goals:loadGoals, 'goal-progress':loadGoalProgress, 'goal-review':loadGoalReview,
-    vitals:loadVitals, affirmations:loadAffirmations, manifestation:loadManifestation,
-    'strategy-playbook':loadStrategyPlaybook };
-  if(refreshers[page]) refreshers[page]();
+    affirmations:loadAffirmations, manifestation:loadManifestation,
+    'strategy-playbook':loadStrategyPlaybook, gratitude:loadGratitude };
+  if(refreshers[page]) {
+    // Render immediately from local cache (feels instant), then silently
+    // refresh from server in the background and re-render if data changed.
+    refreshers[page]();
+    refreshFromServer().then(() => refreshers[page]());
+  }
   if(page === 'usermgmt') loadUserManagement();
 }
 
@@ -3766,7 +4018,7 @@ document.addEventListener('keydown', e=>{
   }
 });
 
-let healthSleepChart, healthEnergyChart;
+let healthSleepChart, healthEnergyChart, healthSleepScoreChart, healthHrChart, healthHrvChart;
 
 // ── Helpers ──
 function hsGetOrCreate(date) {
@@ -3775,16 +4027,26 @@ function hsGetOrCreate(date) {
   if (!entry) {
     // Create a fresh entry object but do NOT push to existing yet —
     // saveHealthSection handles insertion so cancelled modals don't pollute the cache
-    entry = { id:'HLT-'+date.replace(/-/g,''), date, sleep:0, sleepQ:3, energy:3,
+    entry = { id:'HLT-'+date.replace(/-/g,''), date,
+      sleep:0, sleepMins:0, sleepScore:null, sleepEff:null, recovery:3, notes:'', score:3,
+      remHrs:null, remMins:null, lightHrs:null, lightMins:null, deepHrs:null, deepMins:null,
       exercise:'none', exDur:0, steps:0, water:0, food:3, meals:[],
-      weight:'', screen:'', recovery:3, notes:'', score:3, createdAt:new Date().toISOString() };
+      weight:'',
+      hrAvg:null, hrMin:null, hrMax:null, hrv:null, hrvMin:null, hrvMax:null,
+      createdAt:new Date().toISOString() };
   }
   return { existing, entry };
 }
 
 function hsRecalcScore(entry) {
-  entry.score = Math.round(((entry.sleepQ||3)+(entry.energy||3)+(entry.food||3)+(entry.recovery||3))/4*10)/10;
+  entry.score = Math.round(((entry.food||3)+(entry.recovery||3))/2*10)/10;
 }
+// Helper: decimal hours → {h, m}
+function _decToHM(dec) { const h=Math.floor(dec||0); const m=Math.round(((dec||0)-h)*60); return {h, m}; }
+// Helper: hrs + mins → decimal hours
+function _hmToDec(h,m) { return (parseInt(h)||0)+(parseInt(m)||0)/60; }
+// Helper: format hrs+mins for display
+function _fmtHM(h,m) { if(!h&&!m) return ''; return `${h||0}h ${m||0}m`; }
 
 function hsWaterAdd(n) {
   const el = document.getElementById('hsw-water');
@@ -3797,14 +4059,20 @@ function hsDateChanged(section, newDate) {
   const data = store.get('health');
   const e = data.find(x => x.date === newDate) || {};
   if (section === 'sleep') {
-    document.getElementById('hss-sleep').value = e.sleep || 7;
-    const sq = e.sleepQ||3, en = e.energy||3, rc = e.recovery||3;
-    document.getElementById('hss-sleepq-r').value = sq; document.getElementById('hss-sleepq-n').textContent = sq;
-    document.getElementById('hss-energy-r').value = en; document.getElementById('hss-energy-n').textContent = en;
-    document.getElementById('hss-recovery-r').value = rc; document.getElementById('hss-recovery-n').textContent = rc;
-    document.getElementById('hss-weight').value = e.weight || '';
-    document.getElementById('hss-screen').value = e.screen || '';
+    const {h, m} = e.sleep ? _decToHM(e.sleep) : {h: e.sleepHrs||7, m: e.sleepMins||0};
+    document.getElementById('hss-sleep-hrs').value = h;
+    document.getElementById('hss-sleep-mins').value = m;
+    document.getElementById('hss-sleep-eff').value = e.sleepEff != null ? e.sleepEff : '';
+    document.getElementById('hss-sleep-score').value = e.sleepScore != null ? e.sleepScore : '';
+    document.getElementById('hss-rem-hrs').value = e.remHrs ?? '';
+    document.getElementById('hss-rem-mins').value = e.remMins ?? '';
+    document.getElementById('hss-light-hrs').value = e.lightHrs ?? '';
+    document.getElementById('hss-light-mins').value = e.lightMins ?? '';
+    document.getElementById('hss-deep-hrs').value = e.deepHrs ?? '';
+    document.getElementById('hss-deep-mins').value = e.deepMins ?? '';
     document.getElementById('hss-notes').value = e.notes || '';
+  } else if (section === 'weight') {
+    document.getElementById('hswt-weight').value = e.weight || '';
   } else if (section === 'water') {
     document.getElementById('hsw-water').value = e.water || 0;
   } else if (section === 'exercise') {
@@ -3812,6 +4080,15 @@ function hsDateChanged(section, newDate) {
     document.getElementById('hse-dur').value = e.exDur || 0;
     document.getElementById('hse-steps').value = e.steps || 0;
     document.getElementById('hse-notes').value = e.exNotes || '';
+  } else if (section === 'hrv') {
+    document.getElementById('hshrv-hr-avg').value = e.hrAvg || '';
+    document.getElementById('hshrv-hr-min').value = e.hrMin || '';
+    document.getElementById('hshrv-hr-max').value = e.hrMax || '';
+    document.getElementById('hshrv-hrv-avg').value = e.hrv || '';
+    document.getElementById('hshrv-hrv-min').value = e.hrvMin || '';
+    document.getElementById('hshrv-hrv-max').value = e.hrvMax || '';
+  } else if (section === 'weight') {
+    document.getElementById('hswt-weight').value = e.weight || '';
   }
 }
 
@@ -3835,18 +4112,23 @@ function openHealthSection(section, editDate) {
 
   if (section==='sleep') {
     document.getElementById('hss-date').value = d;
-    document.getElementById('hss-sleep').value = e.sleep||7;
-    const sq = e.sleepQ||3, en = e.energy||3, rc = e.recovery||3;
-    document.getElementById('hss-sleepq-r').value = sq;
-    document.getElementById('hss-sleepq-n').textContent = sq;
-    document.getElementById('hss-energy-r').value = en;
-    document.getElementById('hss-energy-n').textContent = en;
-    document.getElementById('hss-recovery-r').value = rc;
-    document.getElementById('hss-recovery-n').textContent = rc;
-    document.getElementById('hss-weight').value = e.weight||'';
-    document.getElementById('hss-screen').value = e.screen||'';
+    const {h, m} = e.sleep ? _decToHM(e.sleep) : {h: e.sleepHrs||7, m: e.sleepMins||0};
+    document.getElementById('hss-sleep-hrs').value = h;
+    document.getElementById('hss-sleep-mins').value = m;
+    document.getElementById('hss-sleep-eff').value = e.sleepEff != null ? e.sleepEff : '';
+    document.getElementById('hss-sleep-score').value = e.sleepScore != null ? e.sleepScore : '';
+    document.getElementById('hss-rem-hrs').value = e.remHrs ?? '';
+    document.getElementById('hss-rem-mins').value = e.remMins ?? '';
+    document.getElementById('hss-light-hrs').value = e.lightHrs ?? '';
+    document.getElementById('hss-light-mins').value = e.lightMins ?? '';
+    document.getElementById('hss-deep-hrs').value = e.deepHrs ?? '';
+    document.getElementById('hss-deep-mins').value = e.deepMins ?? '';
     document.getElementById('hss-notes').value = e.notes||'';
     showModal('hs-sleep-modal');
+  } else if (section==='weight') {
+    document.getElementById('hswt-date').value = d;
+    document.getElementById('hswt-weight').value = e.weight||'';
+    showModal('hs-weight-modal');
   } else if (section==='water') {
     document.getElementById('hsw-date').value = d;
     document.getElementById('hsw-water').value = e.water||0;
@@ -3866,25 +4148,51 @@ function openHealthSection(section, editDate) {
     document.getElementById('hsf-food-num').textContent = fq;
     renderMealList();
     showModal('hs-food-modal');
+  } else if (section==='hrv') {
+    document.getElementById('hshrv-date').value = d;
+    document.getElementById('hshrv-hr-avg').value = e.hrAvg||'';
+    document.getElementById('hshrv-hr-min').value = e.hrMin||'';
+    document.getElementById('hshrv-hr-max').value = e.hrMax||'';
+    document.getElementById('hshrv-hrv-avg').value = e.hrv||'';
+    document.getElementById('hshrv-hrv-min').value = e.hrvMin||'';
+    document.getElementById('hshrv-hrv-max').value = e.hrvMax||'';
+    showModal('hs-hrv-modal');
   }
 }
 
 // ── Save a section ──
 function saveHealthSection(section) {
   try {
-    const dateIds = {sleep:'hss-date',water:'hsw-date',exercise:'hse-date',food:'hsf-date'};
+    const dateIds = {sleep:'hss-date',water:'hsw-date',exercise:'hse-date',food:'hsf-date',hrv:'hshrv-date',weight:'hswt-date'};
     const date = document.getElementById(dateIds[section]).value || today();
     let { existing, entry } = hsGetOrCreate(date);
     const idx = existing.findIndex(e=>e.date===date);
 
     if (section==='sleep') {
-      entry.sleep = parseFloat(document.getElementById('hss-sleep').value)||0;
-      entry.sleepQ = parseInt(document.getElementById('hss-sleepq-n').textContent)||3;
-      entry.energy = parseInt(document.getElementById('hss-energy-n').textContent)||3;
-      entry.recovery = parseInt(document.getElementById('hss-recovery-n').textContent)||3;
-      entry.weight = document.getElementById('hss-weight').value;
-      entry.screen = document.getElementById('hss-screen').value;
+      const sH = parseInt(document.getElementById('hss-sleep-hrs').value)||0;
+      const sM = parseInt(document.getElementById('hss-sleep-mins').value)||0;
+      entry.sleepHrs = sH; entry.sleepMins = sM;
+      entry.sleep = _hmToDec(sH, sM); // decimal for chart compat
+      const eff = parseInt(document.getElementById('hss-sleep-eff').value);
+      entry.sleepEff = (eff >= 0 && eff <= 100) ? eff : null;
       entry.notes = document.getElementById('hss-notes').value;
+      const ss = parseInt(document.getElementById('hss-sleep-score').value);
+      entry.sleepScore = ss >= 0 && ss <= 100 ? ss : null;
+      entry.remHrs  = parseInt(document.getElementById('hss-rem-hrs').value)||null;
+      entry.remMins = parseInt(document.getElementById('hss-rem-mins').value)||null;
+      entry.lightHrs  = parseInt(document.getElementById('hss-light-hrs').value)||null;
+      entry.lightMins = parseInt(document.getElementById('hss-light-mins').value)||null;
+      entry.deepHrs  = parseInt(document.getElementById('hss-deep-hrs').value)||null;
+      entry.deepMins = parseInt(document.getElementById('hss-deep-mins').value)||null;
+    } else if (section==='weight') {
+      entry.weight = document.getElementById('hswt-weight').value;
+    } else if (section==='hrv') {
+      entry.hrAvg  = parseFloat(document.getElementById('hshrv-hr-avg').value)||null;
+      entry.hrMin  = parseFloat(document.getElementById('hshrv-hr-min').value)||null;
+      entry.hrMax  = parseFloat(document.getElementById('hshrv-hr-max').value)||null;
+      entry.hrv    = parseFloat(document.getElementById('hshrv-hrv-avg').value)||null;
+      entry.hrvMin = parseFloat(document.getElementById('hshrv-hrv-min').value)||null;
+      entry.hrvMax = parseFloat(document.getElementById('hshrv-hrv-max').value)||null;
     } else if (section==='water') {
       entry.water = parseFloat(document.getElementById('hsw-water').value)||0;
     } else if (section==='exercise') {
@@ -3903,9 +4211,9 @@ function saveHealthSection(section) {
     if (idx>=0) existing[idx]=entry; else existing.push(entry);
     store.set('health', existing);
 
-    const modals = {sleep:'hs-sleep-modal',water:'hs-water-modal',exercise:'hs-exercise-modal',food:'hs-food-modal'};
+    const modals = {sleep:'hs-sleep-modal',water:'hs-water-modal',exercise:'hs-exercise-modal',food:'hs-food-modal',hrv:'hs-hrv-modal',weight:'hs-weight-modal'};
     hideModal(modals[section]);
-    const labels = {sleep:'😴 Sleep saved!',water:'💧 Water logged!',exercise:'🏃 Exercise logged!',food:'🍽️ Meals saved!'};
+    const labels = {sleep:'😴 Sleep saved!',water:'💧 Water logged!',exercise:'🏃 Exercise logged!',food:'🍽️ Meals saved!',hrv:'❤️ HR & HRV saved!',weight:'⚖️ Weight logged!'};
     toast(labels[section]);
     loadHealth();
   } catch(err) { toast('❌ Save failed', false); }
@@ -3933,7 +4241,29 @@ function deleteMealFromEntry(date, mealIdx) {
 
 // ── Render today's section displays ──
 function hsRenderSections(data) {
-  const todayE = data.find(e=>e.date===today()) || null;
+  const activeDate = today();
+  const todayE = data.find(e=>e.date===activeDate) || null;
+  const allHealth = store.get('health') || [];
+  const wd7 = thisWeekDates();
+
+  // ── Shared sparkline helper (line chart, right-aligned, no x labels) ──
+  const _spark = (vals, col) => {
+    const SVG_W=80, SVG_H=36, n=vals.length;
+    const filled = vals.map(v=>v??null);
+    const hasAny = filled.some(v=>v!==null);
+    if (!hasAny) return '';
+    const mx = Math.max(...filled.filter(v=>v!==null));
+    const mn = Math.min(...filled.filter(v=>v!==null));
+    const range = mx-mn||1;
+    const pts = filled.map((v,i)=>{ const x=Math.round(i*(SVG_W-1)/(n-1)); const y=v==null?null:Math.round(SVG_H-1-((v-mn)/range)*(SVG_H-4)-1); return {x,y}; });
+    const polyPts = pts.filter(p=>p.y!==null).map(p=>`${p.x},${p.y}`).join(' ');
+    const dots = pts.filter(p=>p.y!==null).map(p=>`<circle cx="${p.x}" cy="${p.y}" r="2.5" fill="${col}"/>`).join('');
+    return `<div style="position:absolute;right:14px;bottom:14px;opacity:.85"><svg width="${SVG_W}" height="${SVG_H}" style="overflow:visible"><polyline points="${polyPts}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>${dots}</svg></div>`;
+  };
+  const sleep7 = wd7.map(d=>{ const e=allHealth.find(x=>x.date===d); if(!e||!e.sleep) return null; const h=e.sleepHrs!=null?e.sleepHrs:Math.floor(e.sleep||0); const m=e.sleepMins!=null&&e.sleepMins<60?e.sleepMins:Math.round(((e.sleep||0)-h)*60); return h+m/60; });
+  const wt7  = wd7.map(d=>{ const e=allHealth.find(x=>x.date===d); return e&&e.weight?parseFloat(e.weight):null; });
+  const wa7  = wd7.map(d=>{ const e=allHealth.find(x=>x.date===d); return e&&e.water?parseFloat(e.water):null; });
+  const st7  = wd7.map(d=>{ const e=allHealth.find(x=>x.date===d); return e&&e.steps?parseInt(e.steps):null; });
 
   // Sleep display
   const sleepEl = document.getElementById('hs-sleep-display');
@@ -3941,14 +4271,58 @@ function hsRenderSections(data) {
     if (!todayE || !todayE.sleep) {
       sleepEl.innerHTML='<div class="hs-empty">Not logged today</div>';
     } else {
+      // ── Normalise hours/minutes ──────────────────────────────────────
+      let sH = todayE.sleepHrs != null ? todayE.sleepHrs : Math.floor(todayE.sleep||0);
+      let sM = todayE.sleepMins != null ? todayE.sleepMins : Math.round(((todayE.sleep||0)-sH)*60);
+      // Guard: if mins ≥ 60 (bad stored value), recalculate from decimal
+      if (sM >= 60) {
+        const dec = todayE.sleep || _hmToDec(sH, sM);
+        sH = Math.floor(dec);
+        sM = Math.round((dec - sH) * 60);
+      }
+      sM = Math.max(0, Math.min(59, sM)); // final clamp
+
+      // ── Sleep stages ────────────────────────────────────────────────
+      let stagesHtml = '';
+      const hasStages = todayE.remHrs!=null||todayE.lightHrs!=null||todayE.deepHrs!=null;
+      if (hasStages) {
+        stagesHtml = `<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;margin-bottom:4px">
+          ${todayE.remHrs!=null?`<span style="font-size:11px;background:var(--surface2);padding:2px 8px;border-radius:6px;color:var(--muted)">🟣 REM ${todayE.remHrs}h${todayE.remMins?todayE.remMins+'m':''}</span>`:''}
+          ${todayE.lightHrs!=null?`<span style="font-size:11px;background:var(--surface2);padding:2px 8px;border-radius:6px;color:var(--muted)">🔵 Light ${todayE.lightHrs}h${todayE.lightMins?todayE.lightMins+'m':''}</span>`:''}
+          ${todayE.deepHrs!=null?`<span style="font-size:11px;background:var(--surface2);padding:2px 8px;border-radius:6px;color:var(--muted)">🟤 Deep ${todayE.deepHrs}h${todayE.deepMins?todayE.deepMins+'m':''}</span>`:''}
+        </div>`;
+      }
+
+      const sleepSparkHtml = _spark(sleep7, '#5b8def');
+
+      sleepEl.style.position='relative';
       sleepEl.innerHTML=`
-        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
-          <div class="hs-val">${todayE.sleep}</div>
-          <div class="hs-sub">hours</div>
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:4px">
+          <div class="hs-val">${sH}<span style="font-size:14px;font-weight:600">h</span> ${sM}<span style="font-size:14px;font-weight:600">m</span></div>
         </div>
-        ${todayE.weight?`<div class="hs-sub">⚖️ ${todayE.weight} kg</div>`:''}
+        ${todayE.sleepScore!=null?`<div class="hs-sub" style="margin-bottom:2px">🏆 Score: ${todayE.sleepScore}/100</div>`:''}
+        ${todayE.sleepEff!=null?`<div class="hs-sub" style="margin-bottom:2px">⚡ Efficiency: ${todayE.sleepEff}%</div>`:''}
+        ${stagesHtml}
         ${todayE.notes?`<div class="hs-sub" style="margin-top:3px">📝 ${todayE.notes}</div>`:''}
-        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('sleep','${today()}')">✎ Edit</button></div>`;
+        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('sleep','${activeDate}')">✎ Edit</button></div>
+        ${sleepSparkHtml}`;
+    }
+  }
+
+  // Weight display
+  const weightEl = document.getElementById('hs-weight-display');
+  if (weightEl) {
+    if (!todayE || !todayE.weight) {
+      weightEl.innerHTML='<div class="hs-empty">Not logged today</div>';
+    } else {
+      weightEl.style.position='relative';
+      weightEl.innerHTML=`
+        <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:6px">
+          <div class="hs-val" style="color:var(--accent)">${todayE.weight}</div>
+          <div class="hs-sub">kg</div>
+        </div>
+        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('weight','${activeDate}')">✎ Edit</button></div>
+        ${_spark(wt7, '#6366f1')}`;
     }
   }
 
@@ -3959,6 +4333,7 @@ function hsRenderSections(data) {
       waterEl.innerHTML='<div class="hs-empty">Not logged today</div>';
     } else {
       const pct = Math.min(100, (todayE.water/3)*100);
+      waterEl.style.position='relative';
       waterEl.innerHTML=`
         <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:8px">
           <div class="hs-val" style="color:#0ea5e9">${todayE.water}</div>
@@ -3968,10 +4343,11 @@ function hsRenderSections(data) {
           <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#38bdf8,#0ea5e9);border-radius:6px;transition:width .4s"></div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('water','${today()}')">✎ Edit</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('water','${activeDate}')">✎ Edit</button>
           <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="hsQuickWater(0.25)">+¼L</button>
           <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="hsQuickWater(0.5)">+½L</button>
-        </div>`;
+        </div>
+        ${_spark(wa7, '#0ea5e9')}`;
     }
   }
 
@@ -3981,11 +4357,38 @@ function hsRenderSections(data) {
     if (!todayE || !todayE.exercise || todayE.exercise==='none') {
       exEl.innerHTML='<div class="hs-empty">Not logged today</div>';
     } else {
+      exEl.style.position='relative';
       exEl.innerHTML=`
         <div class="hs-val" style="color:var(--green);font-size:18px;margin-bottom:4px">✓ ${todayE.exercise}</div>
         <div class="hs-sub">${todayE.exDur?todayE.exDur+' min':''} ${todayE.steps?'· '+Number(todayE.steps).toLocaleString()+' steps':''}</div>
         ${todayE.exNotes?`<div class="hs-sub" style="margin-top:4px">📝 ${todayE.exNotes}</div>`:''}
-        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('exercise','${today()}')">✎ Edit</button></div>`;
+        <div style="margin-top:8px"><button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('exercise','${activeDate}')">✎ Edit</button></div>
+        ${_spark(st7, '#10b981')}`;
+    }
+  }
+
+  // HRV display
+  const hrvEl = document.getElementById('hs-hrv-display');
+  if (hrvEl) {
+    if (!todayE || (!todayE.hrAvg && !todayE.hrv)) {
+      hrvEl.innerHTML='<div class="hs-empty">Not logged today</div>';
+    } else {
+      let html = '';
+      if (todayE.hrAvg) html += `<div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+        <div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Avg</div><div class="hs-val" style="color:#ef4444">${todayE.hrAvg}</div></div>
+        ${todayE.hrMin?`<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Min</div><div class="hs-val" style="color:#f87171">${todayE.hrMin}</div></div>`:''}
+        ${todayE.hrMax?`<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Max</div><div class="hs-val" style="color:#dc2626">${todayE.hrMax}</div></div>`:''}
+        <div style="align-self:flex-end;padding-bottom:4px"><span class="hs-sub">bpm</span></div>
+      </div>`;
+      if (todayE.hrv) html += `<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px">HRV</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px">
+          <div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Avg</div><div class="hs-val" style="color:#8b5cf6">${todayE.hrv}</div></div>
+          ${todayE.hrvMin?`<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Min</div><div class="hs-val" style="color:#a78bfa">${todayE.hrvMin}</div></div>`:''}
+          ${todayE.hrvMax?`<div><div style="font-size:10px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px">Max</div><div class="hs-val" style="color:#7c3aed">${todayE.hrvMax}</div></div>`:''}
+          <div style="align-self:flex-end;padding-bottom:4px"><span class="hs-sub">ms</span></div>
+        </div>`;
+      html += `<button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('hrv','${activeDate}')">✎ Edit</button>`;
+      hrvEl.innerHTML = html;
     }
   }
 
@@ -3999,18 +4402,17 @@ function hsRenderSections(data) {
       todayE.meals.forEach((m,i)=>{ if(!grouped[m.meal]) grouped[m.meal]=[]; grouped[m.meal].push({...m,_i:i}); });
       const order=['breakfast','lunch','dinner','snack','preworkout','postworkout'];
       const sorted=order.filter(k=>grouped[k]).concat(Object.keys(grouped).filter(k=>!order.includes(k)));
-      const todayDate = today();
       let html = sorted.map(meal=>`
         <div style="margin-bottom:6px">
           <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:3px">${mealLabels[meal]||meal}</div>
           ${grouped[meal].map(item=>`
             <div class="hs-meal-item">
               <span>${item.name} <span style="color:var(--muted)">${item.qty} ${item.unit}</span></span>
-              <button class="hs-del-btn" onclick="deleteMealFromEntry('${todayDate}',${item._i})" title="Remove">✕</button>
+              <button class="hs-del-btn" onclick="deleteMealFromEntry('${activeDate}',${item._i})" title="Remove">✕</button>
             </div>`).join('')}
         </div>`).join('');
       html += `<div style="margin-top:6px;text-align:right">
-        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('food','${todayDate}')">✎ Edit</button>
+        <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="openHealthSection('food','${activeDate}')">✎ Edit</button>
       </div>`;
       foodEl.innerHTML = html;
     }
@@ -4030,28 +4432,84 @@ function hsQuickWater(n) {
 
 function loadHealth() {
   const data = store.get('health');
-  const weekDates = thisWeekDates();
+  const weekDates = Array.from({length:7},(_,i)=>{const d=new Date();d.setDate(d.getDate()-(6-i));return d.toISOString().slice(0,10);});
   const weekData = weekDates.map(d=>data.find(e=>e.date===d)||null);
-  const sleepData = weekData.map(e=>e?e.sleep:null);
-  const energyData = weekData.map(e=>e?e.energy:null);
-  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()]});
+  const recoveryData = weekData.map(e=>e?e.recovery:null);
+  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')});
 
   // Stats
   const weekEntries = weekData.filter(Boolean);
   const avgSleep  = weekEntries.length ? (weekEntries.reduce((s,e)=>s+(e.sleep||0),0)/weekEntries.length).toFixed(1) : '—';
-  const avgEnergy = weekEntries.filter(e=>e.energy).length ? (weekEntries.filter(e=>e.energy).reduce((s,e)=>s+(e.energy||0),0)/weekEntries.filter(e=>e.energy).length).toFixed(1) : '—';
+  // Avg exercise time per session (hrs+mins)
+  const exSessions = weekEntries.filter(e=>e.exercise&&e.exercise!=='none'&&e.exDur>0);
+  let avgExText = '—';
+  if (exSessions.length) {
+    const avgMin = Math.round(exSessions.reduce((s,e)=>s+(parseInt(e.exDur)||0),0)/exSessions.length);
+    avgExText = avgMin>=60 ? Math.floor(avgMin/60)+'h '+(avgMin%60)+'m' : avgMin+'m';
+  }
   const exDays    = weekEntries.filter(e=>e.exercise&&e.exercise!=='none').length;
   const avgWater  = weekEntries.filter(e=>e.water>0).length ? (weekEntries.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/weekEntries.filter(e=>e.water>0).length).toFixed(1) : '—';
   document.getElementById('h-avg-sleep').textContent  = avgSleep;
-  document.getElementById('h-avg-energy').textContent = avgEnergy;
+  document.getElementById('h-avg-energy').textContent = avgExText;
   document.getElementById('h-exercise-days').textContent = exDays;
   document.getElementById('h-avg-water').textContent  = avgWater;
 
-  const chartOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#6b7280',font:{size:11}}}}, scales:{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(255,255,255,.05)'}}} };
+  const sleepScoreData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return (e&&e.sleepScore!=null)?e.sleepScore:null; });
+  const hrAvgData  = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrAvg||null; });
+  const hrMinData  = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrMin||null; });
+  const hrMaxData  = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrMax||null; });
+  const hrvAvgData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrv||null; });
+  const hrvMinData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrvMin||null; });
+  const hrvMaxData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return e?.hrvMax||null; });
+
+  const chartOpts = { responsive:true, maintainAspectRatio:false, spanGaps:true, plugins:{legend:{labels:{color:'#6b7280',font:{size:11}}}}, scales:{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(107,114,128,.1)'}}} };
+
+  // Sleep Duration — stacked bars: REM / Light / Deep (or total if no stages)
   if(healthSleepChart) healthSleepChart.destroy();
-  healthSleepChart = new Chart(document.getElementById('health-sleep-chart'), { type:'bar', data:{labels, datasets:[{label:'Sleep (hrs)',data:sleepData,backgroundColor:'rgba(91,141,239,.5)',borderColor:'rgba(91,141,239,1)',borderWidth:1,borderRadius:4}]}, options:chartOpts });
+  const remData   = weekDates.map(d=>{ const e=data.find(x=>x.date===d); if(!e) return null; if(e.remHrs!=null) return e.remHrs+(e.remMins||0)/60; return null; });
+  const lightData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); if(!e) return null; if(e.lightHrs!=null) return e.lightHrs+(e.lightMins||0)/60; return null; });
+  const deepData  = weekDates.map(d=>{ const e=data.find(x=>x.date===d); if(!e) return null; if(e.deepHrs!=null) return e.deepHrs+(e.deepMins||0)/60; return null; });
+  const sleepDataTotal = weekDates.map(d=>{ const e=data.find(x=>x.date===d); if(!e||!e.sleep) return null; const h=e.sleepHrs!=null?e.sleepHrs:Math.floor(e.sleep); const m=e.sleepMins!=null&&e.sleepMins<60?e.sleepMins:Math.round((e.sleep-Math.floor(e.sleep))*60); return h+m/60; });
+  const hasStageData = remData.some(v=>v!=null)||lightData.some(v=>v!=null)||deepData.some(v=>v!=null);
+  const sleepChartDatasets = hasStageData ? [
+    {label:'REM',   data:remData,   backgroundColor:'rgba(139,92,246,.75)', borderRadius:3, stack:'sleep'},
+    {label:'Light', data:lightData, backgroundColor:'rgba(91,141,239,.65)', borderRadius:3, stack:'sleep'},
+    {label:'Deep',  data:deepData,  backgroundColor:'rgba(16,185,129,.7)',  borderRadius:3, stack:'sleep'}
+  ] : [
+    {label:'Sleep (hrs)', data:sleepDataTotal, backgroundColor:'rgba(91,141,239,.5)', borderColor:'rgba(91,141,239,1)', borderWidth:1, borderRadius:4}
+  ];
+  healthSleepChart = new Chart(document.getElementById('health-sleep-chart'), {
+    type:'bar',
+    data:{labels, datasets:sleepChartDatasets},
+    options:{...chartOpts, scales:{...chartOpts.scales, y:{...chartOpts.scales.y, suggestedMin:0, suggestedMax:10, stacked:hasStageData}, x:{...chartOpts.scales.x, stacked:hasStageData}}}
+  });
+
+  // Sleep Score chart
+  if(healthSleepScoreChart) healthSleepScoreChart.destroy();
+  const sscEl = document.getElementById('health-sleep-score-chart');
+  if(sscEl) healthSleepScoreChart = new Chart(sscEl, { type:'line', data:{labels, datasets:[{label:'Sleep Score',data:sleepScoreData,borderColor:'#6366f1',backgroundColor:'rgba(99,102,241,.12)',tension:.4,fill:true,pointRadius:5,pointBackgroundColor:'#6366f1'}]}, options:{...chartOpts,scales:{...chartOpts.scales,y:{...chartOpts.scales.y,suggestedMin:0,suggestedMax:100}}} });
+
+  // Heart Rate chart (avg/min/max)
+  if(healthHrChart) healthHrChart.destroy();
+  const hrEl = document.getElementById('health-hr-chart');
+  if(hrEl) healthHrChart = new Chart(hrEl, { type:'line', data:{labels, datasets:[
+    {label:'Avg HR',data:hrAvgData,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',tension:.4,fill:false,pointRadius:4,borderWidth:2},
+    {label:'Min HR',data:hrMinData,borderColor:'#fca5a5',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:3,borderWidth:1,borderDash:[4,3]},
+    {label:'Max HR',data:hrMaxData,borderColor:'#dc2626',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:3,borderWidth:1,borderDash:[4,3]}
+  ]}, options:{...chartOpts,scales:{...chartOpts.scales,y:{...chartOpts.scales.y,suggestedMin:40,suggestedMax:200,title:{display:true,text:'bpm',color:'#6b7280'}}}} });
+
+  // HRV chart (avg/min/max)
+  if(healthHrvChart) healthHrvChart.destroy();
+  const hrvEl2 = document.getElementById('health-hrv-chart');
+  if(hrvEl2) healthHrvChart = new Chart(hrvEl2, { type:'line', data:{labels, datasets:[
+    {label:'Avg HRV',data:hrvAvgData,borderColor:'#8b5cf6',backgroundColor:'rgba(139,92,246,.12)',tension:.4,fill:false,pointRadius:4,borderWidth:2},
+    {label:'Min HRV',data:hrvMinData,borderColor:'#c4b5fd',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:3,borderWidth:1,borderDash:[4,3]},
+    {label:'Max HRV',data:hrvMaxData,borderColor:'#7c3aed',backgroundColor:'transparent',tension:.4,fill:false,pointRadius:3,borderWidth:1,borderDash:[4,3]}
+  ]}, options:{...chartOpts,scales:{...chartOpts.scales,y:{...chartOpts.scales.y,suggestedMin:0,title:{display:true,text:'ms',color:'#6b7280'}}}} });
+
   if(healthEnergyChart) healthEnergyChart.destroy();
-  healthEnergyChart = new Chart(document.getElementById('health-energy-chart'), { type:'line', data:{labels, datasets:[{label:'Energy',data:energyData,borderColor:'#10b981',backgroundColor:'rgba(16,185,129,.1)',tension:.4,fill:true,pointRadius:4}]}, options:chartOpts });
+  const exDurData = weekDates.map(d=>{ const e=data.find(x=>x.date===d); return (e&&e.exercise&&e.exercise!=='none'&&e.exDur>0)?parseInt(e.exDur):null; });
+  healthEnergyChart = new Chart(document.getElementById('health-energy-chart'), { type:'bar', data:{labels, datasets:[{label:'Duration (min)',data:exDurData,backgroundColor:'rgba(16,185,129,.55)',borderColor:'rgba(16,185,129,1)',borderWidth:1,borderRadius:5}]}, options:{...chartOpts, spanGaps:true, scales:{...chartOpts.scales,y:{...chartOpts.scales.y,suggestedMin:0,title:{display:true,text:'minutes',color:'#6b7280'}}}} });
 
   // Render section cards
   hsRenderSections(data);
@@ -4064,12 +4522,12 @@ function loadHealth() {
     const exText = e.exercise&&e.exercise!=='none' ? e.exercise : '—';
     return `<tr>
       <td style="font-weight:600">${fmtDate(e.date)}</td>
-      <td>${e.sleep||'—'}</td>
+      <td>${e.sleep?(()=>{const h=e.sleepHrs!=null?e.sleepHrs:Math.floor(e.sleep);const m=e.sleepMins!=null?e.sleepMins:Math.round((e.sleep-h)*60);return h+'h '+(m||0)+'m';})():'—'}</td>
       <td>${e.water||'—'}</td>
       <td>${exText}</td>
       <td>${e.exDur&&e.exDur!='0'?e.exDur+' min':'—'}</td>
       <td>${e.steps&&e.steps!='0'?Number(e.steps).toLocaleString():'—'}</td>
-      <td>${e.energy||'—'}</td>
+      <td>${e.recovery||'—'}</td>
       <td>${mealSummary}</td>
       <td>${e.weight||'—'}</td>
       <td style="white-space:nowrap">
@@ -4085,6 +4543,8 @@ function loadHealth() {
   // Set default report range to last 7 days on first load; always re-render after that
   if (!document.getElementById('hr-from').value) hrSetRange(7);
   else renderHealthReport();
+
+  loadVitals();
 }
 
 // ── Health Report helpers ──
@@ -4140,32 +4600,45 @@ function renderHealthReport() {
     <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--green)">${totalMeals}</div><div class="hr-kpi-lbl">Meals Logged</div><div class="hr-kpi-sub">across ${rows.length} days</div></div>
     <div class="hr-kpi"><div class="hr-kpi-val" style="color:var(--accent)">${totalSteps?totalSteps.toLocaleString():'—'}</div><div class="hr-kpi-lbl">Total Steps</div><div class="hr-kpi-sub">in period</div></div>`;
 
-  // Date-wise table — raw data only
+  // Date-wise table — all parameters
   const tableRows = rows.map(e => {
     const mealSummary = (e.meals&&e.meals.length)
       ? e.meals.map(m=>`${mealLabels[m.meal]||m.meal}: ${m.name} (${m.qty} ${m.unit})`).join(' | ')
       : '—';
+    const sleepStr = e.sleep?(()=>{const h=e.sleepHrs!=null?e.sleepHrs:Math.floor(e.sleep);const m=e.sleepMins!=null?e.sleepMins:Math.round((e.sleep-h)*60);return h+'h '+(m||0)+'m';})():'—';
+    const remStr   = e.remHrs!=null  ? e.remHrs+'h '+(e.remMins||0)+'m'   : '—';
+    const lightStr = e.lightHrs!=null? e.lightHrs+'h '+(e.lightMins||0)+'m': '—';
+    const deepStr  = e.deepHrs!=null ? e.deepHrs+'h '+(e.deepMins||0)+'m'  : '—';
     return `<tr>
-      <td style="font-weight:600">${fmtDate(e.date)}</td>
-      <td>${e.sleep?e.sleep+' hrs':'—'}</td>
+      <td style="font-weight:600;white-space:nowrap">${fmtDate(e.date)}</td>
+      <td>${sleepStr}</td>
+      <td>${e.sleepScore!=null?e.sleepScore:'—'}</td>
+      <td>${remStr}</td><td>${lightStr}</td><td>${deepStr}</td>
       <td>${e.water?e.water+' L':'—'}</td>
       <td>${e.exercise&&e.exercise!=='none'?e.exercise:'—'}</td>
       <td>${e.exDur&&e.exDur!='0'?e.exDur+' min':'—'}</td>
       <td>${e.steps&&e.steps!='0'?Number(e.steps).toLocaleString():'—'}</td>
-      <td>${e.energy||'—'}</td>
+      <td>${e.recovery||'—'}</td>
       <td>${e.weight?e.weight+' kg':'—'}</td>
-      <td class="hr-meal-cell" title="${mealSummary}">${mealSummary}</td>
+      <td>${e.hrAvg||'—'}</td><td>${e.hrMin||'—'}</td><td>${e.hrMax||'—'}</td>
+      <td>${e.hrv||'—'}</td><td>${e.hrvMin||'—'}</td><td>${e.hrvMax||'—'}</td>
+      <td>${e.food!=null?e.food+'/5':'—'}</td>
+      <td class="hr-meal-cell" title="${mealSummary}">${mealSummary.length>60?mealSummary.slice(0,60)+'…':mealSummary}</td>
+      <td>${e.exNotes||'—'}</td>
       <td>${e.notes||'—'}</td>
     </tr>`;
   }).join('');
 
   body.innerHTML = `
     <div class="hr-table-wrap">
-      <table class="hr-table">
+      <table class="hr-table" style="font-size:12px">
         <thead><tr>
-          <th>Date</th><th>Sleep (hrs)</th><th>Water (L)</th>
-          <th>Exercise</th><th>Duration</th><th>Steps</th><th>Energy</th>
-          <th>Weight (kg)</th><th>Meals</th><th>Notes</th>
+          <th>Date</th><th>Sleep</th><th>Score</th><th>REM</th><th>Light</th><th>Deep</th>
+          <th>Water</th><th>Exercise</th><th>Duration</th><th>Steps</th><th>Recovery</th>
+          <th>Weight</th>
+          <th>HR Avg</th><th>HR Min</th><th>HR Max</th>
+          <th>HRV Avg</th><th>HRV Min</th><th>HRV Max</th>
+          <th>Food</th><th>Meals</th><th>Ex Notes</th><th>Notes</th>
         </tr></thead>
         <tbody>${tableRows}</tbody>
       </table>
@@ -4179,71 +4652,108 @@ function exportHealthExcel() {
 
   const from = document.getElementById('hr-from').value;
   const to   = document.getElementById('hr-to').value;
-
-  // Build summary sheet data — raw data only
   const _exR = rows.filter(e=>e.exercise&&e.exercise!=='none');
+  const _avg = (arr, key, dec=2) => { const v=arr.filter(e=>e[key]!=null&&e[key]!==''&&parseFloat(e[key])>0); return v.length?+(v.reduce((s,e)=>s+parseFloat(e[key]),0)/v.length).toFixed(dec):'—'; };
+  const _sum = (arr, key) => arr.reduce((s,e)=>s+(parseInt(e[key])||0),0);
+
+  // ── Summary sheet ──
   const summaryData = [
     ['Health Report — ' + fmtDate(from) + ' to ' + fmtDate(to)],
     [],
-    ['Metric', 'Value'],
+    ['Metric','Value'],
     ['Total Days with Data', rows.length],
-    ['Avg Sleep (hrs)', rows.filter(e=>e.sleep>0).length ? +(rows.filter(e=>e.sleep>0).reduce((s,e)=>s+(e.sleep||0),0)/rows.filter(e=>e.sleep>0).length).toFixed(2) : '—'],
-    ['Avg Water (L)',   rows.filter(e=>e.water>0).length ? +(rows.filter(e=>e.water>0).reduce((s,e)=>s+(parseFloat(e.water)||0),0)/rows.filter(e=>e.water>0).length).toFixed(2) : '—'],
-    ['Exercise Days',  _exR.length],
-    ['Total Exercise (min)', _exR.reduce((s,e)=>s+(parseInt(e.exDur)||0),0)],
-    ['Total Steps',    rows.reduce((s,e)=>s+(parseInt(e.steps)||0),0)],
-    ['Total Meals Logged', rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0)],
+    ['',''],
+    ['── SLEEP ──',''],
+    ['Avg Sleep (hrs)', _avg(rows,'sleep')],
+    ['Avg Sleep Score', _avg(rows,'sleepScore',1)],
+    ['Avg REM (hrs)',   _avg(rows,'remHrs')],
+    ['Avg Light Sleep (hrs)', _avg(rows,'lightHrs')],
+    ['Avg Deep Sleep (hrs)',  _avg(rows,'deepHrs')],
+    ['',''],
+    ['── ACTIVITY ──',''],
+    ['Exercise Days',         _exR.length],
+    ['Total Exercise (min)',  _sum(_exR,'exDur')],
+    ['Total Steps',           _sum(rows,'steps')],
+    ['Avg Steps / Day',       _exR.length?+(_sum(rows,'steps')/rows.length).toFixed(0):'—'],
+    ['',''],
+    ['── NUTRITION ──',''],
+    ['Avg Water (L/day)',     _avg(rows,'water')],
+    ['Total Meals Logged',   rows.reduce((s,e)=>s+((e.meals&&e.meals.length)||0),0)],
+    ['',''],
+    ['── VITALS ──',''],
+    ['Avg HR (bpm)',          _avg(rows,'hrAvg',1)],
+    ['Avg HR Min (bpm)',      _avg(rows,'hrMin',1)],
+    ['Avg HR Max (bpm)',      _avg(rows,'hrMax',1)],
+    ['Avg HRV (ms)',          _avg(rows,'hrv',1)],
+    ['Avg HRV Min (ms)',      _avg(rows,'hrvMin',1)],
+    ['Avg HRV Max (ms)',      _avg(rows,'hrvMax',1)],
+    ['Avg Weight (kg)',       _avg(rows,'weight')],
+    ['Avg Recovery (/5)',     _avg(rows,'recovery',1)],
   ];
 
-  // Build daily log sheet data — raw data only
-  const headers = ['Date','Sleep (hrs)','Water (L)','Exercise','Duration (min)','Steps','Energy (/5)','Weight (kg)','Screen Time (hrs)','Notes'];
-  const dataRows = rows.map(e => [
-    e.date,
-    e.sleep||'',
-    e.water||'',
-    e.exercise!=='none'?(e.exercise||''):'',
-    e.exDur||'',
-    e.steps||'',
-    e.energy||'',
-    e.weight||'',
-    e.screen||'',
-    e.notes||''
-  ]);
+  // ── Daily Log sheet ──
+  const dailyHeaders = [
+    'Date',
+    'Sleep','Sleep Score','REM (h)','Light (h)','Deep (h)',
+    'Water (L)','Food Rating (/5)',
+    'Exercise','Duration (min)','Steps','Recovery (/5)','Exercise Notes',
+    'Weight (kg)',
+    'HR Avg (bpm)','HR Min (bpm)','HR Max (bpm)',
+    'HRV Avg (ms)','HRV Min (ms)','HRV Max (ms)',
+    'Notes'
+  ];
+  const dailyRows = rows.map(e => {
+    const sH=e.sleepHrs!=null?e.sleepHrs:(e.sleep?Math.floor(e.sleep):0);
+    const sM=e.sleepMins!=null?e.sleepMins:(e.sleep?Math.round((e.sleep-sH)*60):0);
+    const toHDec = (h,m) => h!=null ? +(h+(m||0)/60).toFixed(2) : '';
+    return [
+      e.date,
+      e.sleep?(sH+'h '+sM+'m'):'', e.sleepScore!=null?e.sleepScore:'',
+      toHDec(e.remHrs,e.remMins), toHDec(e.lightHrs,e.lightMins), toHDec(e.deepHrs,e.deepMins),
+      e.water||'', e.food!=null?e.food:'',
+      e.exercise&&e.exercise!=='none'?e.exercise:'', e.exDur||'', e.steps||'', e.recovery||'', e.exNotes||'',
+      e.weight||'',
+      e.hrAvg||'', e.hrMin||'', e.hrMax||'',
+      e.hrv||'',   e.hrvMin||'', e.hrvMax||'',
+      e.notes||''
+    ];
+  });
 
-  // Build meals sheet
+  // ── Meals sheet ──
   const mealHeaders = ['Date','Meal Type','Food Item','Qty','Unit'];
   const mealRows = [];
   rows.forEach(e => {
-    if (e.meals && e.meals.length) {
-      e.meals.forEach(m => mealRows.push([e.date, mealLabels[m.meal]||m.meal, m.name, m.qty, m.unit]));
-    }
+    if (e.meals&&e.meals.length)
+      e.meals.forEach(m=>mealRows.push([e.date, mealLabels[m.meal]||m.meal, m.name, m.qty, m.unit]));
   });
 
   const wb = XLSX.utils.book_new();
 
-  // Summary sheet
+  // Summary
   const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
-  wsSummary['!cols'] = [{wch:30},{wch:20}];
+  wsSummary['!cols'] = [{wch:28},{wch:18}];
   XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
 
-  // Daily Log sheet
-  const wsDaily = XLSX.utils.aoa_to_sheet([headers, ...dataRows]);
+  // Daily Log
+  const wsDaily = XLSX.utils.aoa_to_sheet([dailyHeaders, ...dailyRows]);
   wsDaily['!cols'] = [
-    {wch:12},{wch:12},{wch:10},{wch:12},{wch:14},{wch:12},
-    {wch:12},{wch:12},{wch:14},{wch:30}
+    {wch:13},{wch:10},{wch:12},{wch:9},{wch:9},{wch:9},
+    {wch:10},{wch:13},{wch:14},{wch:13},{wch:10},{wch:13},{wch:18},
+    {wch:11},
+    {wch:12},{wch:12},{wch:12},{wch:12},{wch:12},{wch:12},
+    {wch:22}
   ];
-  // Style header row bold
-  headers.forEach((_,ci) => {
+  dailyHeaders.forEach((_,ci) => {
     const cell = XLSX.utils.encode_cell({r:0,c:ci});
     if (!wsDaily[cell]) wsDaily[cell]={};
     wsDaily[cell].s = { font:{bold:true}, fill:{fgColor:{rgb:'4361EE'}}, alignment:{horizontal:'center'} };
   });
   XLSX.utils.book_append_sheet(wb, wsDaily, 'Daily Log');
 
-  // Meals sheet
+  // Meals
   if (mealRows.length) {
     const wsMeals = XLSX.utils.aoa_to_sheet([mealHeaders, ...mealRows]);
-    wsMeals['!cols'] = [{wch:12},{wch:16},{wch:24},{wch:8},{wch:10}];
+    wsMeals['!cols'] = [{wch:12},{wch:16},{wch:26},{wch:8},{wch:10}];
     XLSX.utils.book_append_sheet(wb, wsMeals, 'Meals Log');
   }
 
@@ -4251,6 +4761,313 @@ function exportHealthExcel() {
   XLSX.writeFile(wb, filename);
   toast('📥 Excel exported!');
 }
+
+</script>
+<script>
+// ══════════════════════════════════════════════
+//  GRATITUDE LOG
+// ══════════════════════════════════════════════
+let _grActiveDate = today();
+
+function grOpenToday() {
+  _grActiveDate = today();
+  document.getElementById('gr-date').value = today();
+  loadGratitude();
+}
+
+function loadGratitude() {
+  // Sync date picker
+  const datePicker = document.getElementById('gr-date');
+  if (datePicker) {
+    if (!datePicker.value) datePicker.value = today();
+    _grActiveDate = datePicker.value;
+    datePicker.onchange = () => { _grActiveDate = datePicker.value; loadGratitude(); };
+  }
+
+  // Normalize: old entries use g1/g2/g3 (from Morning Routine), new ones use points[]
+  const all = (store.get('gratitude') || []).map(e => ({
+    ...e,
+    points: e.points || [e.g1, e.g2, e.g3].filter(Boolean)
+  }));
+
+  // ── KPIs ──
+  const totalPoints = all.reduce((s, e) => s + (e.points || []).length, 0);
+  const totalDays   = all.length;
+  const avgPerDay   = totalDays ? (totalPoints / totalDays).toFixed(1) : 0;
+
+  // Streak: count consecutive days ending today with at least 1 point
+  let streak = 0;
+  for (let i = 0; ; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = d.toISOString().slice(0, 10);
+    const entry = all.find(e => e.date === ds);
+    if (entry && entry.points && entry.points.length) streak++;
+    else break;
+  }
+  const _setKpi = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  _setKpi('gr-kpi-streak', streak);
+  _setKpi('gr-kpi-total',  totalPoints);
+  _setKpi('gr-kpi-days',   totalDays);
+  _setKpi('gr-kpi-avg',    avgPerDay);
+
+  // ── Streak dots (last 14 days) ──
+  const barEl = document.getElementById('gr-streak-bar');
+  if (barEl) {
+    const dots = [];
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const ds = d.toISOString().slice(0, 10);
+      const entry = all.find(e => e.date === ds);
+      const count = entry ? (entry.points || []).length : 0;
+      const label = d.toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric' });
+      const isToday = ds === today();
+      const filled = count > 0;
+      const bg = filled ? 'linear-gradient(135deg,#8b5cf6,#6366f1)' : 'var(--surface2)';
+      const color = filled ? '#fff' : 'var(--muted)';
+      const border = isToday ? '2px solid #8b5cf6' : '2px solid transparent';
+      dots.push(`<div title="${label}: ${count} point${count!==1?'s':''}" class="gr-streak-dot" style="background:${bg};color:${color};border:${border}">${filled?count:'·'}</div>`);
+    }
+    barEl.innerHTML = dots.join('');
+  }
+
+  // ── Active date entry panel ──
+  const activeEntry = all.find(e => e.date === _grActiveDate);
+  const points = activeEntry ? (activeEntry.points || []) : [];
+  const isToday = _grActiveDate === today();
+  const labelEl = document.getElementById('gr-active-label');
+  const countEl = document.getElementById('gr-count-label');
+  if (labelEl) labelEl.textContent = isToday ? "Today's Gratitude" : `Gratitude — ${fmtDate(_grActiveDate)}`;
+  if (countEl) countEl.textContent = `${points.length} point${points.length !== 1 ? 's' : ''}`;
+
+  const listEl = document.getElementById('gr-points-list');
+  if (listEl) {
+    listEl.innerHTML = points.length
+      ? points.map((pt, i) => `
+          <div class="gr-point">
+            <span class="gr-point-num">${i + 1}</span>
+            <span style="flex:1">${pt}</span>
+            <button class="gr-point-del" onclick="grDeletePoint(${i})" title="Remove">✕</button>
+          </div>`).join('')
+      : `<div style="color:var(--muted);font-style:italic;font-size:13px;padding:8px 0">
+           No gratitude points yet for this day. Add your first one below 🙏
+         </div>`;
+  }
+
+  // ── History (all dates, newest first) ──
+  const histEl = document.getElementById('gr-history');
+  if (histEl) {
+    const sorted = [...all].sort((a, b) => b.date.localeCompare(a.date));
+    histEl.innerHTML = sorted.length
+      ? sorted.map(e => `
+          <div class="gr-entry-card">
+            <div class="gr-entry-date">
+              <span>📅</span> ${fmtDate(e.date)} ${e.date === today() ? '<span style="font-size:10px;background:linear-gradient(135deg,#8b5cf6,#6366f1);color:#fff;padding:2px 8px;border-radius:20px;font-weight:700">TODAY</span>' : ''}
+              <span style="margin-left:auto;font-size:11px;color:var(--muted)">${e.points.length} point${e.points.length !== 1 ? 's' : ''}</span>
+            </div>
+            ${e.points.map((pt, i) => `
+              <div class="gr-point">
+                <span class="gr-point-num">${i + 1}</span>
+                <span style="flex:1">${pt}</span>
+              </div>`).join('')}
+          </div>`).join('')
+      : `<div class="gr-empty">No gratitude entries yet. Start logging today! 🙏</div>`;
+  }
+}
+
+function grAddPoint() {
+  const inp = document.getElementById('gr-new-point');
+  const text = (inp?.value || '').trim();
+  if (!text) { inp?.focus(); return; }
+
+  const all = store.get('gratitude') || [];
+  const idx = all.findIndex(e => e.date === _grActiveDate);
+  if (idx >= 0) {
+    all[idx].points.push(text);
+    store.set('gratitude', all);
+  } else {
+    store.push('gratitude', { id: uid('grt'), date: _grActiveDate, points: [text], createdAt: new Date().toISOString() });
+  }
+  inp.value = '';
+  inp.focus();
+  loadGratitude();
+}
+
+function grDeletePoint(idx) {
+  const all = store.get('gratitude') || [];
+  const entryIdx = all.findIndex(e => e.date === _grActiveDate);
+  if (entryIdx < 0) return;
+  all[entryIdx].points.splice(idx, 1);
+  if (!all[entryIdx].points.length) all.splice(entryIdx, 1);
+  store.set('gratitude', all);
+  loadGratitude();
+}
+
+</script>
+<script>
+// ══════════════════════════════════════════════
+//  DASHBOARD SLIDESHOW  — portrait 2:3, 3-up desktop / 1-up mobile
+// ══════════════════════════════════════════════
+const SS_KEY = 'lifeOS_slideshow_v1';
+let _ssImages = [];   // [{id, src}]
+let _ssCurrent = 0;
+let _ssTimer = null;
+
+function ssLoad() {
+  try { _ssImages = JSON.parse(localStorage.getItem(SS_KEY) || '[]'); } catch(e) { _ssImages = []; }
+  ssRender();
+}
+
+function ssSave() {
+  try { localStorage.setItem(SS_KEY, JSON.stringify(_ssImages)); } catch(e) {
+    toast('Storage full — try removing some photos first', false);
+  }
+}
+
+// How many images are visible at once
+function _ssCols() { return window.innerWidth <= 768 ? 1 : 3; }
+
+// Maximum valid _ssCurrent (last position where >=1 image is visible)
+function _ssMax() { return Math.max(0, _ssImages.length - _ssCols()); }
+
+// Compute pixel offset and apply to the track
+function ssApplyTransform() {
+  const viewport = document.getElementById('ss-viewport');
+  const track    = document.getElementById('ss-track');
+  if (!viewport || !track) return;
+  const cols  = _ssCols();
+  const gap   = 10; // must match CSS gap
+  const vw    = viewport.offsetWidth;
+  const itemW = (vw - (cols - 1) * gap) / cols;
+  track.style.transform = `translateX(-${_ssCurrent * (itemW + gap)}px)`;
+}
+
+// Sync dots and arrow disabled states without a full re-render
+function _ssUpdateControls() {
+  ssApplyTransform();
+  const max = _ssMax();
+  document.querySelectorAll('.ss-dot').forEach((d, i) => d.classList.toggle('active', i === _ssCurrent));
+  const prev = document.getElementById('ss-prev');
+  const next = document.getElementById('ss-next');
+  if (prev) prev.disabled = _ssCurrent === 0;
+  if (next) next.disabled = _ssCurrent >= max;
+}
+
+// Start/restart auto-advance timer
+function _ssRestartTimer() {
+  clearInterval(_ssTimer);
+  if (_ssImages.length > _ssCols()) {
+    _ssTimer = setInterval(() => {
+      _ssCurrent = _ssCurrent >= _ssMax() ? 0 : _ssCurrent + 1;
+      _ssUpdateControls();
+    }, 4000);
+  }
+}
+
+function ssRender() {
+  const viewport = document.getElementById('ss-viewport');
+  const track    = document.getElementById('ss-track');
+  const emptyUi  = document.getElementById('ss-empty-ui');
+  const bar      = document.getElementById('ss-bar');
+  const dotsEl   = document.getElementById('ss-dots');
+  if (!viewport) return;
+
+  clearInterval(_ssTimer);
+
+  if (!_ssImages.length) {
+    viewport.style.display = 'none';
+    if (bar)     bar.style.display     = 'none';
+    if (emptyUi) emptyUi.style.display = '';
+    return;
+  }
+
+  viewport.style.display = '';
+  if (bar)     bar.style.display     = 'flex';
+  if (emptyUi) emptyUi.style.display = 'none';
+
+  // Clamp index
+  _ssCurrent = Math.min(_ssCurrent, _ssMax());
+
+  // Build slide items (each with its own delete button)
+  track.innerHTML = _ssImages.map((img, i) =>
+    `<div class="ss-item">` +
+      `<img src="${img.src}" alt="Photo ${i + 1}" loading="lazy">` +
+      `<button class="ss-item-del" onclick="ssDeleteAt(${i})" title="Remove photo">✕</button>` +
+    `</div>`
+  ).join('');
+
+  // Apply transform without animation on first render, then re-enable
+  track.style.transition = 'none';
+  ssApplyTransform();
+  requestAnimationFrame(() => {
+    if (track) track.style.transition = 'transform .45s cubic-bezier(.4,0,.2,1)';
+  });
+
+  // Build dots (max 12 shown)
+  if (dotsEl) {
+    const maxDots = Math.min(_ssImages.length, 12);
+    dotsEl.innerHTML = Array.from({length: maxDots}, (_, i) =>
+      `<button class="ss-dot${i === _ssCurrent ? ' active' : ''}" onclick="ssGoTo(${i})"></button>`
+    ).join('');
+  }
+
+  // Arrow states
+  const prev = document.getElementById('ss-prev');
+  const next = document.getElementById('ss-next');
+  if (prev) prev.disabled = _ssCurrent === 0;
+  if (next) next.disabled = _ssCurrent >= _ssMax();
+
+  _ssRestartTimer();
+}
+
+function ssGoTo(idx) {
+  clearInterval(_ssTimer);
+  _ssCurrent = Math.max(0, Math.min(idx, _ssMax()));
+  _ssUpdateControls();
+  _ssRestartTimer();
+}
+
+function ssMove(dir) {
+  clearInterval(_ssTimer);
+  _ssCurrent = Math.max(0, Math.min(_ssCurrent + dir, _ssMax()));
+  _ssUpdateControls();
+  _ssRestartTimer();
+}
+
+function ssUpload(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  let loaded = 0;
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      _ssImages.push({ id: 'ss_' + Date.now() + '_' + Math.random().toString(36).slice(2), src: e.target.result });
+      loaded++;
+      if (loaded === files.length) {
+        _ssCurrent = Math.max(0, _ssImages.length - _ssCols()); // jump to newly added batch
+        ssSave();
+        ssRender();
+        toast(`📷 ${files.length} photo${files.length > 1 ? 's' : ''} added!`);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // allow re-selecting same file
+}
+
+function ssDeleteAt(idx) {
+  if (!confirm('Remove this photo?')) return;
+  _ssImages.splice(idx, 1);
+  _ssCurrent = Math.min(_ssCurrent, _ssMax());
+  ssSave();
+  ssRender();
+  toast('Photo removed');
+}
+
+// Recalculate offset when window is resized (columns may change)
+window.addEventListener('resize', () => { if (_ssImages.length) ssApplyTransform(); });
+
+// Init on page load
+document.addEventListener('DOMContentLoaded', () => ssLoad());
 
 </script>
 <script>
@@ -4285,7 +5102,7 @@ function saveMindset(btn) {
 function loadMindset() {
   const data = store.get('mindset');
   const weekDates = thisWeekDates();
-  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()]});
+  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')});
   const weekData = weekDates.map(d=>data.find(e=>e.date===d)||null);
   const awarenessData = weekData.map(e=>e?e.awareness:null);
   const chartOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#6b7280',font:{size:11}}}}, scales:{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(255,255,255,.05)'},min:0,max:10}} };
@@ -4334,7 +5151,7 @@ function saveRelationships(btn) {
 function loadRelationships() {
   const data = store.get('relationships');
   const weekDates = thisWeekDates();
-  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][dt.getDay()]});
+  const labels = weekDates.map(d=>{const dt=new Date(d+'T00:00:00');return String(dt.getDate()).padStart(2,'0')+'/'+String(dt.getMonth()+1).padStart(2,'0')});
   const weekData = weekDates.map(d=>data.find(e=>e.date===d)||null);
   const connData = weekData.map(e=>e?e.connection:null);
   const chartOpts = { responsive:true, maintainAspectRatio:false, plugins:{legend:{labels:{color:'#6b7280'}}}, scales:{x:{ticks:{color:'#6b7280'}},y:{ticks:{color:'#6b7280'},grid:{color:'rgba(255,255,255,.05)'},min:0,max:10}} };
@@ -5373,32 +6190,103 @@ function calcGoalPct(goal) {
   return total ? Math.min(100, Math.max(0, Math.round(moved/total*100))) : 0;
 }
 
+function openAddGoalModal() {
+  // Reset to "Add" mode
+  document.getElementById('ag-edit-id').value = '';
+  document.getElementById('ag-modal-title').textContent = '🏆 Add New Goal';
+  document.getElementById('ag-submit-btn').textContent = 'Add Goal';
+  ['ag-title','ag-unit','ag-baseline','ag-target','ag-current','ag-start','ag-due','ag-why','ag-strategy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const pillarEl=document.getElementById('ag-pillar');if(pillarEl)pillarEl.value='health';
+  const typeEl=document.getElementById('ag-type');if(typeEl)typeEl.value='short';
+  const dirEl=document.getElementById('ag-direction');if(dirEl)dirEl.value='increase';
+  showModal('add-goal-modal');
+}
+
 function addGoal() {
   const title = document.getElementById('ag-title').value.trim();
   if(!title){toast('Goal title required',false);return;}
   const baseline = parseFloat(document.getElementById('ag-baseline').value)||0;
   const current = parseFloat(document.getElementById('ag-current').value)||baseline;
-  const goal = {
-    id: uid('GOAL'),
-    title, pillar: document.getElementById('ag-pillar').value,
-    type: document.getElementById('ag-type').value,
-    direction: document.getElementById('ag-direction').value,
-    unit: document.getElementById('ag-unit').value.trim(),
-    baseline, target: parseFloat(document.getElementById('ag-target').value)||0,
-    current,
-    startDate: document.getElementById('ag-start').value || today(),
-    dueDate: document.getElementById('ag-due').value,
-    why: document.getElementById('ag-why').value.trim(),
-    strategy: document.getElementById('ag-strategy').value.trim(),
-    visionLink: document.getElementById('ag-vision-link').value,
-    status: 'Not Started',
-    createdAt: new Date().toISOString()
-  };
-  store.push('goals', goal);
-  hideModal('add-goal-modal');
-  ['ag-title','ag-unit','ag-baseline','ag-target','ag-current','ag-start','ag-due','ag-why','ag-strategy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  loadGoals();
-  toast('Goal added ✓');
+  const editId = document.getElementById('ag-edit-id').value;
+
+  if (editId) {
+    // Edit mode — update existing goal
+    const goals = store.get('goals') || [];
+    const idx = goals.findIndex(g => g.id === editId);
+    if (idx === -1) { toast('Goal not found', false); return; }
+    goals[idx] = Object.assign(goals[idx], {
+      title, pillar: document.getElementById('ag-pillar').value,
+      type: document.getElementById('ag-type').value,
+      direction: document.getElementById('ag-direction').value,
+      unit: document.getElementById('ag-unit').value.trim(),
+      baseline, target: parseFloat(document.getElementById('ag-target').value)||0,
+      current,
+      startDate: document.getElementById('ag-start').value || today(),
+      dueDate: document.getElementById('ag-due').value,
+      why: document.getElementById('ag-why').value.trim(),
+      strategy: document.getElementById('ag-strategy').value.trim(),
+      visionLink: document.getElementById('ag-vision-link').value,
+      updatedAt: new Date().toISOString()
+    });
+    store.set('goals', goals);
+    hideModal('add-goal-modal');
+    loadGoals();
+    toast('Goal updated ✓');
+  } else {
+    // Add mode — create new goal
+    const goal = {
+      id: uid('GOAL'),
+      title, pillar: document.getElementById('ag-pillar').value,
+      type: document.getElementById('ag-type').value,
+      direction: document.getElementById('ag-direction').value,
+      unit: document.getElementById('ag-unit').value.trim(),
+      baseline, target: parseFloat(document.getElementById('ag-target').value)||0,
+      current,
+      startDate: document.getElementById('ag-start').value || today(),
+      dueDate: document.getElementById('ag-due').value,
+      why: document.getElementById('ag-why').value.trim(),
+      strategy: document.getElementById('ag-strategy').value.trim(),
+      visionLink: document.getElementById('ag-vision-link').value,
+      status: 'Not Started',
+      createdAt: new Date().toISOString()
+    };
+    store.push('goals', goal);
+    hideModal('add-goal-modal');
+    ['ag-title','ag-unit','ag-baseline','ag-target','ag-current','ag-start','ag-due','ag-why','ag-strategy'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    loadGoals();
+    toast('Goal added ✓');
+  }
+}
+
+function editGoal(id) {
+  const goals = store.get('goals') || [];
+  const g = goals.find(goal => goal.id === id);
+  if (!g) { toast('Goal not found', false); return; }
+
+  // Pre-fill all fields
+  document.getElementById('ag-edit-id').value = g.id;
+  document.getElementById('ag-title').value = g.title || '';
+  document.getElementById('ag-pillar').value = g.pillar || 'health';
+  document.getElementById('ag-type').value = g.type || 'short';
+  document.getElementById('ag-direction').value = g.direction || 'increase';
+  document.getElementById('ag-unit').value = g.unit || '';
+  document.getElementById('ag-baseline').value = g.baseline ?? '';
+  document.getElementById('ag-target').value = g.target ?? '';
+  document.getElementById('ag-current').value = g.current ?? '';
+  document.getElementById('ag-start').value = g.startDate || '';
+  document.getElementById('ag-due').value = g.dueDate || '';
+  document.getElementById('ag-why').value = g.why || '';
+  document.getElementById('ag-strategy').value = g.strategy || '';
+
+  // Update modal title and button text
+  document.getElementById('ag-modal-title').textContent = '✏️ Edit Goal';
+  document.getElementById('ag-submit-btn').textContent = 'Save Changes';
+
+  // Populate vision link, then set its value
+  populateVisionLinkSelect();
+  document.getElementById('ag-vision-link').value = g.visionLink || '';
+
+  showModal('add-goal-modal');
 }
 
 function renderGoalCard(g) {
@@ -5415,6 +6303,7 @@ function renderGoalCard(g) {
       <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
         <button class="btn btn-sm btn-secondary" onclick="openGoalProgressFromGoal('${g.id}')" title="Log progress">📊</button>
         <button class="btn btn-sm btn-secondary" onclick="updateGoalStatus('${g.id}')" title="Update status">⚙</button>
+        <button class="btn btn-sm btn-secondary" onclick="editGoal('${g.id}')" title="Edit goal">✏️</button>
         <button class="btn btn-sm btn-secondary" onclick="deleteGoal('${g.id}')" style="color:var(--red)" title="Delete">🗑</button>
       </div>
     </div>
@@ -5755,7 +6644,7 @@ const VITAL_RANGES = [
 function vitalStatus(key, val) {
   if(!val || isNaN(parseFloat(val))) return null;
   const v = parseFloat(val);
-  if(key==='hr') return v<60||v>100 ? (v>100?{cls:'warning',text:'High'}:{cls:'warning',text:'Low'}) : {cls:'normal',text:'Normal'};
+  if(key==='hr'||key==='hrAvg') return v<60||v>100 ? (v>100?{cls:'warning',text:'High'}:{cls:'warning',text:'Low'}) : {cls:'normal',text:'Normal'};
   if(key==='spo2') return v<95?{cls:'alert',text:'Low O₂'}:v<97?{cls:'warning',text:'Borderline'}:{cls:'normal',text:'Normal'};
   if(key==='temp') return v<36.1?{cls:'warning',text:'Low'}:v>37.5?{cls:'alert',text:'Fever'}:v>37.2?{cls:'warning',text:'Elevated'}:{cls:'normal',text:'Normal'};
   if(key==='bmi') return v<18.5?{cls:'warning',text:'Underweight'}:v>30?{cls:'alert',text:'Obese'}:v>25?{cls:'warning',text:'Overweight'}:{cls:'normal',text:'Normal'};
@@ -5788,9 +6677,6 @@ function loadVitals() {
   }
 
   if(todayEntry) {
-    setTile('vt-hr', todayEntry.hr, 'hr');
-    const bp = todayEntry.sys && todayEntry.dia ? todayEntry.sys+'/'+todayEntry.dia : '';
-    setTile('vt-bp', bp, 'sys');
     setTile('vt-spo2', todayEntry.spo2, 'spo2');
     setTile('vt-temp', todayEntry.temp, 'temp');
     setTile('vt-cal', todayEntry.cal ? Math.round(todayEntry.cal) : '');
@@ -5798,10 +6684,21 @@ function loadVitals() {
     setTile('vt-bmi', todayEntry.bmi, 'bmi');
     setTile('vt-stress', todayEntry.stress);
   } else {
-    ['vt-hr','vt-bp','vt-spo2','vt-temp','vt-cal','vt-active','vt-bmi','vt-stress'].forEach(id=>{
+    ['vt-spo2','vt-temp','vt-cal','vt-active','vt-bmi','vt-stress'].forEach(id=>{
       const el=document.getElementById(id); if(el) el.textContent='—';
     });
   }
+
+  // Populate HR Avg/Min/Max and HRV tiles — vitals store takes priority, health store as fallback
+  const vitalsToday = vitals.find(e=>e.date===today());
+  const healthToday = (store.get('health')||[]).find(e=>e.date===today());
+  const _setSpan = (id, val) => { const el=document.getElementById(id); if(el) el.textContent = val!=null ? val : '—'; };
+  _setSpan('vt-hr-avg',  vitalsToday?.hrAvg  ?? healthToday?.hrAvg  ?? null);
+  _setSpan('vt-hr-min',  vitalsToday?.hrMin  ?? healthToday?.hrMin  ?? null);
+  _setSpan('vt-hr-max',  vitalsToday?.hrMax  ?? healthToday?.hrMax  ?? null);
+  _setSpan('vt-hrv-avg', vitalsToday?.hrvAvg ?? healthToday?.hrv    ?? null);
+  _setSpan('vt-hrv-min', vitalsToday?.hrvMin ?? healthToday?.hrvMin ?? null);
+  _setSpan('vt-hrv-max', vitalsToday?.hrvMax ?? healthToday?.hrvMax ?? null);
 
   // Build last-7-days
   const last7 = [];
@@ -5809,11 +6706,16 @@ function loadVitals() {
   const byDate = {};
   vitals.forEach(v=>byDate[v.date]=v);
 
-  // HR chart
-  const hrData = last7.map(d=>byDate[d]?.hr||null);
+  // Merge health store as fallback for HR data
+  const healthByDate = {};
+  (store.get('health')||[]).forEach(e=>healthByDate[e.date]=e);
+
+  // HR chart — vitals store primary, health store fallback
+  const hrAvgData = last7.map(d=>byDate[d]?.hrAvg ?? healthByDate[d]?.hrAvg ?? null);
+  const hrMinData = last7.map(d=>byDate[d]?.hrMin ?? healthByDate[d]?.hrMin ?? null);
+  const hrMaxData = last7.map(d=>byDate[d]?.hrMax ?? healthByDate[d]?.hrMax ?? null);
   const spo2Data = last7.map(d=>byDate[d]?.spo2||null);
-  const sysData = last7.map(d=>byDate[d]?.sys||null);
-  const diaData = last7.map(d=>byDate[d]?.dia||null);
+
   const calData = last7.map(d=>byDate[d]?.cal||null);
   const labels = last7.map(d=>fmtDate(d).slice(0,6));
 
@@ -5830,12 +6732,12 @@ function loadVitals() {
   }
 
   const accent='rgba(67,97,238,1)', accentFill='rgba(67,97,238,.1)';
-  makeChart('vt-hr-chart',[{label:'Heart Rate (bpm)',data:hrData,borderColor:accent,backgroundColor:accentFill,fill:true,tension:.35,pointRadius:4}],'bpm',50,120);
+  makeChart('vt-hr-chart',[
+    {label:'Avg HR',data:hrAvgData,borderColor:'#ef4444',backgroundColor:'rgba(239,68,68,.1)',fill:true,tension:.4,pointRadius:4,borderWidth:2},
+    {label:'Min HR',data:hrMinData,borderColor:'#fca5a5',backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:1.5,borderDash:[4,3]},
+    {label:'Max HR',data:hrMaxData,borderColor:'#dc2626',backgroundColor:'transparent',fill:false,tension:.4,pointRadius:3,borderWidth:1.5,borderDash:[4,3]}
+  ],'bpm',40,200);
   makeChart('vt-spo2-chart',[{label:'SpO₂ (%)',data:spo2Data,borderColor:'#059669',backgroundColor:'rgba(5,150,105,.1)',fill:true,tension:.35,pointRadius:4}],'%',90,100);
-  makeChart('vt-bp-chart',[
-    {label:'Systolic',data:sysData,borderColor:'#dc2626',backgroundColor:'rgba(220,38,38,.08)',fill:false,tension:.35,pointRadius:4},
-    {label:'Diastolic',data:diaData,borderColor:'#f87171',backgroundColor:'rgba(248,113,113,.08)',fill:false,tension:.35,pointRadius:4}
-  ],'mmHg',60,160);
   makeChart('vt-cal-chart',[{label:'Calories (kcal)',data:calData,borderColor:'#d97706',backgroundColor:'rgba(217,119,6,.1)',fill:true,tension:.35,pointRadius:4}],'kcal');
 
   // History list
@@ -5844,14 +6746,14 @@ function loadVitals() {
     const sorted = [...vitals].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,30);
     histEl.innerHTML = sorted.length ? sorted.map(v=>{
       const chips = [];
-      if(v.hr) chips.push(`❤️ ${v.hr} bpm`);
-      if(v.sys&&v.dia) chips.push(`🩺 ${v.sys}/${v.dia} mmHg`);
+      if(v.hrAvg) chips.push(`❤️ ${v.hrAvg}${v.hrMin?'/'+v.hrMin:''}${v.hrMax?'/'+v.hrMax:''} bpm`);
+      if(v.hrvAvg) chips.push(`💜 HRV ${v.hrvAvg}${v.hrvMin?'/'+v.hrvMin:''}${v.hrvMax?'/'+v.hrvMax:''} ms`);
       if(v.spo2) chips.push(`🫁 ${v.spo2}%`);
       if(v.temp) chips.push(`🌡️ ${v.temp}°C`);
       if(v.cal) chips.push(`🔥 ${Math.round(v.cal)} kcal`);
       if(v.active) chips.push(`⚡ ${v.active} min`);
       if(v.bmi) chips.push(`⚖️ BMI ${v.bmi}`);
-      if(v.stress) chips.push(`😰 Stress ${v.stress}/5`);
+      if(v.stress) chips.push(`😰 Stress ${v.stress}/100`);
       return `<div class="vitals-log-row">
         <div class="vitals-log-date">${fmtDate(v.date)}</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap;flex:1">${chips.map(c=>`<span class="vitals-log-chip">${c}</span>`).join('')}</div>
@@ -5865,9 +6767,7 @@ function loadVitals() {
   const rangesEl = document.getElementById('vt-ranges-tbody');
   if(rangesEl) {
     const rows = [
-      {label:'Resting Heart Rate',unit:'bpm',normal:'60–100',vals:avgDays.map(v=>v.hr).filter(Boolean),key:'hr'},
-      {label:'Systolic BP',unit:'mmHg',normal:'< 120',vals:avgDays.map(v=>v.sys).filter(Boolean),key:'sys'},
-      {label:'Diastolic BP',unit:'mmHg',normal:'< 80',vals:avgDays.map(v=>v.dia).filter(Boolean)},
+      {label:'Avg Heart Rate',unit:'bpm',normal:'60–100',vals:avgDays.map(v=>v.hrAvg).filter(Boolean),key:'hrAvg'},
       {label:'Blood Oxygen (SpO₂)',unit:'%',normal:'95–100',vals:avgDays.map(v=>v.spo2).filter(Boolean),key:'spo2'},
       {label:'Body Temperature',unit:'°C',normal:'36.1–37.2',vals:avgDays.map(v=>v.temp).filter(Boolean),key:'temp'},
       {label:'BMI',unit:'',normal:'18.5–24.9',vals:avgDays.map(v=>v.bmi).filter(Boolean),key:'bmi'},
@@ -5896,16 +6796,18 @@ function saveVitals() {
 
   const entry = {
     id: uid('vit'), date,
-    hr: parseFloat(document.getElementById('vt-inp-hr').value)||null,
-    hrMax: parseFloat(document.getElementById('vt-inp-hrmax').value)||null,
-    sys: parseFloat(document.getElementById('vt-inp-sys').value)||null,
-    dia: parseFloat(document.getElementById('vt-inp-dia').value)||null,
+    hrAvg: parseFloat(document.getElementById('vt-inp-hr-avg').value)||null,
+    hrMin: parseFloat(document.getElementById('vt-inp-hr-min').value)||null,
+    hrMax: parseFloat(document.getElementById('vt-inp-hr-max').value)||null,
+    hrvAvg: parseFloat(document.getElementById('vt-inp-hrv-avg').value)||null,
+    hrvMin: parseFloat(document.getElementById('vt-inp-hrv-min').value)||null,
+    hrvMax: parseFloat(document.getElementById('vt-inp-hrv-max').value)||null,
     spo2: parseFloat(document.getElementById('vt-inp-spo2').value)||null,
     temp: parseFloat(document.getElementById('vt-inp-temp').value)||null,
     cal: parseFloat(document.getElementById('vt-inp-cal').value)||null,
     active: parseFloat(document.getElementById('vt-inp-active').value)||null,
     weight, height, bmi,
-    stress: parseInt(document.getElementById('vt-inp-stress').value)||5,
+    stress: parseFloat(document.getElementById('vt-inp-stress').value)||null,
     notes: document.getElementById('vt-inp-notes').value.trim(),
     source: 'manual', createdAt: today()
   };
@@ -5917,9 +6819,7 @@ function saveVitals() {
   else store.push('vitals', entry);
 
   hideModal('modal-log-vitals');
-  ['vt-inp-hr','vt-inp-hrmax','vt-inp-sys','vt-inp-dia','vt-inp-spo2','vt-inp-temp','vt-inp-cal','vt-inp-active','vt-inp-weight','vt-inp-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('vt-stress-num').textContent='5';
-  document.getElementById('vt-inp-stress').value='5';
+  ['vt-inp-hr-avg','vt-inp-hr-min','vt-inp-hr-max','vt-inp-hrv-avg','vt-inp-hrv-min','vt-inp-hrv-max','vt-inp-spo2','vt-inp-temp','vt-inp-cal','vt-inp-active','vt-inp-weight','vt-inp-stress','vt-inp-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   toast('Vitals saved 🫀');
   loadVitals();
 }
@@ -5930,69 +6830,6 @@ function deleteVital(id) {
   loadVitals();
   toast('Deleted');
 }
-
-function connectGoogleFit() {
-  // Redirect to server-side OAuth flow
-  window.location.href = '/api/auth/google';
-}
-
-async function disconnectGoogleFit() {
-  if (!confirm('Disconnect Google Fit? This will remove the stored token.')) return;
-  try {
-    await fetch('/api/auth/google/disconnect', { method: 'POST' });
-    setGfitUI(false);
-    toast('Google Fit disconnected');
-  } catch(e) {
-    toast('Error disconnecting: ' + e.message);
-  }
-}
-
-function setGfitUI(connected, lastSync) {
-  const dot  = document.getElementById('gfit-dot');
-  const text = document.getElementById('gfit-status-text');
-  const sub  = document.getElementById('gfit-status-sub');
-  const connectBtn    = document.getElementById('gfit-connect-btn');
-  const disconnectBtn = document.getElementById('gfit-disconnect-btn');
-  const lastSyncEl    = document.getElementById('gfit-last-sync');
-  if (!dot) return;
-  if (connected) {
-    dot.className = 'gfit-status-dot connected';
-    text.textContent = 'Google Fit — Connected ✓';
-    sub.textContent  = 'Steps, heart rate, calories & active minutes sync automatically.';
-    if (connectBtn)    { connectBtn.style.display    = 'none'; }
-    if (disconnectBtn) { disconnectBtn.style.display = ''; }
-    if (lastSyncEl && lastSync) lastSyncEl.textContent = 'Last synced: ' + lastSync;
-    fetchGfitData();
-  } else {
-    dot.className = 'gfit-status-dot disconnected';
-    text.textContent = 'Google Fit — Not Connected';
-    sub.textContent  = 'Connect your Google Fit account to auto-sync steps, heart rate, sleep & more.';
-    if (connectBtn)    { connectBtn.style.display    = ''; }
-    if (disconnectBtn) { disconnectBtn.style.display = 'none'; }
-    if (lastSyncEl)    lastSyncEl.textContent = '';
-  }
-}
-
-async function checkGfitStatus() {
-  try {
-    const r = await fetch('/api/fit/status');
-    const d = await r.json();
-    setGfitUI(d.connected);
-  } catch(e) { /* offline or no backend */ }
-}
-
-async function fetchGfitData() {
-  try {
-    const r = await fetch('/api/fit/data');
-    if (!r.ok) return;
-    const d = await r.json();
-    const el = document.getElementById('gfit-last-sync');
-    if (el) el.textContent = `Steps: ${d.steps.toLocaleString()} · HR: ${d.heartRate || '—'} bpm · Calories: ${Math.round(d.calories)} · Active: ${d.activeMinutes} min · synced ${new Date().toLocaleTimeString()}`;
-  } catch(e) { /* ignore */ }
-}
-
-// Check on page load and handle ?gfit= callback param
-// Google Fit init is handled inside _initAppAfterAuth (after authentication)
 
 // ══════════════════════════════════════════════
 //  AFFIRMATIONS
@@ -6348,19 +7185,6 @@ async function _initAppAfterAuth() {
   loadDashboard();
   renderTasks();
 
-  // Check Google Fit state from URL params (OAuth callback)
-  const params = new URLSearchParams(window.location.search);
-  if (params.get('gfit') === 'connected') {
-    toast('✅ Google Fit connected!');
-    history.replaceState({}, '', window.location.pathname);
-    setGfitUI(true);
-    setTimeout(() => showPage('vitals'), 300);
-  } else if (params.get('gfit') === 'error') {
-    toast('❌ Google Fit connection failed.');
-    history.replaceState({}, '', window.location.pathname);
-  } else {
-    checkGfitStatus();
-  }
 }
 
 async function _initApp() {
